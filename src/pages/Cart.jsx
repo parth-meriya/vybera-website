@@ -1,0 +1,206 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { validateCoupon } from '../firebase/coupons';
+import toast from 'react-hot-toast';
+
+const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
+
+const Cart = () => {
+  const { items, removeItem, updateQuantity, coupon, discount, applyCoupon, removeCoupon, subtotal, total, itemCount } = useCart();
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    try {
+      const result = await validateCoupon(couponCode.trim(), subtotal);
+      if (result.valid) {
+        applyCoupon(result.coupon, result.discount);
+        toast.success(result.message, { className: 'toast-vybera' });
+      } else {
+        toast.error(result.message, { className: 'toast-vybera' });
+      }
+    } catch (e) {
+      toast.error('Error validating coupon.', { className: 'toast-vybera' });
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6 px-6">
+        <ShoppingBag size={48} className="text-vy-border" />
+        <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white">Your cart is empty</h2>
+        <p className="text-vy-grey text-sm tracking-wide">Add products to get started.</p>
+        <Link to="/shop" className="btn-primary">Shop Now</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-vy-black pt-24">
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-display font-bold text-3xl tracking-wider text-vy-white mb-10 border-b border-vy-border pb-6"
+        >
+          Cart ({itemCount})
+        </motion.h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Items */}
+          <div className="lg:col-span-2 space-y-0">
+            <AnimatePresence>
+              {items.map((item, idx) => (
+                <motion.div
+                  key={`${item.id}-${item.size}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="flex gap-5 py-6 border-b border-vy-border"
+                >
+                  {/* Image */}
+                  <Link to={`/product/${item.id}`} className="flex-shrink-0">
+                    <img
+                      src={item.image || PLACEHOLDER}
+                      alt={item.name}
+                      className="w-20 h-24 object-cover bg-vy-card"
+                    />
+                  </Link>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-vy-white text-sm font-medium tracking-wide">{item.name}</h3>
+                        <p className="text-vy-grey text-xs mt-1">Size: {item.size}</p>
+                        <p className="text-vy-white text-sm font-semibold mt-2">
+                          ₹{(item.price * item.quantity).toLocaleString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => removeItem(item.id, item.size)}
+                        className="text-vy-grey hover:text-vy-white transition-colors p-1 flex-shrink-0"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+
+                    {/* Qty Controls */}
+                    <div className="flex items-center gap-2 mt-4">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                        className="w-8 h-8 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-grey transition-colors"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="text-vy-white text-sm w-8 text-center font-medium">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                        className="w-8 h-8 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-grey transition-colors"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Summary */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="lg:sticky lg:top-24 h-fit"
+          >
+            <div className="bg-vy-card border border-vy-border p-6">
+              <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-6">
+                Order Summary
+              </h2>
+
+              {/* Coupon */}
+              <div className="mb-6">
+                {coupon ? (
+                  <div className="flex items-center justify-between bg-vy-border/50 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Tag size={12} className="text-green-400" />
+                      <span className="text-green-400 text-xs font-mono font-bold">{coupon.code}</span>
+                    </div>
+                    <button
+                      onClick={removeCoupon}
+                      className="text-vy-grey hover:text-vy-white transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Coupon code"
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
+                      className="vy-input flex-1 text-xs"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading}
+                      className="px-4 py-3 bg-vy-white text-vy-black text-xs font-semibold tracking-widest uppercase hover:bg-vy-accent transition-colors disabled:opacity-50"
+                    >
+                      {couponLoading ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Breakdown */}
+              <div className="space-y-3 mb-6 pb-6 border-b border-vy-border">
+                <div className="flex justify-between">
+                  <span className="text-vy-grey text-sm">Subtotal</span>
+                  <span className="text-vy-white text-sm">₹{subtotal.toLocaleString()}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-green-400 text-sm">Coupon Discount</span>
+                    <span className="text-green-400 text-sm">−₹{discount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-vy-grey text-sm">Shipping</span>
+                  <span className="text-green-400 text-sm">Free</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between mb-8">
+                <span className="text-vy-white font-semibold">Total</span>
+                <span className="text-vy-white font-bold text-xl">₹{total.toLocaleString()}</span>
+              </div>
+
+              <button
+                onClick={() => navigate('/checkout')}
+                className="btn-primary w-full flex items-center justify-center gap-2"
+              >
+                Proceed to Checkout <ArrowRight size={14} />
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Cart;
