@@ -8,7 +8,10 @@ const SIZES_ALL = ['S', 'M', 'L', 'XL', 'XXL'];
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
 const CATEGORIES = [
-  { value: 'normal', label: 'Normal' },
+  { value: 'normal', label: 'Normal (All)' },
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'unisex', label: 'Unisex' },
   { value: 'couple', label: 'Couple' },
   { value: 'embroidery', label: 'Embroidery' },
 ];

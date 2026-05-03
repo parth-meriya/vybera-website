@@ -14,6 +14,16 @@ const PRICE_RANGES = [
   { label: 'Above ₹3000', min: 3000, max: Infinity },
 ];
 
+const CATEGORIES = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'unisex', label: 'Unisex' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'couple', label: 'Couple' },
+  { value: 'embroidery', label: 'Embroidery' },
+];
+
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -21,6 +31,7 @@ const Shop = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState([]);
   const [selectedPrice, setSelectedPrice] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     getProducts().then(p => {
@@ -32,6 +43,11 @@ const Shop = () => {
 
   useEffect(() => {
     let result = [...products];
+    
+    if (selectedCategory !== 'all') {
+      result = result.filter(p => p.category === selectedCategory);
+    }
+    
     if (selectedSizes.length > 0) {
       result = result.filter(p =>
         p.sizes?.some(s => selectedSizes.includes(s))
@@ -40,7 +56,7 @@ const Shop = () => {
     const range = PRICE_RANGES[selectedPrice];
     result = result.filter(p => p.price >= range.min && p.price <= range.max);
     setFiltered(result);
-  }, [selectedSizes, selectedPrice, products]);
+  }, [selectedSizes, selectedPrice, selectedCategory, products]);
 
   const toggleSize = (size) => {
     setSelectedSizes(prev =>
@@ -51,9 +67,10 @@ const Shop = () => {
   const clearFilters = () => {
     setSelectedSizes([]);
     setSelectedPrice(0);
+    setSelectedCategory('all');
   };
 
-  const hasFilters = selectedSizes.length > 0 || selectedPrice !== 0;
+  const hasFilters = selectedSizes.length > 0 || selectedPrice !== 0 || selectedCategory !== 'all';
 
   return (
     <div className="min-h-screen bg-vy-black pt-24">
@@ -105,7 +122,24 @@ const Shop = () => {
           transition={{ duration: 0.3 }}
           className="overflow-hidden mb-8"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 border-b border-vy-border">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-vy-border">
+            {/* Category filter */}
+            <div>
+              <p className="text-vy-grey text-xs tracking-widest uppercase mb-4">Category</p>
+              <div className="flex flex-col gap-2">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.value}
+                    onClick={() => setSelectedCategory(cat.value)}
+                    className={`text-left text-sm transition-colors duration-200 ${
+                      selectedCategory === cat.value ? 'text-vy-white' : 'text-vy-grey hover:text-vy-white'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {/* Size filter */}
             <div>
               <p className="text-vy-grey text-xs tracking-widest uppercase mb-4">Size</p>
