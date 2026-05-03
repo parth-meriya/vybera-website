@@ -263,6 +263,57 @@ const Customize = () => {
     try {
       const receipt = `custom_${user.uid.slice(0, 8)}_${Date.now()}`;
 
+      // ── 0-Rupee Bypass (100% Free via Coupon) ──
+      if (finalPrice === 0) {
+        if (coupon) {
+          const { validateCoupon } = await import('../firebase/coupons');
+          const check = await validateCoupon(coupon.code, basePrice);
+          const trueFinal = Math.max(0, basePrice - check.discountAmount);
+          if (trueFinal !== 0) {
+            toast.error("Security Error: Invalid pricing detected.", { className: 'toast-vybera' });
+            setPaymentState('failed');
+            setStep(1);
+            return;
+          }
+        } else if (basePrice > 0) {
+          toast.error("Security Error: Cannot process free order without coupon.", { className: 'toast-vybera' });
+          setPaymentState('failed');
+          setStep(1);
+          return;
+        }
+
+        try {
+          await createCustomOrder({
+            userId: user.uid,
+            userEmail: user.email,
+            userName: user.displayName || '',
+            imageUrls,
+            size,
+            color,
+            position,
+            description: description.trim(),
+            basePrice,
+            discount,
+            price: finalPrice,
+            couponCode: coupon?.code || null,
+            paymentId: 'free_coupon_bypass',
+            razorpayOrderId: null,
+            razorpaySignature: null,
+            paymentReceipt: receipt,
+          });
+
+          setPaymentState('success');
+          toast.success('Custom order placed! We\'ll get in touch soon.', { className: 'toast-vybera', duration: 5000 });
+          setTimeout(() => navigate('/order-success'), 1000);
+        } catch (dbErr) {
+          console.error('Firestore save failed:', dbErr);
+          setPaymentState('failed');
+          setStep(1);
+          toast.error('Failed to log order.', { className: 'toast-vybera' });
+        }
+        return;
+      }
+
       await openRazorpay({
         amount: finalPrice,
         receipt,

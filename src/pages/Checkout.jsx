@@ -169,6 +169,46 @@ const Checkout = () => {
     try {
       const receipt = `vybera_${user.uid.slice(0, 8)}_${Date.now()}`;
 
+      // ── 0-Rupee Bypass (100% Free via Coupon) ──
+      if (total === 0) {
+        if (coupon) {
+          const { validateCoupon } = await import('../firebase/coupons');
+          const check = await validateCoupon(coupon.code, subtotal);
+          const trueFinal = Math.max(0, subtotal - check.discountAmount);
+          if (trueFinal !== 0) {
+            toast.error("Security Error: Invalid pricing detected.", { className: 'toast-vybera' });
+            setPaymentState('failed');
+            setStep(2);
+            return;
+          }
+        } else if (subtotal > 0) {
+          toast.error("Security Error: Cannot process free order without coupon.", { className: 'toast-vybera' });
+          setPaymentState('failed');
+          setStep(2);
+          return;
+        }
+
+        await createOrder({
+          userId: user.uid,
+          userEmail: user.email,
+          products: items.map(i => ({
+            id: i.id, name: i.name, price: i.price, quantity: i.quantity, size: i.size, image: i.image || '',
+          })),
+          address: { ...form },
+          subtotal, discount, total,
+          couponCode: coupon?.code || null,
+          paymentId: 'free_coupon_bypass',
+          razorpayOrderId: null,
+          razorpaySignature: null,
+          paymentReceipt: receipt,
+        });
+
+        clearCart();
+        setPaymentState('success');
+        setTimeout(() => navigate('/order-success'), 800);
+        return;
+      }
+
       await openRazorpay({
         amount: total,          // Final amount IN RUPEES (after coupon discount)
         receipt,
