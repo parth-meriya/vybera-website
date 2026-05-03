@@ -29,72 +29,6 @@ const StepLabel = ({ n, label, active, done }) => (
   </div>
 );
 
-const TshirtPreview = ({ color, position, imageUrls, viewMode }) => {
-  const isLight = () => {
-    if (!color.startsWith('#')) return true;
-    const hex = color.replace('#', '');
-    if (hex.length < 6) return true;
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 2), 16);
-    const b = parseInt(hex.substring(4, 2), 16);
-    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    return yiq >= 128;
-  };
-  const bg = color || '#f5f5f5';
-  const textColor = isLight() ? '#111' : '#f5f5f5';
-
-  const isBack = viewMode === 'Back';
-  const collarPath = isBack
-    ? "M60,10 L30,40 L10,30 L0,70 L35,75 L35,210 L165,210 L165,75 L200,70 L190,30 L170,40 L140,10 Q120,5 100,5 Q80,5 60,10Z"
-    : "M60,10 L30,40 L10,30 L0,70 L35,75 L35,210 L165,210 L165,75 L200,70 L190,30 L170,40 L140,10 Q120,20 100,20 Q80,20 60,10Z";
-
-  let activeImageUrl = null;
-  if (imageUrls && imageUrls.length > 0) {
-    if (position === 'Both') {
-      activeImageUrl = isBack ? (imageUrls[1] || imageUrls[0]) : imageUrls[0];
-    } else if (position === 'Front' && !isBack) {
-      activeImageUrl = imageUrls[0];
-    } else if (position === 'Back' && isBack) {
-      activeImageUrl = imageUrls[0];
-    }
-  }
-
-  const isZoneActive = (position === 'Both') || (position === 'Front' && !isBack) || (position === 'Back' && isBack);
-
-  return (
-    <motion.div
-      key={`${color}-${viewMode}`}
-      initial={{ scale: 0.97, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="relative flex flex-col items-center justify-center p-4"
-    >
-      <div
-        className="relative w-56 h-64 flex items-center justify-center"
-        style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.5))' }}
-      >
-        <svg viewBox="0 0 200 220" className="w-full h-full absolute inset-0" fill={bg} stroke={isLight() ? '#ddd' : '#333'} strokeWidth="1">
-          <path d={collarPath} />
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 px-6 pt-10 pb-4 gap-2 pointer-events-none">
-          {isZoneActive && activeImageUrl ? (
-            <div className="w-20 h-28 flex flex-col items-center justify-center overflow-hidden bg-black/10 border border-dashed border-white/20 rounded-sm">
-               <img src={activeImageUrl} alt="design" className="w-full max-h-full object-contain drop-shadow" />
-            </div>
-          ) : isZoneActive ? (
-            <div className="w-20 h-28 flex flex-col items-center justify-center border border-dashed opacity-40 rounded-sm" style={{ borderColor: textColor }}>
-              <span className="text-[10px] tracking-widest font-bold mb-1" style={{ color: textColor }}>{viewMode.toUpperCase()}</span>
-              <span className="text-[8px] text-center px-1" style={{ color: textColor }}>DRAG & DROP <br/> DESIGN</span>
-            </div>
-          ) : null}
-          <span className="text-[10px] tracking-widest font-bold opacity-30 mt-auto" style={{ color: textColor }}>VYBERA</span>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
 // ── Upload Zone ─────────────────────────────────────────
 const UploadZone = ({ files, previews, onFiles, onRemove, uploading, progress }) => {
   const inputRef = useRef();
@@ -201,7 +135,7 @@ const Customize = () => {
   const [uploadPct, setUploadPct] = useState(0);
 
   const [size, setSize]           = useState('M');
-  const [color, setColor]         = useState('#f5f5f5');
+  const [color, setColor]         = useState('');
   const [position, setPosition]   = useState('Both');
   const [viewMode, setViewMode]   = useState('Front');
   const [description, setDescription] = useState('');
@@ -304,6 +238,10 @@ const Customize = () => {
     }
     if (files.length === 0) {
       toast.error('Please upload your design images.', { className: 'toast-vybera' });
+      return;
+    }
+    if (!color.trim()) {
+      toast.error('Please enter a t-shirt color.', { className: 'toast-vybera' });
       return;
     }
     if (uploading) {
@@ -440,10 +378,9 @@ const Customize = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="grid grid-cols-1 lg:grid-cols-5 gap-10"
+              className="max-w-2xl mx-auto"
             >
-              {/* Left: Options */}
-              <div className="lg:col-span-3 space-y-8">
+              <div className="space-y-8">
 
                 {/* Upload */}
                 <UploadZone
@@ -474,25 +411,16 @@ const Customize = () => {
                 {/* Color */}
                 <div>
                   <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">
-                    T-Shirt Hex Color
+                    T-Shirt Color
                   </label>
-                  <div className="flex gap-4 items-center">
-                    <input
-                      type="color"
-                      value={color}
-                      onChange={(e) => setColor(e.target.value)}
-                      className="w-14 h-14 p-0 border-0 cursor-pointer bg-transparent rounded-full overflow-hidden"
-                      title="Choose Color"
-                    />
-                    <input
-                      type="text"
-                      value={color}
-                      onChange={(e) => setColor(e.target.value.toUpperCase())}
-                      className="vy-input w-full text-sm font-mono tracking-widest uppercase"
-                      placeholder="#F5F5F5"
-                      maxLength={7}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="vy-input w-full text-sm tracking-wide"
+                    placeholder="e.g. Black, White, Navy Blue..."
+                    maxLength={30}
+                  />
                 </div>
 
                 {/* Print Position */}
@@ -559,56 +487,6 @@ const Customize = () => {
                   {uploading ? 'Uploading image…' : 'Continue to Review'}
                   {!uploading && <ChevronRight size={16} />}
                 </motion.button>
-              </div>
-
-              {/* Right: Live Preview */}
-              <div className="lg:col-span-2">
-                <div className="lg:sticky lg:top-28">
-                  <p className="text-vy-grey text-xs tracking-widest uppercase mb-5">Live Preview</p>
-                  <div className="bg-vy-card border border-vy-border p-8 flex flex-col items-center gap-6">
-                    
-                    <div className="flex items-center gap-2 w-full justify-center bg-vy-dark p-1 border border-vy-border/50">
-                      <button 
-                        onClick={() => setViewMode('Front')} 
-                        className={`px-6 py-2 text-xs uppercase tracking-widest transition-colors flex-1 ${viewMode === 'Front' ? 'bg-vy-border text-vy-white' : 'text-vy-grey hover:text-vy-white'}`}
-                      >
-                        Front
-                      </button>
-                      <button 
-                        onClick={() => setViewMode('Back')} 
-                        className={`px-6 py-2 text-xs uppercase tracking-widest transition-colors flex-1 ${viewMode === 'Back' ? 'bg-vy-border text-vy-white' : 'text-vy-grey hover:text-vy-white'}`}
-                      >
-                        Back
-                      </button>
-                    </div>
-
-                    <TshirtPreview color={color} position={position} imageUrls={previews} viewMode={viewMode} />
-
-                    <div className="w-full space-y-2 text-xs">
-                      {[
-                        ['Size', size],
-                        ['Color', color],
-                        ['Print', position],
-                      ].map(([k, v]) => (
-                        <div key={k} className="flex justify-between text-vy-grey">
-                          <span>{k}</span>
-                          <span className="text-vy-white font-medium">{v}</span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between border-t border-vy-border pt-2 text-vy-white font-semibold">
-                        <span>Base Price</span>
-                        <span>₹{basePrice.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Design tip */}
-                  <div className="mt-4 p-4 border border-vy-border bg-vy-card/50">
-                    <p className="text-vy-grey text-xs leading-relaxed">
-                      <span className="text-vy-white font-semibold">Pro tip:</span> Upload high-res designs (min 300 DPI) for best print quality. PNG with transparent background works best.
-                    </p>
-                  </div>
-                </div>
               </div>
             </motion.div>
           )}
