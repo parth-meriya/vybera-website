@@ -33,12 +33,19 @@ const ProductCard = ({ product }) => {
             className={`w-full h-full object-cover transition-transform duration-700 ${!product.isDrop && 'group-hover:scale-105'}`}
           />
 
-          {/* Drop badge */}
-          {product.isDrop && (
-            <div className="absolute top-3 right-3 border border-vy-accent text-vy-accent text-[10px] font-medium px-2 py-1 tracking-widest">
-              DROP
-            </div>
-          )}
+          {/* Badges */}
+          <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+            {product.isDrop && (
+              <div className="border border-vy-accent text-vy-accent text-[10px] font-medium px-2 py-1 tracking-widest">
+                DROP
+              </div>
+            )}
+            {product.originalPrice && product.originalPrice > product.price && (
+              <div className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 tracking-wider">
+                -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+              </div>
+            )}
+          </div>
           {/* Quick Add overlay */}
           {product.inStock !== false ? (
             <motion.button
@@ -63,14 +70,14 @@ const ProductCard = ({ product }) => {
             {product.name}
           </h3>
           <div className="flex items-center gap-2 mt-1">
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-vy-grey text-xs line-through decoration-vy-border/50">
-                ₹{product.originalPrice.toLocaleString()}
-              </span>
-            )}
             <span className="text-vy-accent text-sm font-semibold">
               ₹{product.price.toLocaleString()}
             </span>
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-vy-grey text-xs line-through">
+                ₹{product.originalPrice.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
       </Link>
