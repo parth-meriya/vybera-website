@@ -17,7 +17,7 @@ const CATEGORIES = [
 ];
 
 const emptyForm = {
-  name: '', price: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
+  name: '', price: '', originalPrice: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
   inStock: true, material: '', fit: 'Oversized', image: '', category: 'normal',
 };
 
@@ -115,7 +115,12 @@ const ProductModal = ({ product, onClose, onSaved }) => {
       console.log("[AdminProducts] Starting save. Form:", form);
       // Strip undefined values explicitly just in case custom form inputs wipe them
       const safeForm = Object.fromEntries(Object.entries(form).filter(([_, v]) => v !== undefined));
-      const data = { ...safeForm, price: Number(form.price), images: existingImages };
+      const data = { 
+        ...safeForm, 
+        price: Number(form.price), 
+        originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
+        images: existingImages 
+      };
       
       let optimizedFiles = [];
       if (imageFiles.length > 0) {
@@ -221,8 +226,12 @@ const ProductModal = ({ product, onClose, onSaved }) => {
               <input name="name" value={form.name} onChange={onChange} className="vy-input" placeholder="VYBERA Oversized Tee" required />
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Price (₹)</label>
-              <input name="price" type="number" value={form.price} onChange={onChange} className="vy-input" placeholder="1499" required />
+              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Selling Price (₹)</label>
+              <input name="price" type="number" value={form.price} onChange={onChange} className="vy-input" placeholder="999" required />
+            </div>
+            <div>
+              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Original Price (₹)</label>
+              <input name="originalPrice" type="number" value={form.originalPrice || ''} onChange={onChange} className="vy-input" placeholder="1499" />
             </div>
             <div>
               <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Fit</label>

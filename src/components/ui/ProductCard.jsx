@@ -63,6 +63,11 @@ const ProductCard = ({ product }) => {
             {product.name}
           </h3>
           <div className="flex items-center gap-2 mt-1">
+            {product.originalPrice && product.originalPrice > product.price && (
+              <span className="text-vy-grey text-xs line-through decoration-vy-border/50">
+                ₹{product.originalPrice.toLocaleString()}
+              </span>
+            )}
             <span className="text-vy-accent text-sm font-semibold">
               ₹{product.price.toLocaleString()}
             </span>

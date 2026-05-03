@@ -253,10 +253,20 @@ const ProductDetail = () => {
             </div>
 
             {/* Price */}
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-end gap-3 mb-8">
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-lg font-medium text-vy-grey line-through decoration-vy-border/50">
+                  ₹{product.originalPrice.toLocaleString()}
+                </span>
+              )}
               <span className="text-2xl font-semibold text-vy-white">
                 ₹{product.price.toLocaleString()}
               </span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-xs font-bold tracking-widest text-green-500 uppercase pb-1">
+                  Save ₹{(product.originalPrice - product.price).toLocaleString()}
+                </span>
+              )}
             </div>
 
             {/* Description */}
