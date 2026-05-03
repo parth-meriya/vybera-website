@@ -174,7 +174,15 @@ const Checkout = () => {
         if (coupon) {
           const { validateCoupon } = await import('../firebase/coupons');
           const check = await validateCoupon(coupon.code, subtotal);
-          const trueFinal = Math.max(0, subtotal - check.discountAmount);
+          
+          if (!check.valid) {
+            toast.error(check.message || "Security Error: Invalid coupon detected.", { className: 'toast-vybera' });
+            setPaymentState('failed');
+            setStep(2);
+            return;
+          }
+
+          const trueFinal = Math.max(0, subtotal - check.discount);
           if (trueFinal !== 0) {
             toast.error("Security Error: Invalid pricing detected.", { className: 'toast-vybera' });
             setPaymentState('failed');
