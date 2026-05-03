@@ -6,21 +6,17 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
-import { SaleProvider } from './context/SaleContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
         <AuthProvider>
-          <SaleProvider>
-            <CartProvider>
-              <App />
-            </CartProvider>
-          </SaleProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>
   </StrictMode>,
 )
-

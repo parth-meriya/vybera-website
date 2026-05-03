@@ -26,11 +26,11 @@ export const createOrder = async (orderData) => {
 export const getOrdersByUser = async (userId) => {
   const q = query(
     collection(db, 'orders'),
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc')
+    where('userId', '==', userId)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return orders.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 };
 
 export const getAllOrders = async () => {

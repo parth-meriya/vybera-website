@@ -2,21 +2,16 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { useSale } from '../../context/SaleContext';
 
 const PLACEHOLDER = 'https://placehold.co/600x750/111111/D9C7A6?text=VYBERA';
 
 const ProductCard = ({ product }) => {
   const { addItem } = useCart();
-  const { getDiscountedPrice, activeSale, isProductOnSale, getDiscountLabel } = useSale();
-
-  const displayPrice = getDiscountedPrice(product.price, product.id);
-  const isOnSale = isProductOnSale(product.id) && displayPrice < product.price;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const defaultSize = product.sizes?.[0] || 'M';
+    const defaultSize = product?.sizes?.[0] || 'Standard';
     addItem(product, defaultSize, 1);
   };
 
@@ -37,12 +32,7 @@ const ProductCard = ({ product }) => {
             decoding="async"
             className={`w-full h-full object-cover transition-transform duration-700 ${!product.isDrop && 'group-hover:scale-105'}`}
           />
-          {/* Sale badge */}
-          {isOnSale && (
-            <div className="absolute top-3 left-3 bg-vy-accent text-vy-black text-[10px] font-bold px-2 py-1 tracking-widest">
-              {getDiscountLabel()} OFF
-            </div>
-          )}
+
           {/* Drop badge */}
           {product.isDrop && (
             <div className="absolute top-3 right-3 border border-vy-accent text-vy-accent text-[10px] font-medium px-2 py-1 tracking-widest">
@@ -74,13 +64,8 @@ const ProductCard = ({ product }) => {
           </h3>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-vy-accent text-sm font-semibold">
-              ₹{displayPrice.toLocaleString()}
+              ₹{product.price.toLocaleString()}
             </span>
-            {isOnSale && (
-              <span className="text-vy-grey text-xs line-through">
-                ₹{product.price.toLocaleString()}
-              </span>
-            )}
           </div>
         </div>
       </Link>

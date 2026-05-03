@@ -43,31 +43,31 @@ export const getProducts = async () => {
 export const getFeaturedProducts = async () => {
   const q = query(
     collection(db, 'products'),
-    where('featured', '==', true),
-    orderBy('createdAt', 'desc')
+    where('featured', '==', true)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return products.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 };
 
 export const getDropProducts = async () => {
   const q = query(
     collection(db, 'products'),
-    where('isDrop', '==', true),
-    orderBy('createdAt', 'desc')
+    where('isDrop', '==', true)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return products.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 };
 
 export const getProductsByCategory = async (category) => {
   const q = query(
     collection(db, 'products'),
-    where('category', '==', category),
-    orderBy('createdAt', 'desc')
+    where('category', '==', category)
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return products.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 };
 
 export const getProductById = async (id) => {

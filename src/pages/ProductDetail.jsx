@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, Star, ImageIcon, X, Trash2, Share2, Copy, MessageCircle, AtSign, Camera } from 'lucide-react';
 import { getProductById } from '../firebase/products';
 import { useCart } from '../context/CartContext';
-import { useSale } from '../context/SaleContext';
 import { useAuth } from '../context/AuthContext';
 import { getReviewsByProduct, addReview, deleteReview } from '../firebase/reviews';
 import toast from 'react-hot-toast';
@@ -25,7 +24,6 @@ const ProductDetail = () => {
   const [zoomed, setZoomed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { addItem } = useCart();
-  const { getDiscountedPrice, activeSale, isProductOnSale } = useSale();
 
   useEffect(() => {
     setLoading(true);
@@ -39,7 +37,12 @@ const ProductDetail = () => {
       if (p?.sizes?.length) {
         const firstAvailable = p.sizes.find(s => !(p.outOfStockSizes || []).includes(s));
         setSelectedSize(firstAvailable || null);
+      } else {
+        setSelectedSize('Standard');
       }
+      setLoading(false);
+    }).catch(err => {
+      console.error(err);
       setLoading(false);
     });
   }, [id]);
@@ -103,11 +106,12 @@ const ProductDetail = () => {
     : 0;
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
+    if (product?.sizes?.length > 0 && !selectedSize) {
       toast.error('Please select a size.', { className: 'toast-vybera' });
       return;
     }
-    addItem(product, selectedSize, 1);
+    const sizeToUse = product?.sizes?.length > 0 ? selectedSize : 'Standard';
+    addItem(product, sizeToUse, 1);
     toast.success(`${product.name} added to cart.`, { className: 'toast-vybera' });
   };
 
@@ -152,8 +156,6 @@ const ProductDetail = () => {
     );
   }
 
-  const displayPrice = getDiscountedPrice(product.price, product.id);
-  const isOnSale = isProductOnSale(product.id) && displayPrice < product.price;
   const PLACEHOLDER = 'https://placehold.co/800x1000/111111/D9C7A6?text=VYBERA';
 
   return (
@@ -196,11 +198,7 @@ const ProductDetail = () => {
                 animate={{ scale: zoomed ? 1.08 : 1 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
               />
-              {isOnSale && (
-                <div className="absolute top-4 left-4 bg-vy-accent text-vy-black text-xs font-bold px-3 py-1 tracking-widest">
-                  {activeSale?.discountType === 'percentage' ? `${activeSale.discountValue}%` : `₹${activeSale?.discountValue}`} OFF
-                </div>
-              )}
+
             </div>
 
             {/* Gallery Thumbnails */}
@@ -257,18 +255,8 @@ const ProductDetail = () => {
             {/* Price */}
             <div className="flex items-center gap-3 mb-8">
               <span className="text-2xl font-semibold text-vy-white">
-                ₹{displayPrice.toLocaleString()}
+                ₹{product.price.toLocaleString()}
               </span>
-              {isOnSale && (
-                <span className="text-vy-grey text-base line-through">
-                  ₹{product.price.toLocaleString()}
-                </span>
-              )}
-              {isOnSale && (
-                <span className="text-green-400 text-sm font-medium">
-                  Save ₹{(product.price - displayPrice).toLocaleString()}
-                </span>
-              )}
             </div>
 
             {/* Description */}

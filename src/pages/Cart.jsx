@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { validateCoupon } from '../firebase/coupons';
+import { validateCoupon, getAllCoupons } from '../firebase/coupons';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
@@ -12,15 +12,24 @@ const Cart = () => {
   const { items, removeItem, updateQuantity, coupon, discount, applyCoupon, removeCoupon, subtotal, total, itemCount } = useCart();
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
   const navigate = useNavigate();
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
+  useEffect(() => {
+    getAllCoupons().then(coupons => {
+      setAvailableCoupons(coupons.filter(c => c.active && c.showToUser));
+    });
+  }, []);
+
+  const handleApplyCoupon = async (codeToApply = couponCode) => {
+    const code = codeToApply.trim();
+    if (!code) return;
     setCouponLoading(true);
     try {
-      const result = await validateCoupon(couponCode.trim(), subtotal);
+      const result = await validateCoupon(code, subtotal);
       if (result.valid) {
         applyCoupon(result.coupon, result.discount);
+        setCouponCode('');
         toast.success(result.message, { className: 'toast-vybera' });
       } else {
         toast.error(result.message, { className: 'toast-vybera' });
@@ -156,7 +165,7 @@ const Cart = () => {
                       className="vy-input flex-1 text-xs"
                     />
                     <button
-                      onClick={handleApplyCoupon}
+                      onClick={() => handleApplyCoupon()}
                       disabled={couponLoading}
                       className="px-4 py-3 bg-vy-white text-vy-black text-xs font-semibold tracking-widest uppercase hover:bg-vy-accent transition-colors disabled:opacity-50"
                     >
@@ -165,6 +174,42 @@ const Cart = () => {
                   </div>
                 )}
               </div>
+
+              {/* Available Coupons */}
+              {!coupon && availableCoupons.length > 0 && (
+                <div className="mb-6 border-b border-vy-border pb-6">
+                  <h3 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Available Coupons</h3>
+                  <div className="space-y-3">
+                    {availableCoupons.map(c => {
+                      const isValid = subtotal >= (c.minOrder || 0);
+                      return (
+                        <div key={c.id} className="border border-vy-border p-3 bg-vy-black/50 flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-sm font-bold text-vy-white tracking-widest">{c.code}</span>
+                            {isValid ? (
+                              <button
+                                onClick={() => handleApplyCoupon(c.code)}
+                                disabled={couponLoading}
+                                className="text-vy-accent text-xs font-semibold uppercase tracking-widest hover:text-vy-white transition-colors"
+                              >
+                                Apply
+                              </button>
+                            ) : (
+                              <span className="text-vy-grey text-[10px] uppercase tracking-widest">
+                                Add ₹{(c.minOrder - subtotal).toLocaleString()} more
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-vy-grey text-xs">
+                            Get {c.type === 'percentage' ? `${c.value}%` : `₹${c.value}`} off
+                            {c.minOrder ? ` on orders above ₹${c.minOrder}` : ''}.
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Breakdown */}
               <div className="space-y-3 mb-6 pb-6 border-b border-vy-border">

@@ -4,14 +4,12 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getProducts } from '../firebase/products';
-import { useSale } from '../context/SaleContext';
 import SEO from '../components/SEO';
 
 
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { activeSale } = useSale();
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -39,19 +37,7 @@ const Home = () => {
         path="/"
       />
 
-      {/* ─── SALE ANNOUNCEMENT BAR ────────────────────── */}
-      {activeSale && (
-        <motion.div
-          initial={{ y: -50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="fixed top-16 left-0 right-0 z-40 bg-vy-accent text-vy-black text-center py-2 px-4"
-        >
-          <p className="text-xs font-bold tracking-[0.3em] uppercase">
-            {activeSale.name} — {activeSale.discountType === 'percentage' ? `${activeSale.discountValue}% OFF` : `₹${activeSale.discountValue} OFF`}
-            {activeSale.applyType === 'all' ? ' ON EVERYTHING' : ' ON SELECTED PRODUCTS'}
-          </p>
-        </motion.div>
-      )}
+
 
       {/* ─── HERO ─────────────────────────────────────── */}
       <section ref={heroRef} className="relative h-screen overflow-hidden flex items-center bg-[#1C2A21]">
@@ -61,27 +47,11 @@ const Home = () => {
           className="absolute inset-0 z-0"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
-          {activeSale?.bannerMedia ? (
-            activeSale.bannerMedia.includes('.mp4') || activeSale.bannerMedia.includes('video') ? (
-              <video
-                src={activeSale.bannerMedia}
-                className="w-full h-full object-cover"
-                autoPlay muted loop playsInline
-              />
-            ) : (
-              <img
-                src={activeSale.bannerMedia}
-                alt={activeSale.name}
-                className="w-full h-full object-cover object-[70%_center] md:object-right"
-              />
-            )
-          ) : (
-            <img
-              src="/hero_banner.png"
-              alt="VYBERA Collection"
-              className="w-full h-full object-cover object-[70%_center] md:object-right"
-            />
-          )}
+          <img
+            src="/hero_banner.png"
+            alt="VYBERA Collection"
+            className="w-full h-full object-cover object-[70%_center] md:object-right"
+          />
         </motion.div>
 
         {/* Hero Content */}
@@ -97,7 +67,7 @@ const Home = () => {
             className="flex items-center gap-4 mb-6"
           >
             <span className="text-vy-light text-[11px] tracking-[0.5em] uppercase font-medium">
-              {activeSale ? activeSale.name : 'New Collection'}
+              New Collection
             </span>
             <span className="w-12 h-px bg-vy-accent" />
             <span className="text-vy-accent text-sm">✦</span>
@@ -110,17 +80,10 @@ const Home = () => {
             transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] tracking-[0.05em] text-vy-white leading-[0.95] mb-6"
           >
-            {activeSale ? (
-              <>
-                {activeSale.discountType === 'percentage' ? `${activeSale.discountValue}% OFF` : `₹${activeSale.discountValue} OFF`}<br />
-                <span className="text-vy-accent">{activeSale.applyType === 'all' ? 'EVERYTHING' : 'SELECTED'}</span>
-              </>
-            ) : (
               <>
                 BUILT FOR<br />
                 <span className="text-vy-accent">THE FUTURE</span>
               </>
-            )}
           </motion.h1>
 
           {/* Subtitle */}
@@ -130,10 +93,7 @@ const Home = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-vy-light text-sm md:text-base leading-relaxed mb-10 max-w-md"
           >
-            {activeSale
-              ? 'Limited time offer. Shop the collection before it ends.'
-              : <>Premium comfort. Timeless style.<br />Made for the next generation.</>
-            }
+            Premium comfort. Timeless style.<br />Made for the next generation.
           </motion.p>
 
           {/* CTA Button */}

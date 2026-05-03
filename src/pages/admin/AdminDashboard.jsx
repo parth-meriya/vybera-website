@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { getProducts } from '../../firebase/products';
 import { getAllOrders, updateOrderStatus } from '../../firebase/orders';
 import { getAllUsers } from '../../firebase/users';
-import { useSale } from '../../context/SaleContext';
 import toast from 'react-hot-toast';
 
 const StatCard = ({ icon: Icon, label, value, sub, color }) => (
@@ -32,7 +31,6 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { activeSale: sale } = useSale();
 
   useEffect(() => {
     Promise.all([getProducts(), getAllOrders(), getAllUsers()]).then(
@@ -129,36 +127,6 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
-        </div>
-
-        {/* Sale Campaigns */}
-        <div className="bg-vy-card border border-vy-border p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <TrendingUp size={15} className="text-vy-grey" />
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider">Sales & Campaigns</h2>
-          </div>
-
-          {sale?.isActive ? (
-            <div className="space-y-3">
-              <div className="bg-green-500/10 border border-green-500/20 px-4 py-3">
-                <p className="text-green-400 text-xs font-bold tracking-wider uppercase mb-1">{sale.name || 'Active Sale'}</p>
-                <p className="text-green-400/70 text-xs">
-                  {sale.discountType === 'percentage' ? `${sale.discountValue}%` : `₹${sale.discountValue}`} off
-                  {sale.applyType === 'all' ? ' on all products' : ` on ${sale.productIds?.length || 0} products`}
-                </p>
-              </div>
-              <Link to="/admin/sales" className="btn-outline w-full text-xs text-center block">
-                Manage Campaigns
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-vy-grey text-xs">No active sale campaigns running.</p>
-              <Link to="/admin/sales" className="btn-primary w-full text-xs text-center block">
-                Create a Campaign
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </div>

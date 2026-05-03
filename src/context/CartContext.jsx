@@ -71,7 +71,13 @@ export const CartProvider = ({ children }) => {
   };
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const total = Math.max(subtotal - discount, 0);
+  
+  let validDiscount = discount;
+  if (coupon && coupon.minOrder && subtotal < coupon.minOrder) {
+    validDiscount = 0; // Automatically negate discount if subtotal drops below minOrder
+  }
+
+  const total = Math.max(subtotal - validDiscount, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
@@ -83,7 +89,7 @@ export const CartProvider = ({ children }) => {
         updateQuantity,
         clearCart,
         coupon,
-        discount,
+        discount: validDiscount,
         applyCoupon,
         removeCoupon,
         subtotal,

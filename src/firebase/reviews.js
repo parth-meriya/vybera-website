@@ -72,11 +72,16 @@ export const getReviewsByProduct = async (productId) => {
   try {
     const q = query(
       collection(db, 'reviews'),
-      where('productId', '==', productId),
-      orderBy('createdAt', 'desc')
+      where('productId', '==', productId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort in memory to avoid needing a Firestore composite index
+    return reviews.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis?.() || 0;
+      const timeB = b.createdAt?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
   } catch (error) {
     console.error('Error fetching product reviews:', error);
     return [];

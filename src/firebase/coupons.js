@@ -15,13 +15,13 @@ import { db } from './config';
 export const validateCoupon = async (code, orderTotal) => {
   const q = query(
     collection(db, 'coupons'),
-    where('code', '==', code.toUpperCase()),
-    where('active', '==', true)
+    where('code', '==', code.toUpperCase())
   );
   const snap = await getDocs(q);
   if (snap.empty) return { valid: false, message: 'Invalid coupon code.' };
 
   const coupon = { id: snap.docs[0].id, ...snap.docs[0].data() };
+  if (!coupon.active) return { valid: false, message: 'Invalid coupon code.' };
 
   // Check expiry
   if (coupon.expiry && new Date(coupon.expiry) < new Date()) {

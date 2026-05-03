@@ -40,7 +40,6 @@ import AdminContent from './pages/admin/AdminContent';
 import AdminCustomOrders from './pages/admin/AdminCustomOrders';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminReviews from './pages/admin/AdminReviews';
-import AdminSales from './pages/admin/AdminSales';
 
 const UserLayout = ({ children }) => (
   <>
@@ -167,7 +166,6 @@ const App = () => {
             <Route path="support" element={<AdminSupport />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="content" element={<AdminContent />} />
-            <Route path="sales" element={<AdminSales />} />
           </Route>
         </Routes>
       </AnimatePresence>

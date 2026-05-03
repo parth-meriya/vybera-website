@@ -18,6 +18,7 @@ const emptyForm = {
   maxDiscount: '',
   expiry: '',
   active: true,
+  showToUser: false,
 };
 
 const CouponModal = ({ coupon, onClose, onSaved }) => {
@@ -108,15 +109,26 @@ const CouponModal = ({ coupon, onClose, onSaved }) => {
               <input name="expiry" type="date" value={form.expiry} onChange={onChange} className="vy-input" />
             </div>
           </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.active}
-              onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
-              className="w-4 h-4 accent-white"
-            />
-            <span className="text-vy-grey text-xs tracking-widest uppercase">Active</span>
-          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
+                className="w-4 h-4 accent-white"
+              />
+              <span className="text-vy-grey text-xs tracking-widest uppercase">Active</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.showToUser}
+                onChange={e => setForm(f => ({ ...f, showToUser: e.target.checked }))}
+                className="w-4 h-4 accent-white"
+              />
+              <span className="text-vy-grey text-xs tracking-widest uppercase">Show in Cart</span>
+            </label>
+          </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
             <button type="submit" disabled={loading} className="btn-primary flex-1 disabled:opacity-60">
@@ -173,7 +185,7 @@ const AdminCoupons = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-vy-border">
-                {['Code', 'Type', 'Value', 'Min Order', 'Max Discount', 'Expiry', 'Status', 'Actions'].map(h => (
+                {['Code', 'Type', 'Value', 'Min Order', 'Max Discount', 'Expiry', 'Visible', 'Status', 'Actions'].map(h => (
                   <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
                 ))}
               </tr>
@@ -189,6 +201,7 @@ const AdminCoupons = () => {
                   <td className="px-4 py-3 text-vy-grey text-xs">{coupon.minOrder ? `₹${coupon.minOrder}` : '—'}</td>
                   <td className="px-4 py-3 text-vy-grey text-xs">{coupon.maxDiscount ? `₹${coupon.maxDiscount}` : '—'}</td>
                   <td className="px-4 py-3 text-vy-grey text-xs">{coupon.expiry || '—'}</td>
+                  <td className="px-4 py-3 text-vy-grey text-xs font-semibold">{coupon.showToUser ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => handleToggle(coupon)}

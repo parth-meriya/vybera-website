@@ -82,8 +82,8 @@ export const openRazorpay = async ({
     razorpayOrder = await createRazorpayOrder(amount, receipt);
   } catch (err) {
     console.error('[Razorpay] Backend order creation failed:', err.message);
-    // Graceful fallback: open checkout without pre-created order (still works in test mode)
-    razorpayOrder = null;
+    if (onFailure) onFailure({ reason: 'backend_failure', message: err.message });
+    return { success: false, reason: 'backend_failure', error: err.message };
   }
 
   // ── Step 3: Open Checkout ────────────────────────────────────
@@ -95,7 +95,7 @@ export const openRazorpay = async ({
       name: 'VYBERA',
       description: description || 'VYBERA Order',
       image: '/favicon.svg',
-      ...(razorpayOrder ? { order_id: razorpayOrder.id } : {}),
+      order_id: razorpayOrder.id,
       prefill: {
         name: prefill.name || '',
         email: prefill.email || '',
