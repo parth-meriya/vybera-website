@@ -38,10 +38,10 @@ export default async function handler(req, res) {
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100), // Convert ₹ to paise
       currency: 'INR',
-      receipt: receipt || `nexvra_${Date.now()}`,
+      receipt: receipt || `vybera_${Date.now()}`,
       notes: {
-        platform: 'NEXVRA',
-        mode: 'test',
+        platform: 'VYBERA',
+        mode: 'live',
       },
     });
 
