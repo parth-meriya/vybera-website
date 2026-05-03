@@ -1,87 +1,86 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Shirt } from 'lucide-react';
 
 const CustomCursor = () => {
-  const dotRef = useRef(null);
-  const ringRef = useRef(null);
-  const [hovered, setHovered] = useState(false);
+  const [position, setPosition] = useState({ x: -100, y: -100 });
+  const [isPointer, setIsPointer] = useState(false);
+  const [hidden, setHidden] = useState(true); // Start hidden until mouse moves
 
   useEffect(() => {
-    let dotX = 0, dotY = 0;
-    let ringX = 0, ringY = 0;
-    let raf;
-
-    const onMouseMove = (e) => {
-      dotX = e.clientX;
-      dotY = e.clientY;
-    };
-
-    const onMouseEnterInteractive = () => setHovered(true);
-    const onMouseLeaveInteractive = () => setHovered(false);
-
-    const moveDot = () => {
-      if (dotRef.current) {
-        dotRef.current.style.left = dotX + 'px';
-        dotRef.current.style.top = dotY + 'px';
+    // We add a global style to hide the default cursor
+    const style = document.createElement('style');
+    style.innerHTML = `
+      * {
+        cursor: none !important;
       }
-      // Ring lags behind
-      ringX += (dotX - ringX) * 0.12;
-      ringY += (dotY - ringY) * 0.12;
-      if (ringRef.current) {
-        ringRef.current.style.left = ringX + 'px';
-        ringRef.current.style.top = ringY + 'px';
+    `;
+    document.head.appendChild(style);
+
+    const updatePosition = (e) => {
+      setHidden(false);
+      let x, y;
+      if (e.touches && e.touches.length > 0) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+      } else {
+        x = e.clientX;
+        y = e.clientY;
       }
-      raf = requestAnimationFrame(moveDot);
+      setPosition({ x, y });
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    raf = requestAnimationFrame(moveDot);
+    const handleMouseLeave = () => setHidden(true);
+    const handleMouseEnter = () => setHidden(false);
 
-    // Add hover detection to interactive elements
-    const addHoverListeners = () => {
-      const els = document.querySelectorAll(
-        'a, button, [role="button"], input, textarea, select, .cursor-pointer, label'
-      );
-      els.forEach(el => {
-        el.addEventListener('mouseenter', onMouseEnterInteractive);
-        el.addEventListener('mouseleave', onMouseLeaveInteractive);
-      });
+    const handleMouseOver = (e) => {
+      const target = e.target;
+      if (
+        target.tagName.toLowerCase() === 'a' ||
+        target.tagName.toLowerCase() === 'button' ||
+        target.tagName.toLowerCase() === 'input' ||
+        target.tagName.toLowerCase() === 'textarea' ||
+        target.closest('a') ||
+        target.closest('button') ||
+        window.getComputedStyle(target).cursor === 'pointer'
+      ) {
+        setIsPointer(true);
+      } else {
+        setIsPointer(false);
+      }
     };
-    addHoverListeners();
 
-    // Re-scan on DOM mutations
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('mousemove', updatePosition);
+    window.addEventListener('touchmove', updatePosition, { passive: true });
+    window.addEventListener('touchstart', updatePosition, { passive: true });
+    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('mouseover', handleMouseOver);
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      cancelAnimationFrame(raf);
-      observer.disconnect();
+      document.head.removeChild(style);
+      window.removeEventListener('mousemove', updatePosition);
+      window.removeEventListener('touchmove', updatePosition);
+      window.removeEventListener('touchstart', updatePosition);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('mouseenter', handleMouseEnter);
+      window.removeEventListener('mouseover', handleMouseOver);
     };
   }, []);
 
   return (
-    <div className="custom-cursor">
-      <div
-        ref={dotRef}
-        className="cursor-dot fixed pointer-events-none"
-        style={{ position: 'fixed', width: 8, height: 8, background: 'white', borderRadius: '50%', transform: 'translate(-50%,-50%)', zIndex: 99999, transition: 'width 0.2s, height 0.2s' }}
-      />
-      <div
-        ref={ringRef}
-        className={`fixed pointer-events-none`}
-        style={{
-          position: 'fixed',
-          width: hovered ? 52 : 32,
-          height: hovered ? 52 : 32,
-          border: `1px solid rgba(255,255,255,${hovered ? 0.7 : 0.4})`,
-          borderRadius: '50%',
-          transform: 'translate(-50%,-50%)',
-          zIndex: 99998,
-          transition: 'width 0.25s cubic-bezier(0.25,0.46,0.45,0.94), height 0.25s cubic-bezier(0.25,0.46,0.45,0.94), border-color 0.25s',
-          boxShadow: hovered ? '0 0 15px rgba(255,255,255,0.15)' : 'none',
-        }}
-      />
-    </div>
+    <motion.div
+      className="fixed top-0 left-0 pointer-events-none z-[9999] flex items-center justify-center mix-blend-difference"
+      animate={{
+        x: position.x - (isPointer ? 14 : 10), // Adjust centering based on size
+        y: position.y - (isPointer ? 14 : 10),
+        scale: isPointer ? 1.2 : 1,
+        opacity: hidden ? 0 : 1,
+      }}
+      transition={{ type: 'spring', stiffness: 800, damping: 35, mass: 0.1 }}
+    >
+      <Shirt size={isPointer ? 28 : 20} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
+    </motion.div>
   );
 };
 
