@@ -338,7 +338,7 @@ const ProductModal = ({ product, onClose, onSaved }) => {
 
                     {/* Per-color Size Stock */}
                     <div className="flex flex-col gap-1.5 border-l border-vy-white/10 pl-6">
-                      <label className="text-vy-grey text-[9px] uppercase tracking-[0.2em]">Size Stock</label>
+                      <label className="text-vy-grey text-[9px] uppercase tracking-[0.2em]">Enabled Sizes</label>
                       <div className="flex gap-1">
                         {form.sizes.map(s => (
                           <button
@@ -355,8 +355,8 @@ const ProductModal = ({ product, onClose, onSaved }) => {
                             }}
                             className={`w-6 h-6 rounded-sm border text-[9px] font-bold transition-all duration-200 ${
                               (c.outOfStockSizes || []).includes(s)
-                                ? 'border-red-500/50 bg-red-500/20 text-red-400'
-                                : 'border-vy-white/10 text-vy-grey hover:border-vy-white/30 hover:text-vy-white'
+                                ? 'border-red-500/30 bg-red-500/10 text-red-400/50 line-through'
+                                : 'border-vy-accent/50 bg-vy-accent/10 text-vy-white'
                             }`}
                           >
                             {s}

@@ -316,13 +316,17 @@ const ProductDetail = () => {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => {
-                    const exists = product.sizes.includes(size);
-                    const colorData = product.colors?.find(c => c.name === selectedColor);
-                    const isOutOfStock = 
-                      product.outOfStockSizes?.includes(size) || 
-                      colorData?.outOfStockSizes?.includes(size);
-                    const disabled = !exists || isOutOfStock;
+                  {['XS', 'S', 'M', 'L', 'XL', 'XXL']
+                    .filter(size => {
+                      const exists = product.sizes.includes(size);
+                      const colorData = product.colors?.find(c => c.name === selectedColor);
+                      const isColorOOS = colorData?.outOfStockSizes?.includes(size);
+                      // If it doesn't exist globally, or is specifically removed for this color, hide it
+                      return exists && !isColorOOS;
+                    })
+                    .map(size => {
+                      const isOutOfStock = product.outOfStockSizes?.includes(size);
+                      const disabled = isOutOfStock;
 
                     return (
                       <div key={size} className="relative group flex flex-col items-center">
