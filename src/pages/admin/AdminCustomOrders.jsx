@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
-import { getAllCustomOrders, updateCustomOrderStatus } from '../../firebase/customOrders';
+import { getAllCustomOrders, updateCustomOrderStatus, updateCustomDesignStatus } from '../../firebase/customOrders';
+import { Check, Clock, MessageSquare } from 'lucide-react';
 
 const STATUS_OPTIONS = ['Pending', 'Processing', 'Completed', 'Cancelled'];
 
@@ -24,6 +24,11 @@ const AdminCustomOrders = () => {
   const handleStatusChange = async (id, status) => {
     await updateCustomOrderStatus(id, status);
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+  };
+
+  const handleDesignStatusChange = async (id, designStatus) => {
+    await updateCustomDesignStatus(id, designStatus);
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, designStatus } : o));
   };
 
   const counts = {
@@ -66,7 +71,7 @@ const AdminCustomOrders = () => {
           <table className="w-full text-sm min-w-[900px]">
             <thead>
               <tr className="border-b border-vy-border">
-                {['Preview', 'Customer', 'Spec', 'Price', 'Payment ID', 'Status', 'Date', 'Details'].map(h => (
+                {['Preview', 'Customer', 'Spec', 'Price', 'Design', 'Status', 'Date', 'Details'].map(h => (
                   <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">
                     {h}
                   </th>
@@ -119,11 +124,31 @@ const AdminCustomOrders = () => {
                       )}
                     </td>
 
-                    {/* Payment ID */}
+                    {/* Design Status */}
                     <td className="px-4 py-3">
-                      <span className="text-vy-grey text-xs font-mono">
-                        {order.paymentId ? order.paymentId.slice(0, 14) + '…' : '—'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        {order.designStatus === 'Received' ? (
+                          <div className="flex items-center gap-1.5 text-green-400 text-[10px] uppercase font-bold tracking-widest">
+                            <Check size={12} /> Received
+                          </div>
+                        ) : order.designStatus === 'WhatsApp' ? (
+                          <div className="flex items-center gap-1.5 text-blue-400 text-[10px] uppercase font-bold tracking-widest">
+                            <MessageSquare size={12} /> WhatsApp
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-yellow-500 text-[10px] uppercase font-bold tracking-widest">
+                            <Clock size={12} /> Pending
+                          </div>
+                        )}
+                        {order.designStatus !== 'Received' && (
+                          <button
+                            onClick={() => handleDesignStatusChange(order.id, 'Received')}
+                            className="text-vy-grey hover:text-vy-white text-[9px] uppercase tracking-widest underline decoration-vy-border hover:decoration-vy-white transition-all text-left"
+                          >
+                            Mark Received
+                          </button>
+                        )}
+                      </div>
                     </td>
 
                     {/* Status */}

@@ -89,6 +89,13 @@ export const updateCustomOrderStatus = async (orderId, status) => {
 };
 
 /**
+ * Update a custom order's design status (e.g. 'Pending', 'Received').
+ */
+export const updateCustomDesignStatus = async (orderId, designStatus) => {
+  return updateDoc(doc(db, 'customOrders', orderId), { designStatus, updatedAt: serverTimestamp() });
+};
+
+/**
  * Get a custom order by ID.
  */
 export const getCustomOrderById = async (id) => {

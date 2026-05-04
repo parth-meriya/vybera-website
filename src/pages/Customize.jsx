@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Upload, X, CheckCircle, AlertCircle, Loader2,
-  Shirt, ChevronRight, Image as ImageIcon,
+  Shirt, ChevronRight, Image as ImageIcon, MessageCircle, Clock,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -147,6 +147,26 @@ const UploadZone = ({ files, previews, onFiles, onRemove, uploading, progress })
         </div>
       )}
 
+      <div className="flex flex-wrap gap-3 mt-4">
+        <button
+          type="button"
+          onClick={() => {
+            const msg = `Hi VYBERA, I want to order a custom t-shirt. My email is ${encodeURIComponent(window.userEmail || '')}. I will send my design here.`;
+            window.open(`https://wa.me/91XXXXXXXXXX?text=${msg}`, '_blank');
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] text-[10px] uppercase font-bold tracking-widest hover:bg-[#25D366]/20 transition-all"
+        >
+          <MessageCircle size={14} /> Submit via WhatsApp
+        </button>
+        <button
+          type="button"
+          onClick={() => onFiles('LATER')}
+          className="flex items-center gap-2 px-4 py-2 bg-vy-white/5 border border-vy-white/10 text-vy-grey text-[10px] uppercase font-bold tracking-widest hover:bg-vy-white/10 hover:text-vy-white transition-all"
+        >
+          <Clock size={14} /> Upload Later
+        </button>
+      </div>
+
       <input
         ref={inputRef}
         type="file"
@@ -175,6 +195,9 @@ const Customize = () => {
   const [position, setPosition]   = useState('Both');
   const [viewMode, setViewMode]   = useState('Front');
   const [description, setDescription] = useState('');
+  const [designStatus, setDesignStatus] = useState('Firebase'); // 'Firebase', 'WhatsApp', 'Pending'
+
+  if (user) window.userEmail = user.email;
 
   const [couponCode, setCouponCode]   = useState('');
   const [coupon, setCoupon]           = useState(null);
@@ -196,6 +219,16 @@ const Customize = () => {
 
   // ── File handling ──────────────────────────────────
   const handleFiles = async (selectedFiles) => {
+    if (selectedFiles === 'LATER') {
+      setDesignStatus('Pending');
+      setFiles([]);
+      setPreviews([]);
+      setImageUrls([]);
+      toast.success('Design status set to "Upload Later". Proceed to review.', { className: 'toast-vybera' });
+      return;
+    }
+
+    setDesignStatus('Firebase');
     let toAdd = Array.from(selectedFiles);
     if (files.length + toAdd.length > 3) {
       toast.error('You can upload a maximum of 3 designs.', { className: 'toast-vybera' });
@@ -275,8 +308,8 @@ const Customize = () => {
       navigate('/login');
       return;
     }
-    if (files.length === 0) {
-      toast.error('Please upload your design images.', { className: 'toast-vybera' });
+    if (files.length === 0 && designStatus === 'Firebase') {
+      toast.error('Please upload your design or select "Upload Later".', { className: 'toast-vybera' });
       return;
     }
     if (!color.trim()) {
@@ -347,6 +380,7 @@ const Customize = () => {
             razorpayOrderId: null,
             razorpaySignature: null,
             paymentReceipt: receipt,
+            designStatus: designStatus,
           });
 
           setPaymentState('success');
@@ -386,6 +420,7 @@ const Customize = () => {
               razorpayOrderId: response.razorpay_order_id || response.backendOrderId || null,
               razorpaySignature: response.razorpay_signature || null,
               paymentReceipt: receipt,
+              designStatus: designStatus,
             });
 
             setPaymentState('success');
@@ -613,16 +648,24 @@ const Customize = () => {
                     </button>
                   </div>
                   <div className="flex gap-4">
-                    <div className="flex flex-col gap-2">
-                       {previews.map((p, i) => (
-                         <img key={i} src={p} alt="Design" className="w-16 h-16 object-contain bg-vy-dark border border-vy-border" />
-                       ))}
-                    </div>
+                    {previews.length > 0 ? (
+                      <div className="flex flex-col gap-2">
+                        {previews.map((p, i) => (
+                          <img key={i} src={p} alt="Design" className="w-16 h-16 object-contain bg-vy-dark border border-vy-border" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-vy-dark border border-vy-border flex flex-col items-center justify-center text-vy-grey">
+                        {designStatus === 'WhatsApp' ? <MessageCircle size={20} /> : <Clock size={20} />}
+                        <span className="text-[8px] mt-1 uppercase font-bold">{designStatus}</span>
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       {[
                         ['Size', size],
                         ['Color', color],
                         ['Print Position', position],
+                        ['Design Status', designStatus === 'Firebase' ? 'Uploaded' : designStatus],
                       ].map(([k, v]) => (
                         <p key={k} className="text-vy-grey text-xs">
                           <span className="text-vy-white font-medium mr-2">{k}:</span>{v}
