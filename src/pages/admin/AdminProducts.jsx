@@ -403,6 +403,8 @@ const AdminProducts = () => {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | {} | product
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchProducts = () => {
     setLoading(true);
@@ -423,6 +425,33 @@ const AdminProducts = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} selected products?`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map(id => deleteProduct(id)));
+      toast.success('Bulk deletion successful!', { className: 'toast-vybera' });
+      setSelectedIds([]);
+      fetchProducts();
+    } catch (err) {
+      toast.error('Failed to delete some products.', { className: 'toast-vybera' });
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === products.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(products.map(p => p.id));
+    }
+  };
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -430,9 +459,25 @@ const AdminProducts = () => {
           <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
           <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Products</h1>
         </div>
-        <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs">
-          <Plus size={13} /> Add Product
-        </button>
+        <div className="flex gap-3">
+          <AnimatePresence>
+            {selectedIds.length > 0 && (
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="btn-outline border-red-500/50 text-red-400 hover:bg-red-500/10 flex items-center gap-2 text-xs"
+              >
+                {bulkDeleting ? 'Deleting...' : `Delete Selected (${selectedIds.length})`}
+              </motion.button>
+            )}
+          </AnimatePresence>
+          <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs">
+            <Plus size={13} /> Add Product
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -442,6 +487,14 @@ const AdminProducts = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-vy-border">
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={products.length > 0 && selectedIds.length === products.length}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 accent-vy-white rounded-none cursor-pointer"
+                  />
+                </th>
                 {['Image', 'Name', 'Price', 'Category', 'Stock', 'Sizes', 'Featured', 'Drop', 'Actions'].map(h => (
                   <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
                 ))}
@@ -449,8 +502,16 @@ const AdminProducts = () => {
             </thead>
             <tbody>
               {products.map(p => (
-                <tr key={p.id} className="border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors">
-                  <td className="px-4 py-3">
+                <tr key={p.id} className={`border-b border-vy-border/50 hover:bg-vy-white/[0.02] transition-colors ${selectedIds.includes(p.id) ? 'bg-vy-white/[0.03]' : ''}`}>
+                  <td className="px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(p.id)}
+                      onChange={() => toggleSelectOne(p.id)}
+                      className="w-4 h-4 accent-vy-white rounded-none cursor-pointer"
+                    />
+                  </td>
+                  <td className="px-4 py-4">
                     <img src={p.images?.[0] || p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-cover bg-vy-dark" />
                   </td>
                   <td className="px-4 py-3 text-vy-white font-medium max-w-xs truncate">{p.name}</td>
