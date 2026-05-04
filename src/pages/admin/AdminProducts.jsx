@@ -323,6 +323,35 @@ const ProductModal = ({ product, onClose, onSaved }) => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Per-color Size Stock */}
+                  <div className="flex items-center gap-3 border-l border-vy-border pl-4">
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest">Out of Stock Sizes:</label>
+                    <div className="flex gap-1">
+                      {form.sizes.map(s => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            const newColors = [...form.colors];
+                            const oos = newColors[i].outOfStockSizes || [];
+                            newColors[i] = {
+                              ...newColors[i],
+                              outOfStockSizes: oos.includes(s) ? oos.filter(x => x !== s) : [...oos, s]
+                            };
+                            setForm(f => ({ ...f, colors: newColors }));
+                          }}
+                          className={`w-6 h-6 border flex items-center justify-center text-[10px] font-bold transition-all ${
+                            (c.outOfStockSizes || []).includes(s)
+                              ? 'border-red-500 bg-red-500/20 text-red-400'
+                              : 'border-vy-border text-vy-grey hover:border-vy-grey'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
