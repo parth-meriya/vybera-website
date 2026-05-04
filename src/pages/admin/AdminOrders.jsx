@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
-import { FileText, Package, RotateCcw } from 'lucide-react';
+import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -23,6 +23,15 @@ const AdminOrders = () => {
   const [expanded, setExpanded] = useState(null);
   const [trackingInputs, setTrackingInputs] = useState({});
 
+  // ── Filters ──────────────────────────────────
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortOrder, setSortOrder] = useState('newest'); // newest | oldest
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterCoupon, setFilterCoupon] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
   useEffect(() => {
     getAllOrders().then(o => { 
       setOrders(o); 
@@ -32,6 +41,58 @@ const AdminOrders = () => {
       setTrackingInputs(t);
     });
   }, []);
+
+  // ── Derived: unique coupon codes for dropdown ──
+  const uniqueCoupons = [...new Set(orders.filter(o => o.couponCode).map(o => o.couponCode))];
+
+  // ── Filtered + Sorted Orders ──────────────────
+  const filteredOrders = orders
+    .filter(o => {
+      // Status filter
+      if (filterStatus !== 'all' && (o.status?.toLowerCase() || 'confirmed') !== filterStatus) return false;
+      
+      // Coupon filter
+      if (filterCoupon && o.couponCode !== filterCoupon) return false;
+      
+      // Date range filter
+      if (filterDateFrom || filterDateTo) {
+        const orderDate = o.createdAt?.toDate?.();
+        if (!orderDate) return false;
+        if (filterDateFrom && orderDate < new Date(filterDateFrom)) return false;
+        if (filterDateTo) {
+          const toEnd = new Date(filterDateTo);
+          toEnd.setHours(23, 59, 59, 999);
+          if (orderDate > toEnd) return false;
+        }
+      }
+
+      // Search (name, email, order ID)
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const name = (o.address?.name || '').toLowerCase();
+        const email = (o.userEmail || o.address?.email || '').toLowerCase();
+        const id = o.id.toLowerCase();
+        if (!name.includes(q) && !email.includes(q) && !id.includes(q)) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
+    });
+
+  const hasActiveFilters = filterStatus !== 'all' || filterCoupon || filterDateFrom || filterDateTo || searchQuery;
+
+  const clearAllFilters = () => {
+    setFilterStatus('all');
+    setFilterCoupon('');
+    setFilterDateFrom('');
+    setFilterDateTo('');
+    setSearchQuery('');
+    setSortOrder('newest');
+  };
 
   const handleStatusChange = async (id, status) => {
     await updateOrderTracking(id, status, trackingInputs[id]);
@@ -47,9 +108,118 @@ const AdminOrders = () => {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-        <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Orders ({orders.length})</h1>
+      <div className="mb-6">
+        <div className="flex items-end justify-between mb-4">
+          <div>
+            <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
+            <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">
+              Orders <span className="text-vy-grey font-normal text-lg">({filteredOrders.length}{filteredOrders.length !== orders.length ? ` / ${orders.length}` : ''})</span>
+            </h1>
+          </div>
+          <div className="flex items-center gap-3">
+            {hasActiveFilters && (
+              <button onClick={clearAllFilters} className="flex items-center gap-1.5 text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors">
+                <X size={12} /> Clear
+              </button>
+            )}
+            <button
+              onClick={() => setShowFilters(f => !f)}
+              className={`flex items-center gap-2 px-4 py-2 border text-xs tracking-widest uppercase transition-all ${
+                showFilters ? 'bg-vy-white text-vy-black border-vy-white' : 'border-vy-border text-vy-grey hover:text-vy-white hover:border-vy-grey'
+              }`}
+            >
+              <SlidersHorizontal size={14} /> Filters
+            </button>
+          </div>
+        </div>
+
+        {/* ── Filter Panel ────────────────────── */}
+        <motion.div
+          initial={false}
+          animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="overflow-hidden"
+        >
+          <div className="bg-vy-card border border-vy-border p-6 mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Search */}
+            <div>
+              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Search</label>
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-vy-grey" />
+                <input
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Name, email, order ID..."
+                  className="vy-input pl-9 w-full text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Status</label>
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="vy-input w-full text-xs bg-vy-dark"
+              >
+                <option value="all">All Statuses</option>
+                {STATUS_OPTIONS.map(s => (
+                  <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Coupon */}
+            <div>
+              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Coupon Code</label>
+              <select
+                value={filterCoupon}
+                onChange={e => setFilterCoupon(e.target.value)}
+                className="vy-input w-full text-xs bg-vy-dark"
+              >
+                <option value="">All Orders</option>
+                {uniqueCoupons.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort */}
+            <div>
+              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Sort By</label>
+              <button
+                onClick={() => setSortOrder(s => s === 'newest' ? 'oldest' : 'newest')}
+                className="vy-input w-full text-xs flex items-center justify-between"
+              >
+                <span>{sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}</span>
+                <ArrowUpDown size={14} className="text-vy-grey" />
+              </button>
+            </div>
+
+            {/* Date From */}
+            <div>
+              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">From Date</label>
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={e => setFilterDateFrom(e.target.value)}
+                className="vy-input w-full text-xs bg-vy-dark"
+              />
+            </div>
+
+            {/* Date To */}
+            <div>
+              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">To Date</label>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={e => setFilterDateTo(e.target.value)}
+                className="vy-input w-full text-xs bg-vy-dark"
+              />
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {loading ? (
@@ -65,7 +235,7 @@ const AdminOrders = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
+              {filteredOrders.map(order => (
                 <>
                   <tr
                     key={order.id}
@@ -90,7 +260,11 @@ const AdminOrders = () => {
                       </select>
                     </td>
                     <td className="px-4 py-3 text-vy-grey text-xs">
-                      {order.createdAt?.toDate?.()?.toLocaleDateString() || '—'}
+                      <div>{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</div>
+                      <div className="text-[10px] text-vy-border">{order.createdAt?.toDate?.()?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) || ''}</div>
+                      {order.couponCode && (
+                        <div className="text-[9px] text-green-400 mt-1 tracking-wider">🎟 {order.couponCode}</div>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <button
@@ -244,9 +418,14 @@ const AdminOrders = () => {
               ))}
             </tbody>
           </table>
-          {orders.length === 0 && (
+          {filteredOrders.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-vy-grey text-sm tracking-widest uppercase">No orders yet</p>
+              <p className="text-vy-grey text-sm tracking-widest uppercase mb-3">
+                {hasActiveFilters ? 'No orders match your filters' : 'No orders yet'}
+              </p>
+              {hasActiveFilters && (
+                <button onClick={clearAllFilters} className="btn-outline text-xs">Clear Filters</button>
+              )}
             </div>
           )}
         </div>
