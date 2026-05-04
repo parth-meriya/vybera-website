@@ -152,7 +152,7 @@ const UploadZone = ({ files, previews, onFiles, onRemove, uploading, progress })
           type="button"
           onClick={() => {
             const msg = `Hi VYBERA, I want to order a custom t-shirt. My email is ${encodeURIComponent(window.userEmail || '')}. I will send my design here.`;
-            window.open(`https://wa.me/91XXXXXXXXXX?text=${msg}`, '_blank');
+            window.open(`https://wa.me/917574097366?text=${msg}`, '_blank');
           }}
           className="flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] text-[10px] uppercase font-bold tracking-widest hover:bg-[#25D366]/20 transition-all"
         >
