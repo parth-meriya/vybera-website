@@ -55,3 +55,29 @@ export const updateOrderTracking = async (id, status, trackingId) => {
     trackingId: trackingId || '' 
   });
 };
+
+// ── Return / Replace Requests ─────────────────────────────
+export const submitReturnRequest = async (orderId, requestData) => {
+  await updateDoc(doc(db, 'orders', orderId), {
+    returnRequest: {
+      ...requestData,
+      status: 'pending', // pending | approved | rejected
+      requestedAt: new Date().toISOString(),
+    },
+  });
+};
+
+export const updateReturnStatus = async (orderId, status, adminNote = '') => {
+  const snap = await getDoc(doc(db, 'orders', orderId));
+  if (!snap.exists()) return;
+  const order = snap.data();
+  
+  await updateDoc(doc(db, 'orders', orderId), {
+    returnRequest: {
+      ...order.returnRequest,
+      status,
+      adminNote,
+      resolvedAt: new Date().toISOString(),
+    },
+  });
+};

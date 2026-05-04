@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getAllOrders, updateOrderStatus, updateOrderTracking } from '../../firebase/orders';
+import { getAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
-import { FileText, Package } from 'lucide-react';
+import { FileText, Package, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -193,6 +193,49 @@ const AdminOrders = () => {
                               </div>
                             </div>
                           </div>
+
+                          {/* Return / Replace Request */}
+                          {order.returnRequest && (
+                            <div className="md:col-span-2 pt-4 border-t border-vy-border mt-2">
+                              <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4 flex items-center gap-2">
+                                <RotateCcw size={14} />
+                                {order.returnRequest.type === 'replace' ? 'Replacement' : 'Return'} Request
+                                <span className={`ml-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${
+                                  order.returnRequest.status === 'approved' ? 'text-green-400 border-green-500/30 bg-green-500/10'
+                                  : order.returnRequest.status === 'rejected' ? 'text-red-400 border-red-500/30 bg-red-500/10'
+                                  : 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'
+                                }`}>{order.returnRequest.status}</span>
+                              </h4>
+                              <div className="space-y-2 mb-4">
+                                <p className="text-vy-grey text-xs">Reason: <span className="text-vy-light">{order.returnRequest.reason}</span></p>
+                                {order.returnRequest.items && (
+                                  <p className="text-vy-grey text-xs">Items: <span className="text-vy-light">{order.returnRequest.items.join(', ')}</span></p>
+                                )}
+                                <p className="text-vy-grey text-xs">Requested: <span className="text-vy-light">{new Date(order.returnRequest.requestedAt).toLocaleDateString('en-IN')}</span></p>
+                              </div>
+                              {order.returnRequest.status === 'pending' && (
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={async () => {
+                                      await updateReturnStatus(order.id, 'approved', 'Return approved by admin.');
+                                      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, returnRequest: { ...o.returnRequest, status: 'approved', adminNote: 'Return approved by admin.' } } : o));
+                                      toast.success('Return approved', { className: 'toast-vybera' });
+                                    }}
+                                    className="px-4 py-2 bg-green-500/20 border border-green-500/30 text-green-400 text-xs tracking-widest uppercase hover:bg-green-500/30 transition-all"
+                                  >Approve</button>
+                                  <button
+                                    onClick={async () => {
+                                      const note = prompt('Rejection reason (optional):') || 'Request rejected.';
+                                      await updateReturnStatus(order.id, 'rejected', note);
+                                      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, returnRequest: { ...o.returnRequest, status: 'rejected', adminNote: note } } : o));
+                                      toast.success('Return rejected', { className: 'toast-vybera' });
+                                    }}
+                                    className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-xs tracking-widest uppercase hover:bg-red-500/30 transition-all"
+                                  >Reject</button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>

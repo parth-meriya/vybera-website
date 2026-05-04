@@ -201,7 +201,7 @@ const Checkout = () => {
           userId: user.uid,
           userEmail: user.email,
           products: items.map(i => ({
-            id: i.id, name: i.name, price: i.price, quantity: i.quantity, size: i.size, image: i.image || '',
+            id: i.id, name: i.name, price: i.price, quantity: i.quantity, size: i.size, image: i.image || '', isDrop: i.isDrop || false,
           })),
           address: { ...form },
           subtotal, discount, total,
@@ -243,6 +243,7 @@ const Checkout = () => {
                 quantity: i.quantity,
                 size: i.size,
                 image: i.image || '',
+                isDrop: i.isDrop || false,
               })),
 
               // Delivery

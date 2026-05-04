@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getOrderById } from '../firebase/orders';
+import { getOrderById, submitReturnRequest } from '../firebase/orders';
 import { getCustomOrderById } from '../firebase/customOrders';
-import { CheckCircle, ArrowLeft, Package, Truck, Home } from 'lucide-react';
+import { CheckCircle, ArrowLeft, Package, Truck, Home, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_STAGES = [
@@ -18,6 +18,10 @@ const TrackOrder = () => {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReturnForm, setShowReturnForm] = useState(false);
+  const [returnType, setReturnType] = useState('return');
+  const [returnReason, setReturnReason] = useState('');
+  const [submittingReturn, setSubmittingReturn] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -205,6 +209,130 @@ const TrackOrder = () => {
               </div>
             </div>
           </div>
+
+          {/* Return / Replace Section */}
+          {(() => {
+            // Only show for regular orders (not custom)
+            if (!order.products) return null;
+            
+            // Check if order has returnable products (isDrop only)
+            const hasReturnableItems = order.products?.some(p => p.isDrop === true);
+            if (!hasReturnableItems) return null;
+
+            // Only show for delivered orders
+            const status = order.status?.toLowerCase();
+            if (status !== 'delivered') return null;
+
+            // Already has a return request
+            if (order.returnRequest) {
+              const rs = order.returnRequest;
+              const statusColor = rs.status === 'approved' ? 'text-green-400 border-green-500/30 bg-green-500/10'
+                : rs.status === 'rejected' ? 'text-red-400 border-red-500/30 bg-red-500/10'
+                : 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
+              
+              return (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 bg-vy-card border border-vy-border p-6">
+                  <h3 className="text-vy-grey text-xs tracking-widest uppercase mb-4 flex items-center gap-2">
+                    <RotateCcw size={14} /> {rs.type === 'replace' ? 'Replacement' : 'Return'} Request
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-vy-grey text-xs">Status:</span>
+                      <span className={`inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${statusColor}`}>
+                        {rs.status}
+                      </span>
+                    </div>
+                    <p className="text-vy-grey text-xs">Reason: <span className="text-vy-light">{rs.reason}</span></p>
+                    {rs.adminNote && (
+                      <p className="text-vy-grey text-xs">Admin Note: <span className="text-vy-light">{rs.adminNote}</span></p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            }
+
+            return (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+                {!showReturnForm ? (
+                  <button
+                    onClick={() => setShowReturnForm(true)}
+                    className="flex items-center gap-2 px-5 py-3 border border-vy-border text-vy-grey text-xs tracking-widest uppercase hover:bg-vy-card hover:text-vy-white transition-all"
+                  >
+                    <RotateCcw size={14} /> Request Return / Replace
+                  </button>
+                ) : (
+                  <div className="bg-vy-card border border-vy-border p-6">
+                    <h3 className="text-vy-white text-xs font-semibold tracking-widest uppercase mb-1">Request Return / Replace</h3>
+                    <p className="text-vy-grey text-[10px] tracking-wider mb-6">Only Limited Drop items are eligible for return/replacement.</p>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-vy-grey text-xs tracking-widest uppercase mb-3">Type</p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setReturnType('return')}
+                            className={`px-4 py-2 text-xs tracking-widest uppercase border transition-all ${
+                              returnType === 'return' ? 'bg-vy-white text-vy-black border-vy-white' : 'border-vy-border text-vy-grey hover:border-vy-grey'
+                            }`}
+                          >Return</button>
+                          <button
+                            onClick={() => setReturnType('replace')}
+                            className={`px-4 py-2 text-xs tracking-widest uppercase border transition-all ${
+                              returnType === 'replace' ? 'bg-vy-white text-vy-black border-vy-white' : 'border-vy-border text-vy-grey hover:border-vy-grey'
+                            }`}
+                          >Replace</button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-vy-grey text-xs tracking-widest uppercase mb-3">Reason</p>
+                        <textarea
+                          value={returnReason}
+                          onChange={e => setReturnReason(e.target.value)}
+                          rows={3}
+                          className="vy-input resize-none w-full"
+                          placeholder="Why do you want to return or replace this order?"
+                        />
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          disabled={submittingReturn || !returnReason.trim()}
+                          onClick={async () => {
+                            setSubmittingReturn(true);
+                            try {
+                              await submitReturnRequest(order.id, {
+                                type: returnType,
+                                reason: returnReason.trim(),
+                                items: order.products.filter(p => p.isDrop).map(p => p.name),
+                              });
+                              setOrder(prev => ({
+                                ...prev,
+                                returnRequest: { type: returnType, reason: returnReason.trim(), status: 'pending', requestedAt: new Date().toISOString() },
+                              }));
+                              setShowReturnForm(false);
+                              toast.success('Return request submitted!', { className: 'toast-vybera' });
+                            } catch {
+                              toast.error('Failed to submit request.', { className: 'toast-vybera' });
+                            } finally {
+                              setSubmittingReturn(false);
+                            }
+                          }}
+                          className="btn-primary py-2 px-6 text-xs"
+                        >
+                          {submittingReturn ? 'Submitting...' : 'Submit Request'}
+                        </button>
+                        <button
+                          onClick={() => { setShowReturnForm(false); setReturnReason(''); }}
+                          className="btn-outline py-2 px-6 text-xs"
+                        >Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
         </motion.div>
       </div>
     </div>
