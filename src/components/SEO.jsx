@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 const SITE_NAME = 'VYBERA';
-const SITE_URL = 'https://vybera.in';
+const SITE_URL = 'https://vybera.shop';
 const DEFAULT_OG_IMAGE = `${SITE_URL}/vybera-og.png`;
 
 /**

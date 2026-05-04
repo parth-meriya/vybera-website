@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { getReviewsByProduct, addReview, deleteReview } from '../firebase/reviews';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import { trackViewProduct, trackAddToCart } from '../utils/analytics';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -46,6 +47,11 @@ const ProductDetail = () => {
       setLoading(false);
     });
   }, [id]);
+
+  // Track product view
+  useEffect(() => {
+    if (product) trackViewProduct(product);
+  }, [product]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -112,6 +118,7 @@ const ProductDetail = () => {
     }
     const sizeToUse = product?.sizes?.length > 0 ? selectedSize : 'Standard';
     addItem(product, sizeToUse, 1);
+    trackAddToCart(product, sizeToUse, 1);
     toast.success(`${product.name} added to cart.`, { className: 'toast-vybera' });
   };
 

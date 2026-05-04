@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../firebase/orders';
 import { openRazorpay } from '../utils/razorpay';
+import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://placehold.co/80x100/141414/888888?text=NX';
@@ -270,6 +271,7 @@ const Checkout = () => {
 
             // Clear cart + redirect
             clearCart();
+            trackPurchase(response.razorpay_payment_id, total, items);
             setPaymentState('success');
             setTimeout(() => navigate('/order-success'), 800);
 
