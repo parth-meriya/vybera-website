@@ -288,17 +288,41 @@ const ProductModal = ({ product, onClose, onSaved }) => {
                 Add
               </button>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="space-y-2">
               {(form.colors || []).map((c, i) => (
-                <div key={i} className="flex items-center gap-2 px-2 py-1 bg-vy-border/30 border border-vy-border rounded-sm">
-                  <span className="text-vy-white text-[10px] uppercase tracking-wider">{c.name || c}</span>
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, colors: f.colors.filter((_, idx) => idx !== i) }))}
-                    className="text-vy-grey hover:text-red-400 transition-colors"
-                  >
-                    <X size={12} />
-                  </button>
+                <div key={i} className="flex items-center justify-between gap-4 p-3 bg-vy-border/10 border border-vy-border rounded-sm">
+                  <div className="flex items-center gap-3">
+                    <span className="text-vy-white text-xs uppercase tracking-wider font-bold">{c.name || c}</span>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, colors: f.colors.filter((_, idx) => idx !== i) }))}
+                      className="text-vy-grey hover:text-red-400 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest">Mockup:</label>
+                    <div className="flex gap-1">
+                      {[...existingImages, ...localPreviews].map((url, imgIdx) => (
+                        <button
+                          key={imgIdx}
+                          type="button"
+                          onClick={() => {
+                            const newColors = [...form.colors];
+                            newColors[i] = { ...newColors[i], imageIndex: imgIdx };
+                            setForm(f => ({ ...f, colors: newColors }));
+                          }}
+                          className={`w-8 h-10 border transition-all ${
+                            c.imageIndex === imgIdx ? 'border-vy-white opacity-100 scale-110 z-10' : 'border-vy-border opacity-40 hover:opacity-70'
+                          }`}
+                        >
+                          <img src={url} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

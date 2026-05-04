@@ -23,6 +23,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [currentImage, setCurrentImage] = useState(null);
   const [zoomed, setZoomed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { addItem } = useCart();
@@ -45,6 +46,7 @@ const ProductDetail = () => {
       if (p?.colors?.length) {
         setSelectedColor(p.colors[0].name);
       }
+      setCurrentImage(p.images?.[0] || p.image || null);
       setLoading(false);
     }).catch(err => {
       console.error(err);
@@ -56,6 +58,16 @@ const ProductDetail = () => {
   useEffect(() => {
     if (product) trackViewProduct(product);
   }, [product]);
+
+  // Handle color-based image switching
+  useEffect(() => {
+    if (product?.colors && selectedColor) {
+      const colorData = product.colors.find(c => c.name === selectedColor);
+      if (colorData && typeof colorData.imageIndex === 'number' && product.images?.[colorData.imageIndex]) {
+        setCurrentImage(product.images[colorData.imageIndex]);
+      }
+    }
+  }, [selectedColor, product]);
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -207,7 +219,7 @@ const ProductDetail = () => {
               onMouseLeave={() => setZoomed(false)}
             >
               <motion.img
-                src={product.images?.[0] || product.image || PLACEHOLDER}
+                src={currentImage || PLACEHOLDER}
                 alt={product.name}
                 id="main-product-image"
                 className="w-full h-full object-cover"
@@ -223,8 +235,10 @@ const ProductDetail = () => {
                 {product.images.map((img, idx) => (
                   <button 
                     key={idx}
-                    onClick={() => document.getElementById('main-product-image').src = img}
-                    className="flex-shrink-0 w-20 h-24 border border-vy-border hover:border-vy-grey transition-colors bg-vy-card"
+                    onClick={() => setCurrentImage(img)}
+                    className={`flex-shrink-0 w-20 h-24 border transition-colors bg-vy-card ${
+                      currentImage === img ? 'border-vy-white' : 'border-vy-border hover:border-vy-grey'
+                    }`}
                   >
                     <img src={img} alt={`view ${idx}`} className="w-full h-full object-cover" />
                   </button>
