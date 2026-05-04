@@ -69,7 +69,7 @@ const ProductModal = ({ product, onClose, onSaved }) => {
     product?.images || (product?.image ? [product.image] : [])
   );
   const [loading, setLoading] = useState(false);
-  const [colorText, setColorText] = useState((product?.colors || []).map(c => c.name || c).join(', '));
+  const [newColor, setNewColor] = useState('');
   const fileRef = useRef();
 
   const onChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -260,27 +260,48 @@ const ProductModal = ({ product, onClose, onSaved }) => {
 
           {/* Colors */}
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Colors (comma separated)</label>
-            <input
-              value={colorText}
-              onChange={e => {
-                const val = e.target.value;
-                setColorText(val);
-                const colors = val.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name }));
-                setForm(f => ({ ...f, colors }));
-              }}
-              className="vy-input"
-              placeholder="Black, White, Rose Pink, Off White"
-            />
-            {form.colors?.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {form.colors.map((c, i) => (
-                  <span key={i} className="px-2 py-1 bg-vy-border/30 text-vy-grey text-[10px] uppercase tracking-wider rounded-sm">
-                    {c.name || c}
-                  </span>
-                ))}
-              </div>
-            )}
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Colors</label>
+            <div className="flex gap-2 mb-3">
+              <input
+                value={newColor}
+                onChange={e => setNewColor(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!newColor.trim()) return;
+                    setForm(f => ({ ...f, colors: [...(f.colors || []), { name: newColor.trim() }] }));
+                    setNewColor('');
+                  }
+                }}
+                className="vy-input"
+                placeholder="e.g. Black"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!newColor.trim()) return;
+                  setForm(f => ({ ...f, colors: [...(f.colors || []), { name: newColor.trim() }] }));
+                  setNewColor('');
+                }}
+                className="px-4 bg-vy-white text-vy-black text-[10px] font-bold uppercase tracking-widest hover:bg-vy-accent transition-colors"
+              >
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(form.colors || []).map((c, i) => (
+                <div key={i} className="flex items-center gap-2 px-2 py-1 bg-vy-border/30 border border-vy-border rounded-sm">
+                  <span className="text-vy-white text-[10px] uppercase tracking-wider">{c.name || c}</span>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, colors: f.colors.filter((_, idx) => idx !== i) }))}
+                    className="text-vy-grey hover:text-red-400 transition-colors"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
