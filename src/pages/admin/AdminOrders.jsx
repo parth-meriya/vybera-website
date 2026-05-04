@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getAllOrders, updateOrderStatus, updateOrderTracking } from '../../firebase/orders';
+import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
+import { FileText, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -150,20 +152,45 @@ const AdminOrders = () => {
 
                           {/* Tracking & Admin Controls */}
                           <div className="md:col-span-2 pt-4 border-t border-vy-border mt-2">
-                            <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Tracking Information</h4>
-                            <div className="flex gap-4 items-center">
-                              <input 
-                                value={trackingInputs[order.id] || ''} 
-                                onChange={e => setTrackingInputs(p => ({...p, [order.id]: e.target.value}))}
-                                placeholder="Paste Courier Tracking ID" 
-                                className="vy-input flex-1 max-w-sm"
-                              />
-                              <button 
-                                onClick={() => handleTrackingSave(order)}
-                                className="btn-primary py-2 px-6 text-xs"
-                              >
-                                Save Tracking ID
-                              </button>
+                            <div className="flex flex-col md:flex-row gap-6">
+                              {/* Tracking */}
+                              <div className="flex-1">
+                                <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Tracking Information</h4>
+                                <div className="flex gap-4 items-center">
+                                  <input 
+                                    value={trackingInputs[order.id] || ''} 
+                                    onChange={e => setTrackingInputs(p => ({...p, [order.id]: e.target.value}))}
+                                    placeholder="Paste Courier Tracking ID" 
+                                    className="vy-input flex-1 max-w-sm"
+                                  />
+                                  <button 
+                                    onClick={() => handleTrackingSave(order)}
+                                    className="btn-primary py-2 px-6 text-xs"
+                                  >
+                                    Save Tracking ID
+                                  </button>
+                                </div>
+                              </div>
+                              {/* Bill Downloads */}
+                              <div>
+                                <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Download Bills</h4>
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={() => printShippingLabel(order)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-vy-border/30 border border-vy-border text-vy-light text-xs tracking-widest uppercase hover:bg-vy-border/60 hover:text-vy-white transition-all"
+                                  >
+                                    <Package size={14} />
+                                    Shipping Label
+                                  </button>
+                                  <button
+                                    onClick={() => printOrderInvoice(order)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-vy-border/30 border border-vy-border text-vy-light text-xs tracking-widest uppercase hover:bg-vy-border/60 hover:text-vy-white transition-all"
+                                  >
+                                    <FileText size={14} />
+                                    Order Invoice
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
