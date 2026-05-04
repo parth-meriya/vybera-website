@@ -259,27 +259,23 @@ const ProductModal = ({ product, onClose, onSaved }) => {
 
           {/* Colors */}
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Colors (name:hex, comma separated)</label>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Colors (comma separated)</label>
             <input
-              value={(form.colors || []).map(c => `${c.name}:${c.hex}`).join(', ')}
+              value={(form.colors || []).map(c => c.name || c).join(', ')}
               onChange={e => {
                 const raw = e.target.value;
-                const colors = raw.split(',').map(s => s.trim()).filter(Boolean).map(s => {
-                  const [name, hex] = s.split(':').map(x => x.trim());
-                  return { name: name || '', hex: hex || '#000000' };
-                });
+                const colors = raw.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name }));
                 setForm(f => ({ ...f, colors }));
               }}
               className="vy-input"
-              placeholder="Black:#000000, White:#FFFFFF, Rose Pink:#F5A5B8"
+              placeholder="Black, White, Rose Pink, Off White"
             />
             {form.colors?.length > 0 && (
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {form.colors.map((c, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <div className="w-5 h-5 rounded-full border border-vy-border" style={{ backgroundColor: c.hex }} />
-                    <span className="text-vy-grey text-[10px]">{c.name}</span>
-                  </div>
+                  <span key={i} className="px-2 py-1 bg-vy-border/30 text-vy-grey text-[10px] uppercase tracking-wider rounded-sm">
+                    {c.name || c}
+                  </span>
                 ))}
               </div>
             )}

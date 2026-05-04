@@ -344,19 +344,13 @@ const ProductDetail = () => {
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(color.name)}
-                      className={`flex items-center gap-2 px-3 py-2 border transition-all ${
+                      className={`px-4 py-2 border text-xs tracking-widest uppercase transition-all ${
                         selectedColor === color.name
-                          ? 'border-vy-white bg-vy-white/10'
-                          : 'border-vy-border hover:border-vy-grey'
+                          ? 'border-vy-white bg-vy-white text-vy-black'
+                          : 'border-vy-border text-vy-grey hover:border-vy-grey hover:text-vy-white'
                       }`}
                     >
-                      <div
-                        className="w-5 h-5 rounded-full border border-vy-border/50"
-                        style={{ backgroundColor: color.hex }}
-                      />
-                      <span className={`text-xs tracking-wider ${
-                        selectedColor === color.name ? 'text-vy-white' : 'text-vy-grey'
-                      }`}>{color.name}</span>
+                      {color.name}
                     </button>
                   ))}
                 </div>
