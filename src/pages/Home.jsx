@@ -50,7 +50,7 @@ const Home = () => {
           <img
             src="/hero_banner.png"
             alt="VYBERA Collection"
-            className="w-full h-full object-cover object-[70%_center] md:object-right"
+            className="w-full h-full object-cover object-center md:object-[70%_center]"
           />
         </motion.div>
 
