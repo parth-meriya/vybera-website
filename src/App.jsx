@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import Navbar from './components/ui/Navbar';
 import Footer from './components/ui/Footer';
 import CustomCursor from './components/ui/CustomCursor';
+import ScrollToTop from './components/ui/ScrollToTop';
 import PageTransition from './components/ui/PageTransition';
 import AdminLayout from './components/admin/AdminLayout';
 
@@ -56,6 +57,7 @@ const App = () => {
 
   return (
     <>
+      <ScrollToTop />
       <CustomCursor />
       <Toaster
         position="bottom-right"
