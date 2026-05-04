@@ -17,6 +17,42 @@ const POSITION_PRICES = { Front: 700, Back: 700, Both: 900 };
 const SIZES      = ['S', 'M', 'L', 'XL'];
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
+// ── Image Compression Utility ──────────────────────────
+const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) return resolve(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = (maxWidth / width) * height;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+            type: 'image/webp',
+            lastModified: Date.now(),
+          });
+          resolve(compressedFile);
+        }, 'image/webp', quality);
+      };
+    };
+  });
+};
+
 // ── Sub-components ──────────────────────────────────────
 const StepLabel = ({ n, label, active, done }) => (
   <div className={`flex items-center gap-2 ${done ? 'text-vy-white' : active ? 'text-vy-white' : 'text-vy-border'}`}>
@@ -175,14 +211,17 @@ const Customize = () => {
     setUploading(true);
     setUploadPct(0);
     try {
-      // Simulate progress somewhat
+      // Step 1: Compress images
+      const compressedFiles = await Promise.all(toAdd.map(f => compressImage(f)));
+      
+      // Step 2: Upload compressed files
       let completed = 0;
-      const step = 100 / toAdd.length;
+      const progressStep = 100 / compressedFiles.length;
 
       const urls = await Promise.all(
-        toAdd.map(async (f) => {
+        compressedFiles.map(async (f) => {
           const u = await uploadCustomDesign(f, user.uid, () => {});
-          completed += step;
+          completed += progressStep;
           setUploadPct(Math.round(completed));
           return u;
         })
