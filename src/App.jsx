@@ -25,6 +25,7 @@ import MyOrders from './pages/MyOrders';
 import TrackOrder from './pages/TrackOrder';
 import Couple from './pages/Couple';
 import Embroidery from './pages/Embroidery';
+import Kids from './pages/Kids';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import RefundPolicy from './pages/RefundPolicy';
@@ -85,6 +86,11 @@ const App = () => {
           <Route path="/embroidery" element={
             <UserLayout>
               <PageTransition><Embroidery /></PageTransition>
+            </UserLayout>
+          } />
+          <Route path="/kids" element={
+            <UserLayout>
+              <PageTransition><Kids /></PageTransition>
             </UserLayout>
           } />
           <Route path="/product/:id" element={

@@ -14,6 +14,7 @@ const CATEGORIES = [
   { value: 'unisex', label: 'Unisex' },
   { value: 'couple', label: 'Couple' },
   { value: 'embroidery', label: 'Embroidery' },
+  { value: 'kids', label: 'Kids' },
 ];
 
 const emptyForm = {

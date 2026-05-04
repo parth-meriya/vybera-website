@@ -32,6 +32,7 @@ const Navbar = () => {
     { label: 'Shop', to: '/shop' },
     { label: 'Couple', to: '/couple' },
     { label: 'Embroidery', to: '/embroidery' },
+    { label: 'Kids', to: '/kids' },
     { label: 'Customize', to: '/customize' },
     { label: 'About', to: '/about' },
     { label: 'Contact', to: '/contact' },
