@@ -124,11 +124,23 @@ const AdminContent = () => {
               </div>
               <div>
                 <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Banner Image URL</label>
-                <input 
-                  value={banner.imageUrl} 
-                  onChange={e => setBanner(b => ({ ...b, imageUrl: e.target.value }))}
-                  className="vy-input" placeholder="https://..." 
-                />
+                <div className="flex gap-4 items-start">
+                  <input 
+                    value={banner.imageUrl} 
+                    onChange={e => setBanner(b => ({ ...b, imageUrl: e.target.value }))}
+                    className="vy-input flex-1" placeholder="https://..." 
+                  />
+                  {banner.imageUrl && (
+                    <div className="w-16 h-16 bg-vy-dark border border-vy-border overflow-hidden">
+                      <img 
+                        src={banner.imageUrl} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Expiry Date (Sale End)</label>

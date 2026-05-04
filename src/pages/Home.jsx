@@ -40,6 +40,9 @@ const Home = () => {
       }
       
       setLoading(false);
+    }).catch(err => {
+      console.error('Home load error:', err);
+      setLoading(false);
     });
   }, []);
 
@@ -69,9 +72,15 @@ const Home = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
           <img
-            src={banner?.imageUrl || "/hero_banner.png"}
+            src={(banner && banner.isActive && banner.imageUrl) ? banner.imageUrl : "/hero_banner.png"}
             alt="VYBERA Collection"
             className="w-full h-full object-cover object-center md:object-[70%_center]"
+            onLoad={() => console.log('Hero image loaded')}
+            onError={(e) => {
+              console.error('Hero image failed to load');
+              if (e.target.src.includes('hero_banner.png')) return;
+              e.target.src = "/hero_banner.png";
+            }}
           />
         </motion.div>
 
