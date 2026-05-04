@@ -69,6 +69,7 @@ const ProductModal = ({ product, onClose, onSaved }) => {
     product?.images || (product?.image ? [product.image] : [])
   );
   const [loading, setLoading] = useState(false);
+  const [colorText, setColorText] = useState((product?.colors || []).map(c => c.name || c).join(', '));
   const fileRef = useRef();
 
   const onChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -261,10 +262,11 @@ const ProductModal = ({ product, onClose, onSaved }) => {
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Colors (comma separated)</label>
             <input
-              value={(form.colors || []).map(c => c.name || c).join(', ')}
+              value={colorText}
               onChange={e => {
-                const raw = e.target.value;
-                const colors = raw.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name }));
+                const val = e.target.value;
+                setColorText(val);
+                const colors = val.split(',').map(s => s.trim()).filter(Boolean).map(name => ({ name }));
                 setForm(f => ({ ...f, colors }));
               }}
               className="vy-input"
