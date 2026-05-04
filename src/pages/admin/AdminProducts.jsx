@@ -290,66 +290,79 @@ const ProductModal = ({ product, onClose, onSaved }) => {
             </div>
             <div className="space-y-2">
               {(form.colors || []).map((c, i) => (
-                <div key={i} className="flex items-center justify-between gap-4 p-3 bg-vy-border/10 border border-vy-border rounded-sm">
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-vy-white/[0.03] border border-vy-white/5 rounded-md hover:bg-vy-white/[0.05] transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="text-vy-white text-xs uppercase tracking-wider font-bold">{c.name || c}</span>
-                    <button
-                      type="button"
-                      onClick={() => setForm(f => ({ ...f, colors: f.colors.filter((_, idx) => idx !== i) }))}
-                      className="text-vy-grey hover:text-red-400 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <label className="text-vy-grey text-[10px] uppercase tracking-widest">Mockup:</label>
-                    <div className="flex gap-1">
-                      {[...existingImages, ...localPreviews].map((url, imgIdx) => (
-                        <button
-                          key={imgIdx}
-                          type="button"
-                          onClick={() => {
-                            const newColors = [...form.colors];
-                            newColors[i] = { ...newColors[i], imageIndex: imgIdx };
-                            setForm(f => ({ ...f, colors: newColors }));
-                          }}
-                          className={`w-8 h-10 border transition-all ${
-                            c.imageIndex === imgIdx ? 'border-vy-white opacity-100 scale-110 z-10' : 'border-vy-border opacity-40 hover:opacity-70'
-                          }`}
-                        >
-                          <img src={url} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
+                    <div className="w-8 h-8 rounded-full bg-vy-accent/20 flex items-center justify-center border border-vy-accent/30">
+                      <span className="text-vy-white text-[10px] font-bold uppercase">{c.name?.[0] || '?'}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-vy-white text-[11px] font-bold uppercase tracking-wider">{c.name || 'Unnamed'}</span>
+                      <button
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, colors: f.colors.filter((_, idx) => idx !== i) }))}
+                        className="text-red-400/60 hover:text-red-400 text-[9px] uppercase tracking-widest text-left transition-colors"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
 
-                  {/* Per-color Size Stock */}
-                  <div className="flex items-center gap-3 border-l border-vy-border pl-4">
-                    <label className="text-vy-grey text-[10px] uppercase tracking-widest">Out of Stock Sizes:</label>
-                    <div className="flex gap-1">
-                      {form.sizes.map(s => (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => {
-                            const newColors = [...form.colors];
-                            const oos = newColors[i].outOfStockSizes || [];
-                            newColors[i] = {
-                              ...newColors[i],
-                              outOfStockSizes: oos.includes(s) ? oos.filter(x => x !== s) : [...oos, s]
-                            };
-                            setForm(f => ({ ...f, colors: newColors }));
-                          }}
-                          className={`w-6 h-6 border flex items-center justify-center text-[10px] font-bold transition-all ${
-                            (c.outOfStockSizes || []).includes(s)
-                              ? 'border-red-500 bg-red-500/20 text-red-400'
-                              : 'border-vy-border text-vy-grey hover:border-vy-grey'
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
+                  <div className="flex flex-wrap items-center gap-6">
+                    {/* Mockup Picker */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-vy-grey text-[9px] uppercase tracking-[0.2em]">Linked Mockup</label>
+                      <div className="flex gap-1.5">
+                        {[...existingImages, ...localPreviews].map((url, imgIdx) => (
+                          <button
+                            key={imgIdx}
+                            type="button"
+                            onClick={() => {
+                              const newColors = [...form.colors];
+                              newColors[i] = { ...newColors[i], imageIndex: imgIdx };
+                              setForm(f => ({ ...f, colors: newColors }));
+                            }}
+                            className={`w-7 h-9 rounded-sm overflow-hidden border-2 transition-all duration-300 relative group ${
+                              c.imageIndex === imgIdx 
+                                ? 'border-vy-white scale-110 shadow-lg shadow-black/50 z-10' 
+                                : 'border-transparent opacity-40 hover:opacity-100'
+                            }`}
+                          >
+                            <img src={url} className="w-full h-full object-cover" />
+                            {c.imageIndex === imgIdx && (
+                              <div className="absolute inset-0 bg-vy-white/10" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Per-color Size Stock */}
+                    <div className="flex flex-col gap-1.5 border-l border-vy-white/10 pl-6">
+                      <label className="text-vy-grey text-[9px] uppercase tracking-[0.2em]">Size Stock</label>
+                      <div className="flex gap-1">
+                        {form.sizes.map(s => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => {
+                              const newColors = [...form.colors];
+                              const oos = newColors[i].outOfStockSizes || [];
+                              newColors[i] = {
+                                ...newColors[i],
+                                outOfStockSizes: oos.includes(s) ? oos.filter(x => x !== s) : [...oos, s]
+                              };
+                              setForm(f => ({ ...f, colors: newColors }));
+                            }}
+                            className={`w-6 h-6 rounded-sm border text-[9px] font-bold transition-all duration-200 ${
+                              (c.outOfStockSizes || []).includes(s)
+                                ? 'border-red-500/50 bg-red-500/20 text-red-400'
+                                : 'border-vy-white/10 text-vy-grey hover:border-vy-white/30 hover:text-vy-white'
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
