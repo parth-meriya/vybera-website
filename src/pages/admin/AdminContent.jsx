@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { uploadBanner } from '../../firebase/content';
 import toast from 'react-hot-toast';
+import { Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
 
 const AdminContent = () => {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   // Banner State
   const [banner, setBanner] = useState({
@@ -37,6 +40,22 @@ const AdminContent = () => {
       toast.error('Failed to save.', { className: 'toast-vybera' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const url = await uploadBanner(file);
+      setBanner(b => ({ ...b, imageUrl: url }));
+      toast.success('Banner uploaded.', { className: 'toast-vybera' });
+    } catch {
+      toast.error('Upload failed.', { className: 'toast-vybera' });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -123,23 +142,42 @@ const AdminContent = () => {
                 />
               </div>
               <div>
-                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Banner Image URL</label>
-                <div className="flex gap-4 items-start">
-                  <input 
-                    value={banner.imageUrl} 
-                    onChange={e => setBanner(b => ({ ...b, imageUrl: e.target.value }))}
-                    className="vy-input flex-1" placeholder="https://..." 
-                  />
-                  {banner.imageUrl && (
-                    <div className="w-16 h-16 bg-vy-dark border border-vy-border overflow-hidden">
+                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Banner Image</label>
+                <div className="space-y-4">
+                  {banner.imageUrl ? (
+                    <div className="relative aspect-[21/9] bg-vy-dark border border-vy-border overflow-hidden group">
                       <img 
                         src={banner.imageUrl} 
-                        alt="Preview" 
+                        alt="Banner Preview" 
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <label className="cursor-pointer p-2 bg-vy-white text-vy-black rounded-full hover:scale-110 transition-transform">
+                          <Upload size={16} />
+                          <input type="file" onChange={handleBannerUpload} className="hidden" accept="image/*" />
+                        </label>
+                        <button 
+                          onClick={() => setBanner(b => ({ ...b, imageUrl: '' }))}
+                          className="p-2 bg-red-500 text-white rounded-full hover:scale-110 transition-transform"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center aspect-[21/9] border border-dashed border-vy-border hover:border-vy-grey cursor-pointer transition-colors">
+                      {uploading ? (
+                        <Loader2 className="animate-spin text-vy-grey" size={24} />
+                      ) : (
+                        <>
+                          <ImageIcon className="text-vy-border mb-2" size={24} />
+                          <span className="text-vy-grey text-[10px] uppercase tracking-widest">Click to upload banner</span>
+                        </>
+                      )}
+                      <input type="file" onChange={handleBannerUpload} className="hidden" accept="image/*" disabled={uploading} />
+                    </label>
                   )}
+                  <p className="text-vy-grey text-[9px] italic">Recommended size: 1920x800px. Max 5MB.</p>
                 </div>
               </div>
               <div>
