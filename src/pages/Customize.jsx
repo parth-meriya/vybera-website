@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 
 const POSITION_PRICES = { Front: 700, Back: 700, Both: 900 };
-const SIZES      = ['S', 'M', 'L', 'XL'];
+const SIZES      = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
 // ── Image Compression Utility ──────────────────────────

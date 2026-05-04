@@ -316,7 +316,7 @@ const ProductDetail = () => {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {['S', 'M', 'L', 'XL', 'XXL'].map(size => {
+                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => {
                     const exists = product.sizes.includes(size);
                     const colorData = product.colors?.find(c => c.name === selectedColor);
                     const isOutOfStock = 

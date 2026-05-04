@@ -4,7 +4,7 @@ import { Plus, Edit2, Trash2, X, Upload, Image } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct } from '../../firebase/products';
 import toast from 'react-hot-toast';
 
-const SIZES_ALL = ['S', 'M', 'L', 'XL', 'XXL'];
+const SIZES_ALL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
 const CATEGORIES = [
