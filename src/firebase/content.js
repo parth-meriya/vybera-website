@@ -17,6 +17,35 @@ export const getBannerConfig = async () => {
 };
 
 /**
+ * Get customization settings (prices, sizes).
+ */
+export const getCustomizeSettings = async () => {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'customize'));
+    if (snap.exists()) return snap.data();
+    return {
+      prices: { Front: 700, Back: 700, Both: 900 },
+      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+    };
+  } catch {
+    return {
+      prices: { Front: 700, Back: 700, Both: 900 },
+      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+    };
+  }
+};
+
+/**
+ * Update customization settings.
+ */
+export const updateCustomizeSettings = async (settings) => {
+  return setDoc(doc(db, 'settings', 'customize'), {
+    ...settings,
+    updatedAt: serverTimestamp(),
+  });
+};
+
+/**
  * Update the banner configuration.
  * @param {Object} config - { imageUrl, headline, subtitle, expiryDate, isActive }
  */

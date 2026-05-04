@@ -8,13 +8,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { uploadCustomDesign, createCustomOrder } from '../firebase/customOrders';
+import { getCustomizeSettings } from '../firebase/content';
 import { validateCoupon } from '../firebase/coupons';
 import { openRazorpay } from '../utils/razorpay';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 
-const POSITION_PRICES = { Front: 700, Back: 700, Both: 900 };
-const SIZES      = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
 // ── Image Compression Utility ──────────────────────────
@@ -205,10 +204,20 @@ const Customize = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
 
-  const [paymentState, setPaymentState] = useState('idle');
   const [step, setStep] = useState(1); 
 
-  const basePrice     = POSITION_PRICES[position];
+  // Settings from Firestore
+  const [prices, setPrices] = useState({ Front: 700, Back: 700, Both: 900 });
+  const [sizes, setSizes]   = useState(['XS', 'S', 'M', 'L', 'XL', 'XXL']);
+
+  useEffect(() => {
+    getCustomizeSettings().then(s => {
+      if (s.prices) setPrices(s.prices);
+      if (s.sizes) setSizes(s.sizes);
+    });
+  }, []);
+
+  const basePrice     = prices[position] || 700;
   const finalPrice    = Math.max(0, basePrice - discount);
 
   const handlePositionChange = (pos) => {
@@ -529,7 +538,7 @@ const Customize = () => {
                 <div>
                   <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">Size</label>
                   <div className="flex gap-2">
-                    {SIZES.map(s => (
+                    {sizes.map(s => (
                       <button
                         key={s}
                         onClick={() => setSize(s)}
@@ -574,7 +583,7 @@ const Customize = () => {
                       >
                         <span className="block">{pos}</span>
                         <span className={`text-xs font-normal mt-0.5 block ${position === pos ? 'text-vy-black/70' : 'text-vy-border'}`}>
-                          ₹{POSITION_PRICES[pos].toLocaleString()}
+                          ₹{(prices[pos] || 0).toLocaleString()}
                         </span>
                       </button>
                     ))}

@@ -20,13 +20,20 @@ const AdminContent = () => {
     isActive: false
   });
 
+  const [customize, setCustomize] = useState({
+    prices: { Front: 700, Back: 700, Both: 900 },
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+  });
+
   useEffect(() => {
     Promise.all([
       getDoc(doc(db, 'content', 'about')),
-      getDoc(doc(db, 'settings', 'banner'))
-    ]).then(([aboutSnap, bannerSnap]) => {
+      getDoc(doc(db, 'settings', 'banner')),
+      getDoc(doc(db, 'settings', 'customize'))
+    ]).then(([aboutSnap, bannerSnap, customSnap]) => {
       if (aboutSnap.exists()) setText(aboutSnap.data().text || '');
       if (bannerSnap.exists()) setBanner(bannerSnap.data());
+      if (customSnap.exists()) setCustomize(customSnap.data());
       setLoading(false);
     });
   }, []);
@@ -69,6 +76,21 @@ const AdminContent = () => {
       toast.success('Banner configuration saved.', { className: 'toast-vybera' });
     } catch {
       toast.error('Failed to save banner.', { className: 'toast-vybera' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveCustomize = async () => {
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'settings', 'customize'), { 
+        ...customize, 
+        updatedAt: serverTimestamp() 
+      });
+      toast.success('Customization settings saved.', { className: 'toast-vybera' });
+    } catch {
+      toast.error('Failed to save customization settings.', { className: 'toast-vybera' });
     } finally {
       setSaving(false);
     }
@@ -207,6 +229,73 @@ const AdminContent = () => {
                   className="btn-primary ml-auto disabled:opacity-60"
                 >
                   {saving ? 'Saving...' : 'Save Banner'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Customization Settings */}
+        <div className="bg-vy-card border border-vy-border p-6">
+          <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Studio Settings</h2>
+          <p className="text-vy-grey text-xs mb-6 tracking-wide">
+            Manage pricing and sizes for the Custom T-Shirt Studio.
+          </p>
+
+          {loading ? (
+            <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
+          ) : (
+            <div className="space-y-6">
+              {/* Prices */}
+              <div className="grid grid-cols-3 gap-3">
+                {Object.keys(customize.prices).map(pos => (
+                  <div key={pos}>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">{pos} Price</label>
+                    <input 
+                      type="number"
+                      value={customize.prices[pos]} 
+                      onChange={e => setCustomize(c => ({ 
+                        ...c, 
+                        prices: { ...c.prices, [pos]: parseInt(e.target.value) || 0 } 
+                      }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Sizes */}
+              <div>
+                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-3">Available Sizes</label>
+                <div className="flex flex-wrap gap-2">
+                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                    <button
+                      key={s}
+                      onClick={() => {
+                        const newSizes = customize.sizes.includes(s)
+                          ? customize.sizes.filter(x => x !== s)
+                          : [...customize.sizes, s];
+                        setCustomize(c => ({ ...c, sizes: newSizes.sort() }));
+                      }}
+                      className={`px-3 py-1 text-[10px] font-bold border transition-all ${
+                        customize.sizes.includes(s)
+                          ? 'border-vy-accent bg-vy-accent/10 text-vy-white'
+                          : 'border-vy-border text-vy-grey'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-vy-border text-right">
+                <button
+                  onClick={handleSaveCustomize}
+                  disabled={saving || loading}
+                  className="btn-primary disabled:opacity-60"
+                >
+                  {saving ? 'Saving...' : 'Save Studio Settings'}
                 </button>
               </div>
             </div>
