@@ -158,7 +158,11 @@ const TrackOrder = () => {
                       <img src={p.image || 'https://placehold.co/60x75/141414/888888?text=VY'} alt={p.name} className="w-12 h-16 object-cover bg-vy-dark" />
                       <div>
                         <p className="text-vy-white text-sm font-medium">{p.name}</p>
-                        <p className="text-vy-grey text-xs">Size: {p.size} × {p.quantity}</p>
+                        <p className="text-vy-grey text-xs">
+                          Size: {p.size}
+                          {p.selectedColor && ` | Color: ${p.selectedColor}`}
+                          {' '}× {p.quantity}
+                        </p>
                         <p className="text-vy-white text-xs font-semibold mt-1">₹{(p.price * p.quantity).toLocaleString()}</p>
                       </div>
                     </div>

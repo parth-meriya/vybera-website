@@ -58,7 +58,7 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact =
     {/* Items */}
     <div className="space-y-3 mb-4 pb-4 border-b border-vy-border">
       {items.map(item => (
-        <div key={`${item.id}-${item.size}`} className="flex gap-3 items-center">
+        <div key={`${item.id}-${item.size}-${item.selectedColor}`} className="flex gap-3 items-center">
           <img
             src={item.image || PLACEHOLDER}
             alt={item.name}
@@ -66,7 +66,11 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact =
           />
           <div className="flex-1 min-w-0">
             <p className="text-vy-white text-xs font-medium truncate">{item.name}</p>
-            <p className="text-vy-grey text-xs">Size: {item.size} × {item.quantity}</p>
+            <p className="text-vy-grey text-xs">
+              Size: {item.size}
+              {item.selectedColor && ` | Color: ${item.selectedColor}`}
+              {' '}× {item.quantity}
+            </p>
           </div>
           <span className="text-vy-white text-xs font-semibold flex-shrink-0">
             ₹{(item.price * item.quantity).toLocaleString()}
@@ -202,6 +206,7 @@ const Checkout = () => {
           userEmail: user.email,
           products: items.map(i => ({
             id: i.id, name: i.name, price: i.price, quantity: i.quantity, size: i.size, image: i.image || '', isDrop: i.isDrop || false,
+            selectedColor: i.selectedColor || null,
           })),
           address: { ...form },
           subtotal, discount, total,
@@ -244,6 +249,7 @@ const Checkout = () => {
                 size: i.size,
                 image: i.image || '',
                 isDrop: i.isDrop || false,
+                selectedColor: i.selectedColor || null,
               })),
 
               // Delivery

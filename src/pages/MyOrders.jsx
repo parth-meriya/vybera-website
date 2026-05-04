@@ -102,7 +102,7 @@ const MyOrders = () => {
                       Order ID: <span className="font-mono text-xs">{order.id}</span>
                     </p>
                     <p className="text-vy-grey text-xs">Placed on: {order.createdAt?.toDate?.().toLocaleDateString() || 'Recently'}</p>
-                    <p className="text-vy-grey text-xs leading-relaxed max-w-lg">Items: {order.products?.map(p => `${p.name} (x${p.quantity})`).join(', ')}</p>
+                    <p className="text-vy-grey text-xs leading-relaxed max-w-lg">Items: {order.products?.map(p => `${p.name}${p.selectedColor ? ` (${p.selectedColor})` : ''} (x${p.quantity})`).join(', ')}</p>
                     <p className="text-vy-white font-medium mt-2 block tracking-wider">Total: ₹{order.total?.toLocaleString()}</p>
                   </div>
                   <div className="md:text-right flex flex-col items-end gap-3">

@@ -22,6 +22,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [zoomed, setZoomed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const { addItem } = useCart();
@@ -40,6 +41,9 @@ const ProductDetail = () => {
         setSelectedSize(firstAvailable || null);
       } else {
         setSelectedSize('Standard');
+      }
+      if (p?.colors?.length) {
+        setSelectedColor(p.colors[0].name);
       }
       setLoading(false);
     }).catch(err => {
@@ -116,8 +120,13 @@ const ProductDetail = () => {
       toast.error('Please select a size.', { className: 'toast-vybera' });
       return;
     }
+    if (product?.colors?.length > 0 && !selectedColor) {
+      toast.error('Please select a color.', { className: 'toast-vybera' });
+      return;
+    }
     const sizeToUse = product?.sizes?.length > 0 ? selectedSize : 'Standard';
-    addItem(product, sizeToUse, 1);
+    const colorToUse = product?.colors?.length > 0 ? selectedColor : null;
+    addItem({ ...product, selectedColor: colorToUse }, sizeToUse, 1);
     trackAddToCart(product, sizeToUse, 1);
     toast.success(`${product.name} added to cart.`, { className: 'toast-vybera' });
   };
@@ -322,6 +331,34 @@ const ProductDetail = () => {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {/* Color */}
+            {product.colors?.length > 0 && (
+              <div className="mb-8">
+                <p className="text-vy-white text-xs font-semibold tracking-widest uppercase mb-4">Color</p>
+                <div className="flex flex-wrap gap-3">
+                  {product.colors.map(color => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedColor(color.name)}
+                      className={`flex items-center gap-2 px-3 py-2 border transition-all ${
+                        selectedColor === color.name
+                          ? 'border-vy-white bg-vy-white/10'
+                          : 'border-vy-border hover:border-vy-grey'
+                      }`}
+                    >
+                      <div
+                        className="w-5 h-5 rounded-full border border-vy-border/50"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span className={`text-xs tracking-wider ${
+                        selectedColor === color.name ? 'text-vy-white' : 'text-vy-grey'
+                      }`}>{color.name}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}

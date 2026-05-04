@@ -69,7 +69,7 @@ const Cart = () => {
             <AnimatePresence>
               {items.map((item, idx) => (
                 <motion.div
-                  key={`${item.id}-${item.size}`}
+                  key={`${item.id}-${item.size}-${item.selectedColor}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -30 }}
@@ -90,13 +90,16 @@ const Cart = () => {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="text-vy-white text-sm font-medium tracking-wide">{item.name}</h3>
-                        <p className="text-vy-grey text-xs mt-1">Size: {item.size}</p>
+                        <p className="text-vy-grey text-xs mt-1">
+                          Size: {item.size}
+                          {item.selectedColor && ` | Color: ${item.selectedColor}`}
+                        </p>
                         <p className="text-vy-white text-sm font-semibold mt-2">
                           ₹{(item.price * item.quantity).toLocaleString()}
                         </p>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id, item.size)}
+                        onClick={() => removeItem(item.id, item.size, item.selectedColor)}
                         className="text-vy-grey hover:text-vy-white transition-colors p-1 flex-shrink-0"
                       >
                         <X size={14} />
@@ -106,7 +109,7 @@ const Cart = () => {
                     {/* Qty Controls */}
                     <div className="flex items-center gap-2 mt-4">
                       <button
-                        onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.selectedColor, item.quantity - 1)}
                         className="w-8 h-8 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-grey transition-colors"
                       >
                         <Minus size={12} />
@@ -115,7 +118,7 @@ const Cart = () => {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.selectedColor, item.quantity + 1)}
                         className="w-8 h-8 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-grey transition-colors"
                       >
                         <Plus size={12} />

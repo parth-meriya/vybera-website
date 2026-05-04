@@ -19,7 +19,7 @@ const CATEGORIES = [
 
 const emptyForm = {
   name: '', price: '', originalPrice: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
-  inStock: true, material: '', fit: 'Oversized', image: '', category: 'normal',
+  inStock: true, material: '', fit: 'Oversized', image: '', category: 'normal', colors: [],
 };
 
 // Extremely aggressive native image compressor to convert generic photos to fast WebP formats
@@ -255,6 +255,34 @@ const ProductModal = ({ product, onClose, onSaved }) => {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Colors */}
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Colors (name:hex, comma separated)</label>
+            <input
+              value={(form.colors || []).map(c => `${c.name}:${c.hex}`).join(', ')}
+              onChange={e => {
+                const raw = e.target.value;
+                const colors = raw.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+                  const [name, hex] = s.split(':').map(x => x.trim());
+                  return { name: name || '', hex: hex || '#000000' };
+                });
+                setForm(f => ({ ...f, colors }));
+              }}
+              className="vy-input"
+              placeholder="Black:#000000, White:#FFFFFF, Rose Pink:#F5A5B8"
+            />
+            {form.colors?.length > 0 && (
+              <div className="flex gap-2 mt-2">
+                {form.colors.map((c, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className="w-5 h-5 rounded-full border border-vy-border" style={{ backgroundColor: c.hex }} />
+                    <span className="text-vy-grey text-[10px]">{c.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
