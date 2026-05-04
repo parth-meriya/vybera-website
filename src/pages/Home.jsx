@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getProducts } from '../firebase/products';
+import { getBannerConfig } from '../firebase/content';
 import SEO from '../components/SEO';
 
 
@@ -15,9 +16,29 @@ const Home = () => {
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
+  const [banner, setBanner] = useState(null);
+
   useEffect(() => {
-    getProducts().then(p => {
+    Promise.all([
+      getProducts(),
+      getBannerConfig()
+    ]).then(([p, b]) => {
       setProducts(p);
+      
+      // Auto-expiry logic
+      if (b && b.isActive && b.expiryDate) {
+        const now = new Date();
+        const expiry = new Date(b.expiryDate);
+        // If today is past expiry date, don't show the sale banner
+        if (now > expiry) {
+          setBanner(null);
+        } else {
+          setBanner(b);
+        }
+      } else {
+        setBanner(b?.isActive ? b : null);
+      }
+      
       setLoading(false);
     });
   }, []);
@@ -48,7 +69,7 @@ const Home = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
           <img
-            src="/hero_banner.png"
+            src={banner?.imageUrl || "/hero_banner.png"}
             alt="VYBERA Collection"
             className="w-full h-full object-cover object-center md:object-[70%_center]"
           />
@@ -78,12 +99,16 @@ const Home = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] tracking-[0.05em] text-vy-white leading-[0.95] mb-6"
+            className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] tracking-[0.05em] text-vy-white leading-[0.95] mb-6 uppercase"
           >
+            {banner?.headline ? (
+              <span className="text-vy-accent">{banner.headline}</span>
+            ) : (
               <>
                 BUILT FOR<br />
                 <span className="text-vy-accent">THE FUTURE</span>
               </>
+            )}
           </motion.h1>
 
           {/* Subtitle */}
@@ -91,9 +116,9 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-vy-light text-sm md:text-base leading-relaxed mb-10 max-w-md"
+            className="text-vy-light text-sm md:text-base leading-relaxed mb-10 max-w-md uppercase tracking-[0.2em]"
           >
-            Premium comfort. Timeless style.<br />Made for the next generation.
+            {banner?.subtitle || "Premium comfort. Timeless style. Made for the next generation."}
           </motion.p>
 
           {/* CTA Button */}
