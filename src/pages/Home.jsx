@@ -98,7 +98,7 @@ const Home = () => {
             className="flex items-center gap-4 mb-6"
           >
             <span className="text-vy-light text-[11px] tracking-[0.5em] uppercase font-medium">
-              {banner?.subtitle || "1st ANNIVERSARY SALE IS LIVE"}
+              {banner?.subtitle || "BUY 1 GET 1 — APPLY COUPON AT CHECKOUT"}
             </span>
             <span className="w-12 h-px bg-vy-accent" />
             <span className="text-vy-accent text-sm">✦</span>
