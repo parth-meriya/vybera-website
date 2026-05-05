@@ -261,13 +261,31 @@ const AdminContent = () => {
                   />
                   <span className="text-vy-white text-xs uppercase tracking-widest">Enable Sale Banner</span>
                 </label>
-                <button
-                  onClick={handleSaveBanner}
-                  disabled={saving || loading}
-                  className="btn-primary ml-auto disabled:opacity-60"
-                >
-                  {saving ? 'Saving...' : 'Save Banner'}
-                </button>
+                
+                <div className="flex gap-2 ml-auto">
+                  <button
+                    onClick={() => {
+                      setBanner({
+                        headline: '',
+                        subtitle: '',
+                        imageUrl: '',
+                        expiryDate: '',
+                        isActive: false
+                      });
+                      toast.success('Fields cleared. Click Save to reset site.', { className: 'toast-vybera' });
+                    }}
+                    className="px-4 py-2 border border-vy-border text-vy-grey text-[10px] uppercase tracking-widest hover:text-vy-white transition-colors"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={handleSaveBanner}
+                    disabled={saving || loading}
+                    className="btn-primary disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save Banner'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
