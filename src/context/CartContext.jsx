@@ -19,8 +19,35 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
   }, [items]);
 
+  const playAddSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.15);
+    } catch {
+      // Browsers might block audio if user hasn't interacted yet
+    }
+  };
+
   const addItem = (product, size, quantity = 1) => {
-    if (product.inStock === false) return; // Disallow adding out of stock items
+    if (product.inStock === false) return; 
+    
+    // Play feedback sound
+    playAddSound();
+
     setItems(prev => {
       const existIdx = prev.findIndex(
         i => i.id === product.id && i.size === size && i.selectedColor === product.selectedColor
