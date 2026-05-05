@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { uploadCustomDesign, createCustomOrder } from '../firebase/customOrders';
 import { getCustomizeSettings } from '../firebase/content';
-import { validateCoupon } from '../firebase/coupons';
+import { validateCoupon, getAllCoupons } from '../firebase/coupons';
 import { openRazorpay } from '../utils/razorpay';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
@@ -232,7 +232,10 @@ const Customize = () => {
     );
   }
 
-  const basePrice     = prices[position] || 700;
+  const safePrices = prices || { Front: 700, Back: 700, Both: 900 };
+  const safeSizes  = sizes  || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+  const basePrice     = safePrices[position] || 700;
   const finalPrice    = Math.max(0, basePrice - discount);
 
   const handlePositionChange = (pos) => {
@@ -362,7 +365,6 @@ const Customize = () => {
       // ── 0-Rupee Bypass (100% Free via Coupon) ──
       if (finalPrice === 0) {
         if (coupon) {
-          const { validateCoupon } = await import('../firebase/coupons');
           const check = await validateCoupon(coupon.code, basePrice);
           
           if (!check.valid) {
@@ -553,7 +555,7 @@ const Customize = () => {
                 <div>
                   <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">Size</label>
                   <div className="flex gap-2">
-                    {sizes.map(s => (
+                    {safeSizes.map(s => (
                       <button
                         key={s}
                         onClick={() => setSize(s)}
