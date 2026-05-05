@@ -48,15 +48,13 @@ const ProductCard = ({ product }) => {
           </div>
           {/* Quick Add overlay */}
           {product.inStock !== false ? (
-            <motion.button
+            <button
               onClick={handleQuickAdd}
-              initial={{ opacity: 0, y: 10 }}
-              whileHover={{ opacity: 1, y: 0 }}
-              className="absolute bottom-4 left-4 right-4 bg-vy-accent text-vy-black text-xs font-semibold tracking-widest uppercase py-3 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute bottom-4 left-4 right-4 bg-vy-accent text-vy-black text-[10px] font-bold tracking-widest uppercase py-3.5 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 z-10"
             >
               <ShoppingBag size={14} />
               Quick Add
-            </motion.button>
+            </button>
           ) : (
             <div className="absolute bottom-4 left-4 right-4 bg-vy-dark/95 border border-vy-border text-vy-grey text-xs font-semibold tracking-widest uppercase py-3 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
               Out of Stock
