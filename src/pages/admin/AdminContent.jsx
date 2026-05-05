@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
 
 // ── Image Compression Utility ──────────────────────────
-const compressImage = (file, maxWidth = 1920, quality = 0.6) => {
+const compressImage = (file, maxWidth = 1280, quality = 0.5) => {
   return new Promise((resolve) => {
     if (!file.type.startsWith('image/')) return resolve(file);
     const reader = new FileReader();

@@ -19,29 +19,24 @@ const Home = () => {
   const [banner, setBanner] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      getProducts(),
-      getBannerConfig()
-    ]).then(([p, b]) => {
-      setProducts(p);
-      
-      // Auto-expiry logic
+    // 1. Fetch Banner first for fast Hero render
+    getBannerConfig().then(b => {
       if (b && b.isActive && b.expiryDate) {
         const now = new Date();
         const expiry = new Date(b.expiryDate);
-        // If today is past expiry date, don't show the sale banner
-        if (now > expiry) {
-          setBanner(null);
-        } else {
-          setBanner(b);
-        }
+        if (now > expiry) setBanner(null);
+        else setBanner(b);
       } else {
         setBanner(b?.isActive ? b : null);
       }
-      
+    });
+
+    // 2. Fetch Products separately
+    getProducts().then(p => {
+      setProducts(p);
       setLoading(false);
     }).catch(err => {
-      console.error('Home load error:', err);
+      console.error('Home products load error:', err);
       setLoading(false);
     });
   }, []);
