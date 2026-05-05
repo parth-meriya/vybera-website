@@ -92,39 +92,56 @@ const Cart = () => {
                   className="flex gap-5 py-6 border-b border-vy-border"
                 >
                   {/* Image */}
-                  <Link to={`/product/${item.id}`} className="flex-shrink-0">
-                    <img
-                      src={item.image || PLACEHOLDER}
-                      alt={item.name}
-                      className="w-20 h-24 object-cover bg-vy-card"
-                    />
-                  </Link>
-
+                  <div className="flex-shrink-0">
+                    {item.isCustom ? (
+                      <img
+                        src={item.image || PLACEHOLDER}
+                        alt="Custom Design"
+                        className="w-20 h-24 object-contain bg-vy-card p-1"
+                      />
+                    ) : (
+                      <Link to={`/product/${item.id}`}>
+                        <img
+                          src={item.image || PLACEHOLDER}
+                          alt={item.name}
+                          className="w-20 h-24 object-cover bg-vy-card"
+                        />
+                      </Link>
+                    )}
+                  </div>
+ 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h3 className="text-vy-white text-sm font-medium tracking-wide">{item.name}</h3>
+                        <h3 className="text-vy-white text-sm font-medium tracking-wide">
+                          {item.isCustom ? <span className="text-vy-accent uppercase text-[10px] block mb-1">Custom Order</span> : null}
+                          {item.name}
+                        </h3>
                         <p className="text-vy-grey text-xs mt-1">
                           Size: {item.size}
                           {item.selectedColor && ` | Color: ${item.selectedColor}`}
+                          {item.isCustom && item.position && ` | Pos: ${item.position}`}
                         </p>
+                        {item.isCustom && (
+                          <p className="text-vy-grey/60 text-[10px] mt-1 italic line-clamp-1">{item.description}</p>
+                        )}
                         <p className="text-vy-white text-sm font-semibold mt-2">
                           ₹{(item.price * item.quantity).toLocaleString()}
                         </p>
                       </div>
                       <button
-                        onClick={() => removeItem(item.id, item.size, item.selectedColor)}
+                        onClick={() => removeItem(item.id, item.size, item.selectedColor, item.cartId)}
                         className="text-vy-grey hover:text-vy-white transition-colors p-1 flex-shrink-0"
                       >
                         <X size={14} />
                       </button>
                     </div>
-
+ 
                     {/* Qty Controls */}
                     <div className="flex items-center gap-2 mt-4">
                       <button
-                        onClick={() => updateQuantity(item.id, item.size, item.selectedColor, item.quantity - 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.selectedColor, item.quantity - 1, item.cartId)}
                         className="w-8 h-8 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-grey transition-colors"
                       >
                         <Minus size={12} />
@@ -133,7 +150,7 @@ const Cart = () => {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQuantity(item.id, item.size, item.selectedColor, item.quantity + 1)}
+                        onClick={() => updateQuantity(item.id, item.size, item.selectedColor, item.quantity + 1, item.cartId)}
                         className="w-8 h-8 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-grey transition-colors"
                       >
                         <Plus size={12} />

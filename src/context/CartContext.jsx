@@ -42,15 +42,21 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addItem = (product, size, quantity = 1) => {
+  const addItem = (product, size, quantity = 1, isCustom = false) => {
     if (product.inStock === false) return; 
     
     // Play feedback sound
     playAddSound();
+    toast.success(`${isCustom ? 'Custom Design' : product.name} added to cart`, { className: 'toast-vybera' });
 
     setItems(prev => {
+      // Custom items are always added as unique entries because they have unique designs
+      if (isCustom) {
+        return [...prev, { ...product, size, quantity, isCustom: true, cartId: `custom_${Date.now()}` }];
+      }
+
       const existIdx = prev.findIndex(
-        i => i.id === product.id && i.size === size && i.selectedColor === product.selectedColor
+        i => !i.isCustom && i.id === product.id && i.size === size && i.selectedColor === product.selectedColor
       );
       if (existIdx >= 0) {
         const updated = [...prev];
@@ -60,23 +66,29 @@ export const CartProvider = ({ children }) => {
         };
         return updated;
       }
-      return [...prev, { ...product, size, quantity }];
+      return [...prev, { ...product, size, quantity, isCustom: false }];
     });
   };
 
-  const removeItem = (productId, size, color) => {
-    setItems(prev => prev.filter(i => !(i.id === productId && i.size === size && i.selectedColor === color)));
+  const removeItem = (productId, size, color, cartId) => {
+    setItems(prev => prev.filter(i => {
+      if (cartId && i.cartId === cartId) return false;
+      if (!cartId && !i.isCustom && i.id === productId && i.size === size && i.selectedColor === color) return false;
+      return true;
+    }));
   };
 
-  const updateQuantity = (productId, size, color, qty) => {
+  const updateQuantity = (productId, size, color, qty, cartId) => {
     if (qty <= 0) {
-      removeItem(productId, size, color);
+      removeItem(productId, size, color, cartId);
       return;
     }
     setItems(prev =>
-      prev.map(i =>
-        i.id === productId && i.size === size && i.selectedColor === color ? { ...i, quantity: qty } : i
-      )
+      prev.map(i => {
+        if (cartId && i.cartId === cartId) return { ...i, quantity: qty };
+        if (!cartId && !i.isCustom && i.id === productId && i.size === size && i.selectedColor === color) return { ...i, quantity: qty };
+        return i;
+      })
     );
   };
 

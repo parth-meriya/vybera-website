@@ -295,13 +295,31 @@ const AdminOrders = () => {
                             <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Products</h4>
                             <div className="space-y-3">
                               {order.products?.map((p, i) => (
-                                <div key={i} className="flex gap-3 items-center">
-                                  <img src={p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-cover bg-vy-dark" />
-                                  <div>
-                                    <p className="text-vy-white text-xs font-medium">{p.name}</p>
+                                <div key={i} className="flex gap-3 items-start border-b border-vy-border/30 pb-3 last:border-0">
+                                  <img src={p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-contain bg-vy-dark border border-vy-border/50" />
+                                  <div className="flex-1">
+                                    <p className="text-vy-white text-xs font-medium">
+                                      {p.isCustom && <span className="inline-block bg-vy-accent text-vy-black text-[8px] font-bold px-1 mr-1 rounded-sm">CUSTOM</span>}
+                                      {p.name}
+                                    </p>
                                     <p className="text-vy-grey text-xs">Size: {p.size} × {p.quantity}</p>
+                                    {p.isCustom && (
+                                      <div className="mt-1 space-y-1">
+                                        <p className="text-vy-accent text-[10px] uppercase tracking-widest">Position: {p.position}</p>
+                                        {p.description && <p className="text-vy-grey text-[10px] leading-relaxed italic">"{p.description}"</p>}
+                                        {p.imageUrls && p.imageUrls.length > 0 && (
+                                          <div className="flex gap-1 mt-2">
+                                            {p.imageUrls.map((url, idx) => (
+                                              <a key={idx} href={url} target="_blank" rel="noreferrer" className="w-8 h-8 border border-vy-border hover:border-vy-accent transition-colors">
+                                                <img src={url} alt="Design" className="w-full h-full object-cover" />
+                                              </a>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
-                                  <span className="ml-auto text-vy-white text-xs font-semibold">₹{(p.price * p.quantity).toLocaleString()}</span>
+                                  <span className="text-vy-white text-xs font-semibold">₹{(p.price * p.quantity).toLocaleString()}</span>
                                 </div>
                               ))}
                             </div>

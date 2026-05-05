@@ -8,10 +8,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { uploadCustomDesign, createCustomOrder } from '../firebase/customOrders';
+import { uploadCustomDesign } from '../firebase/customOrders';
 import { getCustomizeSettings } from '../firebase/content';
-import { validateCoupon, getAllCoupons } from '../firebase/coupons';
-import { openRazorpay } from '../utils/razorpay';
+import { validateCoupon } from '../firebase/coupons';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 
@@ -176,9 +175,9 @@ const Customize = () => {
   const [discount, setDiscount]       = useState(0);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
-  const [paymentState, setPaymentState] = useState('idle');
+  const [addingToCart, setAddingToCart] = useState(false);
   const [step, setStep] = useState(1); 
-
+  const { addItem } = useCart();
   const [prices, setPrices] = useState(() => {
     const cached = localStorage.getItem('vy_customize_settings');
     return cached ? JSON.parse(cached).prices : { Front: 700, Back: 700, Both: 900 };
@@ -329,129 +328,40 @@ const Customize = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // ── Payment ─────────────────────────────────────────
-  const handleOrder = async () => {
-    setPaymentState('paying');
+  // ── Add to Cart ─────────────────────────────────────
+  const handleAddToCart = () => {
+    setAddingToCart(true);
+    
+    const customItem = {
+      id: `custom_${Date.now()}`,
+      name: `Custom Tee (${position} Print)`,
+      price: basePrice,
+      size,
+      color,
+      position,
+      imageUrls,
+      description: description.trim(),
+      designStatus,
+      image: imageUrls[0] || null, // First image as thumbnail
+    };
 
-    try {
-      const receipt = `custom_${user.uid.slice(0, 8)}_${Date.now()}`;
+    addItem(customItem, size, 1, true);
+    setAddingToCart(false);
+    
+    // Suggest navigating to cart
+    toast((t) => (
+      <div className="flex items-center gap-4">
+        <span className="text-xs font-medium text-vy-white">Added to your bag!</span>
+        <button 
+          onClick={() => { navigate('/cart'); toast.dismiss(t.id); }}
+          className="bg-vy-white text-vy-black px-3 py-1.5 text-[10px] uppercase font-bold tracking-widest"
+        >
+          View Bag
+        </button>
+      </div>
+    ), { duration: 6000, position: 'bottom-center', style: { background: '#141414', border: '1px solid #222' } });
 
-      // ── 0-Rupee Bypass (100% Free via Coupon) ──
-      if (finalPrice === 0) {
-        if (coupon) {
-          const check = await validateCoupon(coupon.code, basePrice);
-          
-          if (!check.valid) {
-            toast.error(check.message || "Security Error: Invalid coupon detected.", { className: 'toast-vybera' });
-            setPaymentState('failed');
-            setStep(1);
-            return;
-          }
-
-          const trueFinal = Math.max(0, basePrice - check.discount);
-          if (trueFinal !== 0) {
-            toast.error("Security Error: Invalid pricing detected.", { className: 'toast-vybera' });
-            setPaymentState('failed');
-            setStep(1);
-            return;
-          }
-        } else if (basePrice > 0) {
-          toast.error("Security Error: Cannot process free order without coupon.", { className: 'toast-vybera' });
-          setPaymentState('failed');
-          setStep(1);
-          return;
-        }
-
-        try {
-          await createCustomOrder({
-            userId: user.uid,
-            userEmail: user.email,
-            userName: user.displayName || '',
-            imageUrls,
-            size,
-            color,
-            position,
-            description: description.trim(),
-            basePrice,
-            discount,
-            price: finalPrice,
-            couponCode: coupon?.code || null,
-            paymentId: 'free_coupon_bypass',
-            razorpayOrderId: null,
-            razorpaySignature: null,
-            paymentReceipt: receipt,
-            designStatus: designStatus,
-          });
-
-          setPaymentState('success');
-          toast.success('Custom order placed! We\'ll get in touch soon.', { className: 'toast-vybera', duration: 5000 });
-          setTimeout(() => navigate('/order-success'), 1000);
-        } catch (dbErr) {
-          console.error('Firestore save failed:', dbErr);
-          setPaymentState('failed');
-          setStep(1);
-          toast.error('Failed to log order.', { className: 'toast-vybera' });
-        }
-        return;
-      }
-
-      await openRazorpay({
-        amount: finalPrice,
-        receipt,
-        description: `VYBERA Custom Tee — ${position} print (${color}, ${size})`,
-        prefill: { email: user.email, name: user.displayName || '' },
-
-        onSuccess: async (response) => {
-          try {
-              await createCustomOrder({
-              userId: user.uid,
-              userEmail: user.email,
-              userName: user.displayName || '',
-              imageUrls,
-              size,
-              color,
-              position,
-              description: description.trim(),
-              basePrice,
-              discount,
-              price: finalPrice,
-              couponCode: coupon?.code || null,
-              paymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id || response.backendOrderId || null,
-              razorpaySignature: response.razorpay_signature || null,
-              paymentReceipt: receipt,
-              designStatus: designStatus,
-            });
-
-            setPaymentState('success');
-            toast.success('Custom order placed! We\'ll get in touch soon.', {
-              className: 'toast-vybera',
-              duration: 5000,
-            });
-            setTimeout(() => navigate('/order-success'), 1000);
-          } catch (dbErr) {
-            console.error('Firestore save failed:', dbErr);
-            setPaymentState('success');
-            toast.success('Payment successful! Our team will reach out within 24 hours.', {
-              className: 'toast-vybera',
-              duration: 7000,
-            });
-            setTimeout(() => navigate('/order-success'), 1200);
-          }
-        },
-
-        onFailure: (error) => {
-          setPaymentState('failed');
-          setStep(2);
-          const msg = error?.description || error?.reason || 'Payment was not completed.';
-          toast.error(msg, { className: 'toast-vybera' });
-        },
-      });
-    } catch (err) {
-      setPaymentState('failed');
-      setStep(2);
-      toast.error(err.message || 'Failed to initiate payment.', { className: 'toast-vybera' });
-    }
+    navigate('/cart');
   };
 
   // ── Render ─────────────────────────────────────────
@@ -484,12 +394,12 @@ const Customize = () => {
         <div className="flex items-center gap-4 mb-10">
           <StepLabel n={1} label="Design" active={step === 1} done={step > 1} />
           <div className={`flex-1 max-w-12 h-px transition-colors duration-500 ${step > 1 ? 'bg-vy-white' : 'bg-vy-border'}`} />
-          <StepLabel n={2} label="Review & Pay" active={step === 2} done={paymentState === 'success'} />
+          <StepLabel n={2} label="Review" active={step === 2} done={addingToCart} />
         </div>
 
         {/* Payment processing overlay */}
         <AnimatePresence>
-          {paymentState === 'paying' && (
+          {addingToCart && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -497,8 +407,7 @@ const Customize = () => {
               className="fixed inset-0 z-50 bg-vy-black/90 flex items-center justify-center flex-col gap-5"
             >
               <Loader2 size={48} className="text-vy-white animate-spin" />
-              <p className="text-vy-white font-semibold tracking-wider">Processing your order…</p>
-              <p className="text-vy-grey text-sm">Complete the payment in the Razorpay window</p>
+              <p className="text-vy-white font-semibold tracking-wider">Adding to your bag…</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -681,111 +590,57 @@ const Customize = () => {
                   </div>
                 </div>
 
-                {/* Coupon */}
+                {/* Total Info */}
                 <div className="bg-vy-card border border-vy-border p-6">
-                  <h2 className="text-vy-white text-sm font-semibold tracking-widest uppercase mb-4">Coupon Code</h2>
-
-                  {coupon ? (
-                    <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle size={14} className="text-green-400" />
-                        <span className="text-green-400 text-sm font-semibold">{coupon.code}</span>
-                        <span className="text-green-400/70 text-xs">−₹{discount}</span>
-                      </div>
-                      <button onClick={removeCoupon} className="text-vy-grey hover:text-red-400 transition-colors">
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-3">
-                      <input
-                        value={couponCode}
-                        onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
-                        onKeyDown={e => e.key === 'Enter' && applyCoupon()}
-                        className="vy-input flex-1 font-mono uppercase text-sm"
-                        placeholder="VYBERA20"
-                      />
-                      <button
-                        onClick={applyCoupon}
-                        disabled={couponLoading || !couponCode.trim()}
-                        className="btn-ghost text-xs disabled:opacity-40"
-                      >
-                        {couponLoading ? '…' : 'Apply'}
-                      </button>
-                    </div>
-                  )}
-
-                  {couponError && (
-                    <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                      <AlertCircle size={11} /> {couponError}
-                    </p>
-                  )}
+                  <h2 className="text-vy-white text-sm font-semibold tracking-widest uppercase mb-4">Total for this design</h2>
+                  <div className="flex items-baseline justify-between mb-4">
+                    <span className="text-vy-grey text-sm">Estimated Price</span>
+                    <span className="text-vy-white font-bold text-2xl">₹{basePrice.toLocaleString()}</span>
+                  </div>
+                  <p className="text-vy-grey text-[10px] leading-relaxed italic">
+                    Note: Coupons can be applied globally in your shopping bag.
+                  </p>
                 </div>
               </div>
 
-              {/* Right: Pay */}
+              {/* Right: Add to Cart */}
               <div className="h-fit lg:sticky lg:top-24">
-                <div className="bg-vy-card border border-vy-border p-6 space-y-4">
-                  <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm">Order Total</h2>
+                <div className="bg-vy-card border border-vy-border p-6 space-y-4 shadow-2xl">
+                  <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm">Review & Add</h2>
 
-                  {/* Price breakdown */}
-                  <div className="space-y-2 pb-4 border-b border-vy-border text-sm">
+                  {/* Summary */}
+                  <div className="space-y-3 pb-4 border-b border-vy-border text-xs">
                     <div className="flex justify-between">
-                      <span className="text-vy-grey">Custom Tee ({position})</span>
+                      <span className="text-vy-grey">Position</span>
+                      <span className="text-vy-white">{position}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vy-grey">T-Shirt Color</span>
+                      <span className="text-vy-white">{color}</span>
+                    </div>
+                    <div className="flex justify-between font-bold">
+                      <span className="text-vy-white">Price</span>
                       <span className="text-vy-white">₹{basePrice.toLocaleString()}</span>
                     </div>
-                    {discount > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-green-400 flex items-center gap-1"><CheckCircle size={11} /> Coupon</span>
-                        <span className="text-green-400">−₹{discount.toLocaleString()}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between">
-                      <span className="text-vy-grey">Shipping</span>
-                      <span className="text-green-400">Free</span>
-                    </div>
                   </div>
 
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-vy-grey">Total</span>
-                    <div className="text-right">
-                      <span className="text-vy-white font-bold text-2xl">₹{finalPrice.toLocaleString()}</span>
-                      {discount > 0 && (
-                        <p className="text-vy-grey text-xs line-through">₹{basePrice.toLocaleString()}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Turnaround info */}
-                  <div className="p-3 border border-vy-border/50 bg-vy-border/10 text-xs text-vy-grey space-y-1">
-                    <p>🕐 Turnaround: 5–7 business days</p>
-                    <p>📦 Free shipping across India</p>
-                    <p>📞 We'll call to confirm your design</p>
-                  </div>
-                  
-                  {/* Policy Info */}
-                  <div className="p-3 border border-red-500/20 bg-red-500/5 text-xs text-red-400 space-y-1">
+                  <div className="p-3 border border-red-500/20 bg-red-500/5 text-[10px] text-red-400 space-y-1">
                     <p className="font-semibold tracking-widest uppercase">⚠️ Strict No Return Policy</p>
-                    <p className="text-vy-grey">Since this item is customized specifically for you, all custom order sales are final and non-refundable.</p>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-vy-grey">
-                    <span>Secured by</span>
-                    <span className="text-vy-white font-bold tracking-widest">RAZORPAY</span>
+                    <p className="text-vy-grey/80">Custom items are made uniquely for you and cannot be returned or replaced.</p>
                   </div>
 
                   <motion.button
-                    onClick={handleOrder}
+                    onClick={handleAddToCart}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="btn-primary w-full flex items-center justify-center gap-2 py-4"
+                    className="btn-primary w-full flex items-center justify-center gap-3 py-4 text-xs font-bold"
                   >
                     <Shirt size={16} />
-                    Order Custom Tee — ₹{finalPrice.toLocaleString()}
+                    ADD TO BAG — ₹{basePrice.toLocaleString()}
                   </motion.button>
 
-                  <p className="text-vy-grey text-[10px] text-center leading-relaxed">
-                    By ordering, you confirm you have rights to use the uploaded design.
+                  <p className="text-vy-grey text-[10px] text-center leading-relaxed opacity-60">
+                    You can combine this with regular items in your bag and apply a single coupon at checkout.
                   </p>
                 </div>
               </div>
