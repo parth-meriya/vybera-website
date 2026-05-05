@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import imageCompression from 'browser-image-compression';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -16,40 +17,12 @@ import SEO from '../components/SEO';
 
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
-// ── Image Compression Utility ──────────────────────────
-const compressImage = (file, maxWidth = 1000, quality = 0.5) => {
-  return new Promise((resolve) => {
-    if (!file.type.startsWith('image/')) return resolve(file);
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth) {
-          height = (maxWidth / width) * height;
-          width = maxWidth;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob((blob) => {
-          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
-            type: 'image/webp',
-            lastModified: Date.now(),
-          });
-          resolve(compressedFile);
-        }, 'image/webp', quality);
-      };
-    };
-  });
+// ── Image Compression Settings ──────────────────────────
+const compressionOptions = {
+  maxSizeMB: 0.8,
+  maxWidthOrHeight: 1000,
+  useWebWorker: true,
+  fileType: 'image/webp'
 };
 
 // ── Sub-components ──────────────────────────────────────
@@ -279,23 +252,16 @@ const Customize = () => {
     setUploading(true);
     setUploadPct(0);
     try {
-      // Step 1: Compress images
-      const compressedFiles = await Promise.all(toAdd.map(f => compressImage(f)));
-      
-      // Step 2: Upload compressed files
-      let completed = 0;
-      const progressStep = 100 / compressedFiles.length;
-
+      // Parallel compression & upload
       const urls = await Promise.all(
-        compressedFiles.map(async (f) => {
-          const u = await uploadCustomDesign(f, user.uid, () => {});
-          completed += progressStep;
-          setUploadPct(Math.round(completed));
-          return u;
+        toAdd.map(async (f) => {
+          const compressed = await imageCompression(f, compressionOptions);
+          return uploadCustomDesign(compressed, user.uid, (p) => setUploadPct(p));
         })
       );
       setImageUrls(prev => [...prev, ...urls]);
     } catch (err) {
+      console.error(err);
       toast.error('Image upload failed. Please try again.', { className: 'toast-vybera' });
     } finally {
       setUploading(false);

@@ -1,44 +1,17 @@
 import { useEffect, useState } from 'react';
+import imageCompression from 'browser-image-compression';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { uploadBanner } from '../../firebase/content';
 import toast from 'react-hot-toast';
 import { Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
 
-// ── Image Compression Utility ──────────────────────────
-const compressImage = (file, maxWidth = 1280, quality = 0.5) => {
-  return new Promise((resolve) => {
-    if (!file.type.startsWith('image/')) return resolve(file);
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new window.Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > maxWidth) {
-          height = (maxWidth / width) * height;
-          width = maxWidth;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob((blob) => {
-          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
-            type: 'image/webp',
-            lastModified: Date.now(),
-          });
-          resolve(compressedFile);
-        }, 'image/webp', quality);
-      };
-    };
-  });
+// ── Image Compression Settings ──────────────────────────
+const compressionOptions = {
+  maxSizeMB: 1,
+  maxWidthOrHeight: 1280,
+  useWebWorker: true,
+  fileType: 'image/webp'
 };
 
 const AdminContent = () => {
@@ -92,15 +65,14 @@ const AdminContent = () => {
     if (!file) return;
 
     setUploading(true);
-    setUploadStatus('Optimizing image...');
+    setUploadStatus('Uploading...');
     try {
-      // Compress before upload
-      const compressed = await compressImage(file);
-      setUploadStatus('Uploading to server...');
+      const compressed = await imageCompression(file, compressionOptions);
       const url = await uploadBanner(compressed);
       setBanner(b => ({ ...b, imageUrl: url }));
       toast.success('Banner uploaded and optimized.', { className: 'toast-vybera' });
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error('Upload failed.', { className: 'toast-vybera' });
     } finally {
       setUploading(false);
