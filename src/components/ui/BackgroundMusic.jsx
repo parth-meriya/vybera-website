@@ -20,7 +20,7 @@ const BackgroundMusic = () => {
       // Manual fallback for Anniversary if no music is set or enabled
       const defaultMusic = {
         musicEnabled: true,
-        musicUrl: "/sounds/background.mp3" // Prioritize local optimized file
+        musicUrl: "/sounds/all_of_me.mp3" // Preferred track
       };
       
       const finalConfig = (c && c.musicUrl) ? c : defaultMusic;
@@ -58,7 +58,7 @@ const BackgroundMusic = () => {
 
   const handleAudioError = () => {
     // If local file fails, fallback to a stable CDN
-    if (config?.musicUrl === "/sounds/background.mp3") {
+    if (config?.musicUrl === "/sounds/all_of_me.mp3") {
       setConfig(prev => ({
         ...prev,
         musicUrl: "https://www.chosic.com/wp-content/uploads/2021/07/Rainy-Day-Background-Piano-Music.mp3"
