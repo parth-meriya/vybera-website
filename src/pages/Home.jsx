@@ -66,23 +66,29 @@ const Home = () => {
       {/* ─── HERO ─────────────────────────────────────── */}
       <section ref={heroRef} className="relative h-screen overflow-hidden flex items-center bg-[#1C2A21]">
         {/* Parallax BG */}
-        <motion.div
-          style={{ y: heroY }}
-          className="absolute inset-0 z-0"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
-          <img
-            src={(banner && banner.isActive && banner.imageUrl) ? banner.imageUrl : "/hero_banner.png"}
-            alt="VYBERA Collection"
-            className="w-full h-full object-cover object-center md:object-[70%_center]"
-            onLoad={() => console.log('Hero image loaded')}
-            onError={(e) => {
-              console.error('Hero image failed to load');
-              if (e.target.src.includes('hero_banner.png')) return;
-              e.target.src = "/hero_banner.png";
-            }}
-          />
-        </motion.div>
+        {!loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{ y: heroY }}
+            className="absolute inset-0 z-0"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
+            <img
+              src={(banner && banner.isActive && banner.imageUrl) ? banner.imageUrl : "/hero_banner.png"}
+              alt="VYBERA Collection"
+              className="w-full h-full object-cover object-center md:object-[70%_center]"
+              onError={(e) => {
+                if (e.target.src.includes('hero_banner.png')) return;
+                e.target.src = "/hero_banner.png";
+              }}
+            />
+          </motion.div>
+        )}
+        
+        {loading && (
+           <div className="absolute inset-0 bg-[#1C2A21] z-0 animate-pulse" />
+        )}
 
         {/* Hero Content */}
         <motion.div

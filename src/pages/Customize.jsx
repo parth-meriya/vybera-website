@@ -203,7 +203,7 @@ const Customize = () => {
   const [discount, setDiscount]       = useState(0);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
-
+  const [paymentState, setPaymentState] = useState('idle');
   const [step, setStep] = useState(1); 
 
   // Settings from Firestore
@@ -212,8 +212,8 @@ const Customize = () => {
 
   useEffect(() => {
     getCustomizeSettings().then(s => {
-      if (s.prices) setPrices(s.prices);
-      if (s.sizes) setSizes(s.sizes);
+      if (s && s.prices) setPrices(s.prices);
+      if (s && s.sizes) setSizes(s.sizes);
     });
   }, []);
 
