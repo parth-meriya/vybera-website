@@ -58,10 +58,25 @@ const Cart = () => {
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="font-display font-bold text-3xl tracking-wider text-vy-white mb-10 border-b border-vy-border pb-6"
+          className="font-display font-bold text-3xl tracking-wider text-vy-white mb-2 border-b border-vy-border pb-6"
         >
           Cart ({itemCount})
         </motion.h1>
+
+        {/* Anniversary Alert */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-8 p-4 bg-vy-accent/10 border border-vy-accent/30 flex items-center gap-4"
+        >
+          <div className="w-10 h-10 rounded-full bg-vy-accent flex items-center justify-center text-vy-black shrink-0">
+             <Tag size={20} />
+          </div>
+          <div>
+            <h3 className="text-vy-white text-xs font-bold tracking-widest uppercase">1st Anniversary Sale is LIVE!</h3>
+            <p className="text-vy-grey text-[10px] mt-1">Buy 1 Get 1 Free — Apply your coupon in the summary below.</p>
+          </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Items */}
