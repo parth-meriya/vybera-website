@@ -70,12 +70,12 @@ const Home = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
             <img
-              src={(banner && banner.isActive && banner.imageUrl) ? banner.imageUrl : "/hero_banner.png"}
+              src={(banner && banner.isActive && banner.imageUrl) ? banner.imageUrl : "/anniversary_manual.png"}
               alt="VYBERA Collection"
               className="w-full h-full object-cover object-center md:object-[70%_center]"
               onError={(e) => {
-                if (e.target.src.includes('hero_banner.png')) return;
-                e.target.src = "/hero_banner.png";
+                if (e.target.src.includes('anniversary_manual.png')) return;
+                e.target.src = "/anniversary_manual.png";
               }}
             />
           </motion.div>
@@ -98,7 +98,7 @@ const Home = () => {
             className="flex items-center gap-4 mb-6"
           >
             <span className="text-vy-light text-[11px] tracking-[0.5em] uppercase font-medium">
-              New Collection
+              {banner?.subtitle || "1st ANNIVERSARY SALE IS LIVE"}
             </span>
             <span className="w-12 h-px bg-vy-accent" />
             <span className="text-vy-accent text-sm">✦</span>
@@ -115,8 +115,8 @@ const Home = () => {
               <span className="text-vy-accent">{banner.headline}</span>
             ) : (
               <>
-                BUILT FOR<br />
-                <span className="text-vy-accent">THE FUTURE</span>
+                ANNIVERSARY<br />
+                <span className="text-vy-accent">SALE LIVE</span>
               </>
             )}
           </motion.h1>
