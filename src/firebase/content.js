@@ -72,3 +72,12 @@ export const uploadBanner = async (file) => {
   return getDownloadURL(snap.ref);
 };
 
+/**
+ * Upload music file to Storage.
+ */
+export const uploadMusic = async (file) => {
+  const storageRef = ref(storage, `audio/${Date.now()}_${file.name}`);
+  const snap = await uploadBytes(storageRef, file);
+  return getDownloadURL(snap.ref);
+};
+

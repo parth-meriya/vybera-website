@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import imageCompression from 'browser-image-compression';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { uploadBanner } from '../../firebase/content';
+import { uploadBanner, uploadMusic } from '../../firebase/content';
+import { Music } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
 
@@ -19,6 +20,7 @@ const AdminContent = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingMusic, setUploadingMusic] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
 
   // Banner State
@@ -77,6 +79,27 @@ const AdminContent = () => {
     } finally {
       setUploading(false);
       setUploadStatus('');
+    }
+  };
+
+  const handleMusicUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.includes('audio/mpeg') && !file.type.includes('audio/mp3')) {
+      toast.error('Please upload an MP3 file.', { className: 'toast-vybera' });
+      return;
+    }
+
+    setUploadingMusic(true);
+    try {
+      const url = await uploadMusic(file);
+      setBanner(b => ({ ...b, musicUrl: url }));
+      toast.success('Music uploaded successfully.', { className: 'toast-vybera' });
+    } catch {
+      toast.error('Music upload failed.', { className: 'toast-vybera' });
+    } finally {
+      setUploadingMusic(false);
     }
   };
 
@@ -233,22 +256,50 @@ const AdminContent = () => {
               <div className="pt-4 border-t border-vy-border">
                 <h3 className="text-vy-accent text-[10px] uppercase tracking-widest mb-4">Background Music (Campaign Only)</h3>
                 <div className="space-y-4">
-                  <input 
-                    value={banner.musicUrl || ''} 
-                    onChange={e => setBanner(b => ({ ...b, musicUrl: e.target.value }))}
-                    className="vy-input" 
-                    placeholder="Direct Link to MP3 (e.g. https://example.com/song.mp3)" 
-                  />
+                  <div className="flex items-center gap-3">
+                    <label className="flex-1 cursor-pointer">
+                      <div className="vy-input flex items-center justify-between group">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <Music size={14} className="text-vy-grey" />
+                          <span className="text-[11px] text-vy-grey truncate">
+                            {banner.musicUrl ? "Song Uploaded ✅" : "Select MP3 file..."}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-vy-accent uppercase tracking-widest font-bold group-hover:text-vy-white transition-colors">
+                          {uploadingMusic ? "Uploading..." : "Browse"}
+                        </span>
+                      </div>
+                      <input 
+                        type="file" 
+                        onChange={handleMusicUpload} 
+                        className="hidden" 
+                        accept="audio/mp3,audio/mpeg" 
+                        disabled={uploadingMusic}
+                      />
+                    </label>
+                    {banner.musicUrl && (
+                      <button 
+                        onClick={() => setBanner(b => ({ ...b, musicUrl: '', musicEnabled: false }))}
+                        className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input 
                       type="checkbox" 
                       checked={banner.musicEnabled || false} 
                       onChange={e => setBanner(b => ({ ...b, musicEnabled: e.target.checked }))}
                       className="w-4 h-4 accent-vy-accent"
+                      disabled={!banner.musicUrl}
                     />
-                    <span className="text-vy-white text-[10px] uppercase tracking-widest">Enable Background Music</span>
+                    <span className={`text-[10px] uppercase tracking-widest ${!banner.musicUrl ? 'text-vy-grey/40' : 'text-vy-white'}`}>
+                      Enable Background Music
+                    </span>
                   </label>
-                  <p className="text-vy-grey text-[9px] italic">Note: Browsers only play music after the user clicks anywhere on the site.</p>
+                  <p className="text-vy-grey text-[9px] italic">Note: Music starts after the first click on the site.</p>
                 </div>
               </div>
               
