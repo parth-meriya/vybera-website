@@ -17,8 +17,15 @@ const BackgroundMusic = () => {
 
   useEffect(() => {
     getBannerConfig().then(c => {
-      if (c && c.musicEnabled && c.musicUrl) {
-        setConfig(c);
+      // Manual fallback for Anniversary if no music is set or enabled
+      const defaultMusic = {
+        musicEnabled: true,
+        musicUrl: "https://www.chosic.com/wp-content/uploads/2021/07/Rainy-Day-Background-Piano-Music.mp3"
+      };
+      
+      const finalConfig = (c && c.musicUrl) ? c : defaultMusic;
+      if (finalConfig.musicEnabled && finalConfig.musicUrl) {
+        setConfig(finalConfig);
       }
     });
 
