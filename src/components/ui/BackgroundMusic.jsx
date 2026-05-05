@@ -20,7 +20,7 @@ const BackgroundMusic = () => {
       // Manual fallback for Anniversary if no music is set or enabled
       const defaultMusic = {
         musicEnabled: true,
-        musicUrl: "https://www.chosic.com/wp-content/uploads/2021/07/Rainy-Day-Background-Piano-Music.mp3"
+        musicUrl: "/sounds/background.mp3" // Prioritize local optimized file
       };
       
       const finalConfig = (c && c.musicUrl) ? c : defaultMusic;
@@ -40,13 +40,31 @@ const BackgroundMusic = () => {
 
   useEffect(() => {
     if (config && hasInteracted && audioRef.current) {
+      const audio = audioRef.current;
+      audio.volume = 0.2; // Low volume by default
+      
       if (!isMuted) {
-        audioRef.current.play().catch(e => console.warn("Audio play blocked", e));
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.warn("Playback failed:", error);
+          });
+        }
       } else {
-        audioRef.current.pause();
+        audio.pause();
       }
     }
   }, [isMuted, hasInteracted, config]);
+
+  const handleAudioError = () => {
+    // If local file fails, fallback to a stable CDN
+    if (config?.musicUrl === "/sounds/background.mp3") {
+      setConfig(prev => ({
+        ...prev,
+        musicUrl: "https://www.chosic.com/wp-content/uploads/2021/07/Rainy-Day-Background-Piano-Music.mp3"
+      }));
+    }
+  };
 
   if (!config) return null;
 
@@ -57,6 +75,8 @@ const BackgroundMusic = () => {
         src={config.musicUrl}
         loop
         preload="auto"
+        crossOrigin="anonymous"
+        onError={handleAudioError}
       />
       
       <AnimatePresence>
