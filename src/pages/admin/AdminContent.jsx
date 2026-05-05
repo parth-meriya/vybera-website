@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
 
 // ── Image Compression Utility ──────────────────────────
-const compressImage = (file, maxWidth = 1920, quality = 0.7) => {
+const compressImage = (file, maxWidth = 1920, quality = 0.6) => {
   return new Promise((resolve) => {
     if (!file.type.startsWith('image/')) return resolve(file);
     const reader = new FileReader();
@@ -46,6 +46,7 @@ const AdminContent = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   // Banner State
   const [banner, setBanner] = useState({
@@ -91,9 +92,11 @@ const AdminContent = () => {
     if (!file) return;
 
     setUploading(true);
+    setUploadStatus('Optimizing image...');
     try {
       // Compress before upload
       const compressed = await compressImage(file);
+      setUploadStatus('Uploading to server...');
       const url = await uploadBanner(compressed);
       setBanner(b => ({ ...b, imageUrl: url }));
       toast.success('Banner uploaded and optimized.', { className: 'toast-vybera' });
@@ -101,6 +104,7 @@ const AdminContent = () => {
       toast.error('Upload failed.', { className: 'toast-vybera' });
     } finally {
       setUploading(false);
+      setUploadStatus('');
     }
   };
 
@@ -227,7 +231,10 @@ const AdminContent = () => {
                   ) : (
                     <label className="flex flex-col items-center justify-center aspect-[21/9] border border-dashed border-vy-border hover:border-vy-grey cursor-pointer transition-colors">
                       {uploading ? (
-                        <Loader2 className="animate-spin text-vy-grey" size={24} />
+                        <div className="flex flex-col items-center gap-3">
+                          <Loader2 className="animate-spin text-vy-accent" size={24} />
+                          <span className="text-vy-grey text-[10px] uppercase tracking-widest animate-pulse">{uploadStatus}</span>
+                        </div>
                       ) : (
                         <>
                           <ImageIcon className="text-vy-border mb-2" size={24} />
