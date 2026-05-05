@@ -229,6 +229,28 @@ const AdminContent = () => {
                 />
                 <p className="text-vy-grey text-[9px] mt-2 italic">After this date, the home page will revert to the default branding.</p>
               </div>
+
+              <div className="pt-4 border-t border-vy-border">
+                <h3 className="text-vy-accent text-[10px] uppercase tracking-widest mb-4">Background Music (Campaign Only)</h3>
+                <div className="space-y-4">
+                  <input 
+                    value={banner.musicUrl || ''} 
+                    onChange={e => setBanner(b => ({ ...b, musicUrl: e.target.value }))}
+                    className="vy-input" 
+                    placeholder="Direct Link to MP3 (e.g. https://example.com/song.mp3)" 
+                  />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={banner.musicEnabled || false} 
+                      onChange={e => setBanner(b => ({ ...b, musicEnabled: e.target.checked }))}
+                      className="w-4 h-4 accent-vy-accent"
+                    />
+                    <span className="text-vy-white text-[10px] uppercase tracking-widest">Enable Background Music</span>
+                  </label>
+                  <p className="text-vy-grey text-[9px] italic">Note: Browsers only play music after the user clicks anywhere on the site.</p>
+                </div>
+              </div>
               
               <div className="flex items-center gap-4 pt-4 border-t border-vy-border">
                 <label className="flex items-center gap-2 cursor-pointer">

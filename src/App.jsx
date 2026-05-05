@@ -8,6 +8,7 @@ import Footer from './components/ui/Footer';
 import CustomCursor from './components/ui/CustomCursor';
 import ScrollToTop from './components/ui/ScrollToTop';
 import PageTransition from './components/ui/PageTransition';
+import BackgroundMusic from './components/ui/BackgroundMusic';
 import AdminLayout from './components/admin/AdminLayout';
 
 // User Pages
@@ -59,6 +60,7 @@ const App = () => {
     <>
       <ScrollToTop />
       <CustomCursor />
+      <BackgroundMusic />
       <Toaster
         position="bottom-right"
         toastOptions={{
