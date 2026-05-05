@@ -17,7 +17,7 @@ import SEO from '../components/SEO';
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
 // ── Image Compression Utility ──────────────────────────
-const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
+const compressImage = (file, maxWidth = 1000, quality = 0.5) => {
   return new Promise((resolve) => {
     if (!file.type.startsWith('image/')) return resolve(file);
     const reader = new FileReader();
@@ -206,9 +206,17 @@ const Customize = () => {
   const [paymentState, setPaymentState] = useState('idle');
   const [step, setStep] = useState(1); 
 
-  const [prices, setPrices] = useState({ Front: 700, Back: 700, Both: 900 });
-  const [sizes, setSizes]   = useState(['XS', 'S', 'M', 'L', 'XL', 'XXL']);
-  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [prices, setPrices] = useState(() => {
+    const cached = localStorage.getItem('vy_customize_settings');
+    return cached ? JSON.parse(cached).prices : { Front: 700, Back: 700, Both: 900 };
+  });
+  const [sizes, setSizes]   = useState(() => {
+    const cached = localStorage.getItem('vy_customize_settings');
+    return cached ? JSON.parse(cached).sizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  });
+  const [settingsLoading, setSettingsLoading] = useState(() => {
+    return !localStorage.getItem('vy_customize_settings');
+  });
 
   useEffect(() => {
     getCustomizeSettings()

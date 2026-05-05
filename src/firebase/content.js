@@ -7,12 +7,23 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
  */
 export const getBannerConfig = async () => {
   try {
+    // Try cache first for instant UI
+    const cached = localStorage.getItem('vy_banner_config');
+    if (cached) {
+      // Return cache immediately, but we can't easily update the caller's state from here.
+      // So we just fetch fresh data and update cache.
+    }
+
     const snap = await getDoc(doc(db, 'settings', 'banner'));
-    if (snap.exists()) return snap.data();
+    if (snap.exists()) {
+      const data = snap.data();
+      localStorage.setItem('vy_banner_config', JSON.stringify(data));
+      return data;
+    }
     return null;
   } catch (err) {
-    console.error('Error fetching banner config:', err);
-    return null;
+    const cached = localStorage.getItem('vy_banner_config');
+    return cached ? JSON.parse(cached) : null;
   }
 };
 
@@ -22,17 +33,20 @@ export const getBannerConfig = async () => {
 export const getCustomizeSettings = async () => {
   try {
     const snap = await getDoc(doc(db, 'settings', 'customize'));
-    if (snap.exists()) return snap.data();
-    return {
-      prices: { Front: 700, Back: 700, Both: 900 },
-      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-    };
-  } catch {
-    return {
-      prices: { Front: 700, Back: 700, Both: 900 },
-      sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
-    };
+    if (snap.exists()) {
+      const data = snap.data();
+      localStorage.setItem('vy_customize_settings', JSON.stringify(data));
+      return data;
+    }
+  } catch (err) {
+    const cached = localStorage.getItem('vy_customize_settings');
+    if (cached) return JSON.parse(cached);
   }
+
+  return {
+    prices: { Front: 700, Back: 700, Both: 900 },
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+  };
 };
 
 /**
