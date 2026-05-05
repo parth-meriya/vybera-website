@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus } from '../../firebase/orders';
+import { listenToAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
 import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown } from 'lucide-react';
@@ -33,13 +33,23 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    getAllOrders().then(o => { 
-      setOrders(o); 
+    const unsubscribe = listenToAllOrders(o => {
+      setOrders(o);
       setLoading(false);
-      const t = {};
-      o.forEach(order => { t[order.id] = order.trackingId || ''; });
-      setTrackingInputs(t);
+      
+      // Update tracking inputs map if needed
+      setTrackingInputs(p => {
+        const next = { ...p };
+        o.forEach(order => {
+          if (next[order.id] === undefined) {
+            next[order.id] = order.trackingId || '';
+          }
+        });
+        return next;
+      });
     });
+
+    return () => unsubscribe();
   }, []);
 
   // ── Derived: unique coupon codes for dropdown ──

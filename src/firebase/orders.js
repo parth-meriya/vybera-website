@@ -9,6 +9,7 @@ import {
   orderBy,
   where,
   serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from './config';
 
@@ -37,6 +38,17 @@ export const getAllOrders = async () => {
   const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+/**
+ * Real-time listener for all orders (Admin).
+ */
+export const listenToAllOrders = (callback) => {
+  const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, (snap) => {
+    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    callback(orders);
+  });
 };
 
 export const getOrderById = async (id) => {
