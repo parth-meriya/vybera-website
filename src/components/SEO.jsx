@@ -34,6 +34,9 @@ const SEO = ({
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
       <link rel="canonical" href={canonicalUrl} />
+      <link rel="icon" type="image/png" href="/favicon.png" />
+      <link rel="apple-touch-icon" href="/favicon.png" />
+      <meta name="theme-color" content="#111111" />
 
       {/* Open Graph */}
       <meta property="og:type" content={type} />
