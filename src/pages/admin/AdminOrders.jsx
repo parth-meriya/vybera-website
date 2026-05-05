@@ -5,8 +5,9 @@ import { motion } from 'framer-motion';
 import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const STATUS_OPTIONS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
+const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
 const statusClass = {
+  pending: 'text-vy-grey bg-vy-grey/10 border border-vy-grey/30',
   confirmed: 'text-vy-white bg-vy-white/10 border border-vy-white/30',
   processing: 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/30',
   shipped: 'text-blue-400 bg-blue-500/10 border border-blue-500/30',

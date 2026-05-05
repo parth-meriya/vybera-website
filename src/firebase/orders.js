@@ -61,6 +61,14 @@ export const updateOrderStatus = async (id, status) => {
   await updateDoc(doc(db, 'orders', id), { status });
 };
 
+export const updateOrderPayment = async (id, paymentDetails) => {
+  await updateDoc(doc(db, 'orders', id), {
+    ...paymentDetails,
+    status: 'confirmed',
+    paymentStatus: 'paid'
+  });
+};
+
 export const updateOrderTracking = async (id, status, trackingId) => {
   await updateDoc(doc(db, 'orders', id), { 
     status,
