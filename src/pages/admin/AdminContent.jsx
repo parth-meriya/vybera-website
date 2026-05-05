@@ -21,6 +21,7 @@ const AdminContent = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingMusic, setUploadingMusic] = useState(false);
+  const [musicProgress, setMusicProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
 
   // Banner State
@@ -92,14 +93,16 @@ const AdminContent = () => {
     }
 
     setUploadingMusic(true);
+    setMusicProgress(0);
     try {
-      const url = await uploadMusic(file);
+      const url = await uploadMusic(file, (pct) => setMusicProgress(pct));
       setBanner(b => ({ ...b, musicUrl: url }));
       toast.success('Music uploaded successfully.', { className: 'toast-vybera' });
     } catch {
       toast.error('Music upload failed.', { className: 'toast-vybera' });
     } finally {
       setUploadingMusic(false);
+      setMusicProgress(0);
     }
   };
 
@@ -262,7 +265,7 @@ const AdminContent = () => {
                         <div className="flex items-center gap-2 overflow-hidden">
                           <Music size={14} className="text-vy-grey" />
                           <span className="text-[11px] text-vy-grey truncate">
-                            {banner.musicUrl ? "Song Uploaded ✅" : "Select MP3 file..."}
+                            {uploadingMusic ? `Uploading ${musicProgress}%...` : (banner.musicUrl ? "Song Uploaded ✅" : "Select MP3 file...")}
                           </span>
                         </div>
                         <span className="text-[10px] text-vy-accent uppercase tracking-widest font-bold group-hover:text-vy-white transition-colors">

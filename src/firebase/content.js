@@ -1,6 +1,6 @@
 import { db, storage } from './config';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 /**
  * Get the current banner configuration.
@@ -73,11 +73,25 @@ export const uploadBanner = async (file) => {
 };
 
 /**
- * Upload music file to Storage.
+ * Upload music file to Storage with progress.
  */
-export const uploadMusic = async (file) => {
-  const storageRef = ref(storage, `audio/${Date.now()}_${file.name}`);
-  const snap = await uploadBytes(storageRef, file);
-  return getDownloadURL(snap.ref);
+export const uploadMusic = (file, onProgress) => {
+  return new Promise((resolve, reject) => {
+    const storageRef = ref(storage, `audio/${Date.now()}_${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => {
+        const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        if (onProgress) onProgress(pct);
+      },
+      reject,
+      async () => {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        resolve(url);
+      }
+    );
+  });
 };
 
