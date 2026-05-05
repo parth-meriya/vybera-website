@@ -206,16 +206,31 @@ const Customize = () => {
   const [paymentState, setPaymentState] = useState('idle');
   const [step, setStep] = useState(1); 
 
-  // Settings from Firestore
   const [prices, setPrices] = useState({ Front: 700, Back: 700, Both: 900 });
   const [sizes, setSizes]   = useState(['XS', 'S', 'M', 'L', 'XL', 'XXL']);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   useEffect(() => {
-    getCustomizeSettings().then(s => {
-      if (s && s.prices) setPrices(s.prices);
-      if (s && s.sizes) setSizes(s.sizes);
-    });
+    getCustomizeSettings()
+      .then(s => {
+        if (s && s.prices) setPrices(s.prices);
+        if (s && s.sizes) setSizes(s.sizes);
+      })
+      .catch(err => {
+        console.error('Failed to load studio settings:', err);
+      })
+      .finally(() => {
+        setSettingsLoading(false);
+      });
   }, []);
+
+  if (settingsLoading) {
+    return (
+      <div className="min-h-screen bg-vy-black flex items-center justify-center">
+        <Loader2 className="animate-spin text-vy-accent" size={32} />
+      </div>
+    );
+  }
 
   const basePrice     = prices[position] || 700;
   const finalPrice    = Math.max(0, basePrice - discount);
