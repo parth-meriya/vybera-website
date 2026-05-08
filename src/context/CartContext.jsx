@@ -14,7 +14,6 @@ export const CartProvider = ({ children }) => {
     }
   });
   const [coupon, setCoupon] = useState(null);
-  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
@@ -100,22 +99,34 @@ export const CartProvider = ({ children }) => {
     localStorage.removeItem(CART_KEY);
   };
 
-  const applyCoupon = (couponData, discountAmount) => {
+  const applyCoupon = (couponData) => {
     setCoupon(couponData);
-    setDiscount(discountAmount);
   };
 
   const removeCoupon = () => {
     setCoupon(null);
-    setDiscount(0);
   };
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   
-  let validDiscount = discount;
-  if (coupon && coupon.minOrder && subtotal < coupon.minOrder) {
-    validDiscount = 0; // Automatically negate discount if subtotal drops below minOrder
+  // Recalculate discount dynamically
+  let validDiscount = 0;
+  if (coupon) {
+    // 1. Check min order
+    if (!coupon.minOrder || subtotal >= coupon.minOrder) {
+      // 2. Calculate by type
+      if (coupon.type === 'percentage') {
+        validDiscount = (subtotal * coupon.value) / 100;
+        if (coupon.maxDiscount) {
+          validDiscount = Math.min(validDiscount, coupon.maxDiscount);
+        }
+      } else {
+        validDiscount = coupon.value;
+      }
+    }
   }
+
+  validDiscount = Math.round(validDiscount);
 
   const total = Math.max(subtotal - validDiscount, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);

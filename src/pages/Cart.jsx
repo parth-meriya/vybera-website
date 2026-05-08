@@ -28,7 +28,7 @@ const Cart = () => {
     try {
       const result = await validateCoupon(code, subtotal);
       if (result.valid) {
-        applyCoupon(result.coupon, result.discount);
+        applyCoupon(result.coupon);
         setCouponCode('');
         toast.success(result.message, { className: 'toast-vybera' });
       } else {

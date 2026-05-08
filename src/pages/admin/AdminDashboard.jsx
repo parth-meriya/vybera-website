@@ -24,7 +24,7 @@ const StatCard = ({ icon: Icon, label, value, sub, color }) => (
   </motion.div>
 );
 
-const STATUS_OPTIONS = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
+const STATUS_OPTIONS = ['pending', 'shipped', 'delivered', 'cancelled'];
 
 const AdminDashboard = () => {
   const [products, setProducts] = useState([]);
@@ -53,10 +53,10 @@ const AdminDashboard = () => {
   };
 
   const statusClass = {
-    Pending: 'badge-pending',
-    Shipped: 'badge-shipped',
-    Delivered: 'badge-delivered',
-    Cancelled: 'badge-cancelled',
+    pending: 'badge-pending',
+    shipped: 'badge-shipped',
+    delivered: 'badge-delivered',
+    cancelled: 'badge-cancelled',
   };
 
   if (loading) {
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={Package} label="Products" value={products.length} color="text-blue-400" />
-        <StatCard icon={ShoppingCart} label="Orders" value={orders.length} sub={`${orders.filter(o=>o.status==='Pending').length} pending`} color="text-yellow-400" />
+        <StatCard icon={ShoppingCart} label="Orders" value={orders.length} sub={`${orders.filter(o=>(o.status?.toLowerCase() || 'pending') === 'pending').length} pending`} color="text-yellow-400" />
         <StatCard icon={Users} label="Users" value={users.length} color="text-green-400" />
         <StatCard icon={DollarSign} label="Revenue" value={`₹${revenue.toLocaleString()}`} color="text-purple-400" />
       </div>
@@ -112,11 +112,11 @@ const AdminDashboard = () => {
                     <td className="py-3 pr-4 text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</td>
                     <td className="py-3 pr-4">
                       <select
-                        value={order.status}
+                        value={order.status?.toLowerCase() || 'pending'}
                         onChange={e => handleStatusChange(order.id, e.target.value)}
-                        className={`text-xs bg-transparent border-0 outline-none cursor-pointer ${statusClass[order.status] || 'badge-pending'}`}
+                        className={`text-xs bg-transparent border-0 outline-none cursor-pointer ${statusClass[order.status?.toLowerCase() || 'pending']}`}
                       >
-                        {STATUS_OPTIONS.map(s => <option key={s} value={s} className="bg-vy-dark text-vy-white">{s}</option>)}
+                        {STATUS_OPTIONS.map(s => <option key={s} value={s} className="bg-vy-dark text-vy-white uppercase">{s}</option>)}
                       </select>
                     </td>
                     <td className="py-3 text-vy-grey text-xs">
