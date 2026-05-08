@@ -178,9 +178,9 @@ const Customize = () => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [step, setStep] = useState(1); // 1: Fit, 2: Design, 3: Review
   const { addItem } = useCart();
-  const [prices, setPrices] = useState(() => {
+  const [settings, setSettings] = useState(() => {
     const cached = localStorage.getItem('vy_customize_settings');
-    return cached ? JSON.parse(cached).prices : { Front: 700, Back: 700, Both: 900 };
+    return cached ? JSON.parse(cached) : null;
   });
   const [sizes, setSizes]   = useState(() => {
     const cached = localStorage.getItem('vy_customize_settings');
@@ -193,7 +193,7 @@ const Customize = () => {
   useEffect(() => {
     getCustomizeSettings()
       .then(s => {
-        if (s && s.prices) setPrices(s.prices);
+        if (s) setSettings(s);
         if (s && s.sizes) setSizes(s.sizes);
       })
       .catch(err => {
@@ -212,9 +212,9 @@ const Customize = () => {
     );
   }
 
-  const safeOversize = prices?.oversizePrices || { Front: 700, Back: 700, Both: 900 };
-  const safeRegular   = prices?.regularPrices   || { Front: 600, Back: 600, Both: 800 };
-  const safeSizes     = prices?.sizes           || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const safeOversize = settings?.oversizePrices || { Front: 700, Back: 700, Both: 900 };
+  const safeRegular  = settings?.regularPrices  || { Front: 600, Back: 600, Both: 800 };
+  const safeSizes    = settings?.sizes          || sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   const basePrice     = fit === 'Oversize' ? (safeOversize[position] || 700) : (safeRegular[position] || 600);
   const finalPrice    = Math.max(0, basePrice - discount);
