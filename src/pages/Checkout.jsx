@@ -5,6 +5,7 @@ import { ShoppingBag, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder, updateOrderPayment } from '../firebase/orders';
+import { getUserProfile, updateUserProfile } from '../firebase/users';
 import { openRazorpay } from '../utils/razorpay';
 import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
 import toast from 'react-hot-toast';
@@ -125,7 +126,23 @@ const Checkout = () => {
     state: '',
     pincode: '',
   });
+  const [saveAddress, setSaveAddress] = useState(true);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (user) {
+      getUserProfile(user.uid).then(profile => {
+        if (profile && profile.savedAddress) {
+          setForm(f => ({
+            ...f,
+            ...profile.savedAddress,
+            name: f.name || profile.savedAddress.name,
+            email: f.email || profile.savedAddress.email
+          }));
+        }
+      });
+    }
+  }, [user]);
 
   const onChange = e => {
     const { name, value } = e.target;
@@ -147,7 +164,7 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!validate()) {
       toast.error('Please fix the errors below.', { className: 'toast-vybera' });
       return;
@@ -157,6 +174,11 @@ const Checkout = () => {
       navigate('/login');
       return;
     }
+
+    if (saveAddress) {
+      await updateUserProfile(user.uid, { savedAddress: form });
+    }
+
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -391,6 +413,23 @@ const Checkout = () => {
                     <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">State *</label>
                     <input name="state" value={form.state} onChange={onChange} className={`vy-input ${errors.state ? 'border-red-500/60' : ''}`} placeholder="Maharashtra" />
                     {errors.state && <p className="text-red-400 text-xs mt-1">{errors.state}</p>}
+                  </div>
+
+                  <div className="md:col-span-2 pt-2">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input 
+                          type="checkbox" 
+                          checked={saveAddress}
+                          onChange={(e) => setSaveAddress(e.target.checked)}
+                          className="w-5 h-5 appearance-none border border-vy-border bg-vy-black rounded-none checked:bg-vy-white transition-all cursor-pointer"
+                        />
+                        {saveAddress && <CheckCircle size={12} className="absolute text-vy-black pointer-events-none" />}
+                      </div>
+                      <span className="text-vy-grey text-[10px] uppercase tracking-widest group-hover:text-vy-white transition-colors">
+                        Save this address for future purchases
+                      </span>
+                    </label>
                   </div>
                 </div>
 

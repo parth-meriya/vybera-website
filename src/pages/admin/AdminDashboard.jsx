@@ -44,7 +44,7 @@ const AdminDashboard = () => {
   }, []);
 
   const revenue = orders
-    .filter(o => o.status !== 'Cancelled')
+    .filter(o => o.status !== 'Cancelled' && o.status !== 'Pending')
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
   const handleStatusChange = async (orderId, status) => {

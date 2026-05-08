@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { listenToAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
-import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown } from 'lucide-react';
+import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown, MessageCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -109,6 +109,17 @@ const AdminOrders = () => {
     await updateOrderTracking(id, status, trackingInputs[id]);
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
     toast.success('Status updated', { className: 'toast-vybera' });
+  };
+
+  const handleMessageCustomer = (order) => {
+    const phone = order.address?.phone || '';
+    const name = order.address?.name || '';
+    const orderId = order.id.slice(0, 8);
+    const msg = `Hi ${name}, this is VYBERA. We noticed you were interested in some items but didn't complete your order (ID: ${orderId}). Would you like any help with your purchase?`;
+    const cleanPhone = phone.replace(/\D/g, '');
+    const finalPhone = cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone;
+    const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
   };
 
   const handleTrackingSave = async (order) => {
@@ -350,6 +361,15 @@ const AdminOrders = () => {
                             </div>
                             {order.paymentId && (
                               <p className="text-vy-grey text-xs mt-3">Payment ID: <span className="font-mono text-vy-light">{order.paymentId}</span></p>
+                            )}
+                            
+                            {order.status === 'pending' && (
+                              <button 
+                                onClick={() => handleMessageCustomer(order)}
+                                className="mt-6 w-full py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
+                              >
+                                <MessageCircle size={14} /> Message Customer
+                              </button>
                             )}
                           </div>
 
