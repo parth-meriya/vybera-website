@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Paintbrush } from 'lucide-react';
+import { ShoppingBag, Package, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getOrdersByUser } from '../firebase/orders';
-import { getCustomOrdersByUser } from '../firebase/customOrders';
 import toast from 'react-hot-toast';
 
 const MyOrders = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
-  const [customOrders, setCustomOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('regular'); // 'regular' | 'custom'
 
   useEffect(() => {
     if (!user) {
@@ -24,12 +21,8 @@ const MyOrders = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [o, co] = await Promise.all([
-          getOrdersByUser(user.uid),
-          getCustomOrdersByUser(user.uid)
-        ]);
+        const o = await getOrdersByUser(user.uid);
         setOrders(o);
-        setCustomOrders(co);
       } catch (err) {
         toast.error('Failed to load orders.', { className: 'toast-vybera' });
       } finally {
@@ -50,110 +43,88 @@ const MyOrders = () => {
 
   const getStatusColor = (status) => {
     switch(status?.toLowerCase()) {
-      case 'cancelled':
-      case 'rejected': return 'text-red-400 border-red-500/30 bg-red-500/10';
+      case 'cancelled': return 'text-red-400 border-red-500/30 bg-red-500/10';
       case 'shipped': return 'text-blue-400 border-blue-500/30 bg-blue-500/10';
       case 'out_for_delivery':
-      case 'delivered':
-      case 'approved': return 'text-green-400 border-green-500/30 bg-green-500/10';
+      case 'delivered': return 'text-green-400 border-green-500/30 bg-green-500/10';
       case 'processing': return 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10';
-      default: return 'text-vy-white border-vy-white/30 bg-vy-white/10'; // confirmed
+      default: return 'text-vy-white border-vy-white/30 bg-vy-white/10'; // confirmed/pending
     }
   };
 
   return (
     <div className="min-h-screen bg-vy-black pt-24 pb-16">
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
-          <h1 className="font-display font-bold text-3xl tracking-wider text-vy-white mb-6">
+      <div className="max-w-screen-lg mx-auto px-6 md:px-12 py-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12 text-center md:text-left">
+          <h1 className="font-display font-bold text-4xl tracking-wider text-vy-white mb-2">
             My Orders
           </h1>
-          <div className="flex gap-4 border-b border-vy-border pb-4">
-            <button
-              onClick={() => setActiveTab('regular')}
-              className={`flex items-center gap-2 px-4 py-2 border transition-colors ${
-                activeTab === 'regular' ? 'bg-vy-white text-vy-black border-vy-white' : 'bg-transparent text-vy-grey border-vy-border hover:border-vy-grey'
-              }`}
-            >
-              <ShoppingBag size={14} /> Regular Shop
-            </button>
-            <button
-              onClick={() => setActiveTab('custom')}
-              className={`flex items-center gap-2 px-4 py-2 border transition-colors ${
-                activeTab === 'custom' ? 'bg-vy-white text-vy-black border-vy-white' : 'bg-transparent text-vy-grey border-vy-border hover:border-vy-grey'
-              }`}
-            >
-              <Paintbrush size={14} /> Custom Orders
-            </button>
-          </div>
+          <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Track your journey with VYBERA</p>
         </motion.div>
 
-        {activeTab === 'regular' ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            {orders.length === 0 ? (
-              <div className="text-center p-12 bg-vy-card border border-vy-border">
-                <p className="text-vy-grey tracking-widest text-sm uppercase">You haven't placed any orders yet.</p>
-              </div>
-            ) : (
-              orders.map(order => (
-                <div key={order.id} className="bg-vy-card border border-vy-border p-6 flex flex-col md:flex-row gap-6 md:items-start justify-between">
-                  <div className="space-y-2">
-                    <p className="text-vy-white font-semibold flex flex-wrap gap-2 items-center">
-                      Order ID: <span className="font-mono text-xs">{order.id}</span>
-                    </p>
-                    <p className="text-vy-grey text-xs">Placed on: {order.createdAt?.toDate?.().toLocaleDateString() || 'Recently'}</p>
-                    <p className="text-vy-grey text-xs leading-relaxed max-w-lg">Items: {order.products?.map(p => `${p.name}${p.selectedColor ? ` (${p.selectedColor})` : ''} (x${p.quantity})`).join(', ')}</p>
-                    <p className="text-vy-white font-medium mt-2 block tracking-wider">Total: ₹{order.total?.toLocaleString()}</p>
-                  </div>
-                  <div className="md:text-right flex flex-col items-end gap-3">
-                    <span className={`inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(order.status)}`}>
-                      {order.status?.replace(/_/g, ' ') || 'Confirmed'}
-                    </span>
-                    <Link to={`/track-order/${order.id}`} className="btn-outline px-4 py-2 text-[10px]">
-                      Track Order
-                    </Link>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+          {orders.length === 0 ? (
+            <div className="text-center py-24 bg-vy-card border border-vy-border border-dashed">
+              <ShoppingBag size={48} className="text-vy-border mx-auto mb-4 opacity-50" />
+              <p className="text-vy-grey tracking-widest text-sm uppercase">You haven't placed any orders yet.</p>
+              <Link to="/shop" className="btn-primary mt-6 inline-block">Start Shopping</Link>
+            </div>
+          ) : (
+            orders.map(order => (
+              <div key={order.id} className="bg-vy-card border border-vy-border hover:border-vy-grey transition-all group overflow-hidden">
+                <div className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
+                    <div className="space-y-4 flex-1">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="font-mono text-[10px] text-vy-border uppercase tracking-widest bg-vy-border/10 px-2 py-1 rounded">#{order.id.slice(0, 12)}</span>
+                        <span className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest border ${getStatusColor(order.status)}`}>
+                          {order.status?.replace(/_/g, ' ') || 'Confirmed'}
+                        </span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-4">
+                        {order.products?.map((p, i) => (
+                          <div key={i} className="flex gap-4 items-center">
+                            <div className="relative w-12 h-16 bg-vy-dark border border-vy-border overflow-hidden shrink-0">
+                              <img src={p.image || 'https://placehold.co/60x80/141414/888888?text=VY'} alt={p.name} className="w-full h-full object-cover" />
+                              {p.isCustom && <div className="absolute top-0 right-0 bg-vy-accent text-vy-black text-[7px] font-bold px-1 py-0.5">CUSTOM</div>}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-vy-white text-xs font-medium truncate">{p.name}</p>
+                              <p className="text-vy-grey text-[10px] uppercase tracking-wider">
+                                {p.size} × {p.quantity} {p.fit ? `| ${p.fit}` : ''}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-6 pt-2 border-t border-vy-border/30">
+                         <div>
+                            <p className="text-vy-grey text-[9px] uppercase tracking-widest mb-1">Ordered On</p>
+                            <p className="text-vy-white text-xs">{order.createdAt?.toDate?.().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) || 'Recently'}</p>
+                         </div>
+                         <div>
+                            <p className="text-vy-grey text-[9px] uppercase tracking-widest mb-1">Total Amount</p>
+                            <p className="text-vy-white text-xs font-bold">₹{order.total?.toLocaleString()}</p>
+                         </div>
+                      </div>
+                    </div>
+
+                    <div className="w-full md:w-auto self-stretch flex items-end">
+                      <Link 
+                        to={`/track-order/${order.id}`} 
+                        className="w-full md:w-auto bg-vy-white text-vy-black px-6 py-3 text-[10px] font-bold tracking-widest uppercase hover:bg-vy-accent transition-all flex items-center justify-center gap-2 group"
+                      >
+                        Track Order <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              ))
-            )}
-          </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            {customOrders.length === 0 ? (
-              <div className="text-center p-12 bg-vy-card border border-vy-border">
-                <p className="text-vy-grey tracking-widest text-sm uppercase">You haven't requested any custom designs.</p>
               </div>
-            ) : (
-              customOrders.map(order => (
-                <div key={order.id} className="bg-vy-card border border-vy-border p-6 flex flex-col md:flex-row gap-6 md:items-start justify-between">
-                  <div className="flex gap-4">
-                    <div className="flex gap-2">
-                      {order.imageUrls?.map((url, i) => (
-                        <div key={i} className="w-16 h-20 bg-vy-dark border border-vy-border flex-shrink-0">
-                          <img src={url} alt="Custom Design" className="w-full h-full object-cover p-1 opacity-75" />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-vy-white font-semibold">Custom Design Order</p>
-                      <p className="text-vy-grey text-xs mb-1">Date: {order.createdAt?.toDate?.().toLocaleDateString() || 'Recently'}</p>
-                      <p className="text-vy-grey text-[10px] uppercase tracking-widest">Size: {order.size} | Color: {order.color} | Pos: {order.position}</p>
-                      <p className="text-vy-white font-medium mt-3 tracking-wider">Total: ₹{order.total?.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  <div className="md:text-right flex flex-col items-end gap-3">
-                    <span className={`inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(order.status)}`}>
-                      {order.status?.replace(/_/g, ' ') || 'Confirmed'}
-                    </span>
-                    <Link to={`/track-order/${order.id}`} className="btn-outline px-4 py-2 text-[10px]">
-                      Track Order
-                    </Link>
-                  </div>
-                </div>
-              ))
-            )}
-          </motion.div>
-        )}
+            ))
+          )}
+        </motion.div>
       </div>
     </div>
   );

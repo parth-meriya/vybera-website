@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Package, ShoppingCart, Users, DollarSign, TrendingUp, Plus } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, TrendingUp, Plus, Copy, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '../../firebase/products';
 import { getAllOrders, updateOrderStatus } from '../../firebase/orders';
@@ -44,8 +44,26 @@ const AdminDashboard = () => {
   }, []);
 
   const revenue = orders
-    .filter(o => o.status !== 'Cancelled' && o.status !== 'Pending')
+    .filter(o => o.status !== 'cancelled' && o.status !== 'pending')
     .reduce((sum, o) => sum + (o.total || 0), 0);
+
+  const bestSellers = Object.values(
+    orders
+      .filter(o => o.status !== 'cancelled')
+      .flatMap(o => o.products || [])
+      .reduce((acc, p) => {
+        if (!acc[p.id]) acc[p.id] = { name: p.name, qty: 0, image: p.image };
+        acc[p.id].qty += p.quantity;
+        return acc;
+      }, {})
+  ).sort((a, b) => b.qty - a.qty).slice(0, 5);
+
+  const [copiedId, setCopiedId] = useState(null);
+  const copyToClipboard = (id) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const handleStatusChange = async (orderId, status) => {
     await updateOrderStatus(orderId, status);
@@ -106,26 +124,66 @@ const AdminDashboard = () => {
               </thead>
               <tbody>
                 {orders.slice(0, 6).map(order => (
-                  <tr key={order.id} className="border-b border-vy-border/50">
-                    <td className="py-3 pr-4 text-vy-grey text-xs font-mono">{order.id.slice(0, 8)}...</td>
+                  <tr key={order.id} className="border-b border-vy-border/50 group">
+                    <td className="py-3 pr-4 text-vy-grey text-xs font-mono flex items-center gap-2">
+                      {order.id.slice(0, 8)}...
+                      <button onClick={() => copyToClipboard(order.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-vy-border hover:text-vy-white">
+                        {copiedId === order.id ? <Check size={10} /> : <Copy size={10} />}
+                      </button>
+                    </td>
                     <td className="py-3 pr-4 text-vy-white text-xs">{order.address?.name || order.userEmail}</td>
                     <td className="py-3 pr-4 text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</td>
                     <td className="py-3 pr-4">
                       <select
                         value={order.status?.toLowerCase() || 'pending'}
                         onChange={e => handleStatusChange(order.id, e.target.value)}
-                        className={`text-xs bg-transparent border-0 outline-none cursor-pointer ${statusClass[order.status?.toLowerCase() || 'pending']}`}
+                        className={`text-[10px] uppercase font-bold tracking-widest bg-transparent border-0 outline-none cursor-pointer ${statusClass[order.status?.toLowerCase() || 'pending']}`}
                       >
                         {STATUS_OPTIONS.map(s => <option key={s} value={s} className="bg-vy-dark text-vy-white uppercase">{s}</option>)}
                       </select>
                     </td>
                     <td className="py-3 text-vy-grey text-xs">
-                      {order.createdAt?.toDate?.()?.toLocaleDateString() || '—'}
+                      {order.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Best Sellers Side Panel */}
+        <div className="bg-vy-card border border-vy-border p-6">
+          <div className="flex items-center gap-2 mb-6">
+            <TrendingUp size={16} className="text-vy-accent" />
+            <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm">Best Sellers</h2>
+          </div>
+          
+          <div className="space-y-6">
+            {bestSellers.length === 0 ? (
+              <p className="text-vy-grey text-xs">No data yet.</p>
+            ) : (
+              bestSellers.map((item, i) => (
+                <div key={i} className="flex items-center gap-4 group">
+                  <div className="relative w-10 h-12 bg-vy-dark border border-vy-border overflow-hidden shrink-0">
+                    <img src={item.image || 'https://placehold.co/40x50/141414/888888?text=VY'} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-vy-white text-[10px] font-medium truncate uppercase tracking-wider">{item.name}</p>
+                    <p className="text-vy-grey text-[9px] uppercase tracking-[0.2em]">{item.qty} Sales</p>
+                  </div>
+                  <div className={`w-1 h-8 ${i === 0 ? 'bg-vy-accent' : 'bg-vy-border'} transition-all`} />
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="mt-10 p-4 border border-vy-border bg-vy-black/20">
+            <p className="text-vy-grey text-[9px] uppercase tracking-[0.2em] mb-2 font-bold">Quick Insights</p>
+            <p className="text-vy-white text-[11px] leading-relaxed">
+              Your average order value is <span className="text-vy-accent font-bold">₹{Math.round(revenue / (orders.filter(o=>o.status!=='cancelled').length || 1)).toLocaleString()}</span>. 
+              {bestSellers[0] && ` ${bestSellers[0].name} is currently your most popular drop.`}
+            </p>
           </div>
         </div>
       </div>
