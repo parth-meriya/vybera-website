@@ -305,7 +305,7 @@ const AdminOrders = () => {
                                     <p className="text-vy-grey text-xs">Size: {p.size} × {p.quantity}</p>
                                     {p.isCustom && (
                                       <div className="mt-1 space-y-1">
-                                        <p className="text-vy-accent text-[10px] uppercase tracking-widest">Position: {p.position}</p>
+                                        <p className="text-vy-accent text-[10px] uppercase tracking-widest">Fit: {p.fit || 'Oversize'} | Position: {p.position}</p>
                                         {p.description && <p className="text-vy-grey text-[10px] leading-relaxed italic">"{p.description}"</p>}
                                         {p.imageUrls && p.imageUrls.length > 0 && (
                                           <div className="flex gap-1 mt-2">

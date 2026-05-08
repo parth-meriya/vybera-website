@@ -160,7 +160,7 @@ const Customize = () => {
   const [imageUrls, setImageUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
-
+  const [fit, setFit]             = useState('Oversize'); // 'Oversize' or 'Regular'
   const [size, setSize]           = useState('M');
   const [color, setColor]         = useState('');
   const [position, setPosition]   = useState('Both');
@@ -176,7 +176,7 @@ const Customize = () => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
   const [addingToCart, setAddingToCart] = useState(false);
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1); // 1: Fit, 2: Design, 3: Review
   const { addItem } = useCart();
   const [prices, setPrices] = useState(() => {
     const cached = localStorage.getItem('vy_customize_settings');
@@ -215,7 +215,7 @@ const Customize = () => {
   const safePrices = prices || { Front: 700, Back: 700, Both: 900 };
   const safeSizes  = sizes  || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-  const basePrice     = safePrices[position] || 700;
+  const basePrice     = (safePrices[position] || 700) - (fit === 'Regular' ? 100 : 0);
   const finalPrice    = Math.max(0, basePrice - discount);
 
   const handlePositionChange = (pos) => {
@@ -324,7 +324,7 @@ const Customize = () => {
       toast.error('Image uploads did not complete securely. Please try again.', { className: 'toast-vybera' });
       return;
     }
-    setStep(2);
+    setStep(3);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -334,10 +334,11 @@ const Customize = () => {
     
     const customItem = {
       id: `custom_${Date.now()}`,
-      name: `Custom Tee (${position} Print)`,
+      name: `${fit} Custom Tee (${position} Print)`,
       price: basePrice,
       size,
       color,
+      fit,
       position,
       imageUrls,
       description: description.trim(),
@@ -391,10 +392,12 @@ const Customize = () => {
         </motion.div>
 
         {/* Step indicator */}
-        <div className="flex items-center gap-4 mb-10">
-          <StepLabel n={1} label="Design" active={step === 1} done={step > 1} />
-          <div className={`flex-1 max-w-12 h-px transition-colors duration-500 ${step > 1 ? 'bg-vy-white' : 'bg-vy-border'}`} />
-          <StepLabel n={2} label="Review" active={step === 2} done={addingToCart} />
+        <div className="flex items-center gap-4 mb-10 overflow-x-auto pb-2 scrollbar-hide">
+          <StepLabel n={1} label="Fit" active={step === 1} done={step > 1} />
+          <div className={`flex-1 min-w-4 h-px transition-colors duration-500 ${step > 1 ? 'bg-vy-white' : 'bg-vy-border'}`} />
+          <StepLabel n={2} label="Design" active={step === 2} done={step > 2} />
+          <div className={`flex-1 min-w-4 h-px transition-colors duration-500 ${step > 2 ? 'bg-vy-white' : 'bg-vy-border'}`} />
+          <StepLabel n={3} label="Review" active={step === 3} done={addingToCart} />
         </div>
 
         {/* Payment processing overlay */}
@@ -413,8 +416,65 @@ const Customize = () => {
         </AnimatePresence>
 
         <AnimatePresence mode="wait">
-          {/* ── Step 1: Design Options ────────────────────── */}
+          {/* ── Step 1: Fit Selection ────────────────────── */}
           {step === 1 && (
+            <motion.div
+              key="step0"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-4xl mx-auto"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { 
+                    id: 'Oversize', 
+                    title: 'Oversized Fit', 
+                    desc: 'Drop shoulder, loose boxy fit, premium heavy-weight fabric.',
+                    price: 'Starting ₹700'
+                  },
+                  { 
+                    id: 'Regular', 
+                    title: 'Regular Fit', 
+                    desc: 'Standard comfort fit, classic silhouette, mid-weight cotton.',
+                    price: 'Starting ₹600'
+                  },
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => { setFit(item.id); setStep(2); }}
+                    className={`p-8 border text-left transition-all duration-500 group relative overflow-hidden ${
+                      fit === item.id 
+                        ? 'border-vy-white bg-vy-white/5' 
+                        : 'border-vy-border hover:border-vy-grey bg-vy-card/30'
+                    }`}
+                  >
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <Shirt size={32} className={fit === item.id ? 'text-vy-accent' : 'text-vy-grey group-hover:text-vy-white'} />
+                        <span className="text-[10px] tracking-widest uppercase font-bold text-vy-border">{item.price}</span>
+                      </div>
+                      <h3 className="text-vy-white text-xl font-bold tracking-wider mb-2 uppercase">{item.title}</h3>
+                      <p className="text-vy-grey text-xs leading-relaxed max-w-[200px]">{item.desc}</p>
+                      
+                      <div className={`mt-8 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${
+                        fit === item.id ? 'text-vy-accent translate-x-2' : 'text-vy-grey group-hover:text-vy-white translate-x-0'
+                      }`}>
+                        Select Fit <ChevronRight size={12} />
+                      </div>
+                    </div>
+                    {/* Visual hint */}
+                    <div className={`absolute -right-8 -bottom-8 opacity-[0.03] transition-transform duration-700 group-hover:scale-110 ${fit === item.id ? 'scale-110' : 'scale-100'}`}>
+                      <Shirt size={200} />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step 2: Design Options ────────────────────── */}
+          {step === 2 && (
             <motion.div
               key="step1"
               initial={{ opacity: 0, x: 20 }}
@@ -423,6 +483,22 @@ const Customize = () => {
               className="max-w-2xl mx-auto"
             >
               <div className="space-y-8">
+                {/* Fit summary */}
+                <div className="flex items-center justify-between p-4 border border-vy-border bg-vy-card/50">
+                  <div className="flex items-center gap-3">
+                    <Shirt size={18} className="text-vy-accent" />
+                    <div>
+                      <p className="text-vy-grey text-[10px] tracking-widest uppercase font-bold">Selected Fit</p>
+                      <p className="text-vy-white text-xs font-bold uppercase">{fit} Fit</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setStep(1)}
+                    className="text-vy-grey text-[10px] tracking-widest uppercase hover:text-vy-white transition-colors"
+                  >
+                    Change
+                  </button>
+                </div>
 
                 {/* Upload */}
                 <UploadZone
@@ -533,8 +609,8 @@ const Customize = () => {
             </motion.div>
           )}
 
-          {/* ── Step 2: Review & Pay ──────────────────────── */}
-          {step === 2 && (
+          {/* ── Step 3: Review & Pay ──────────────────────── */}
+          {step === 3 && (
             <motion.div
               key="step2"
               initial={{ opacity: 0, x: 20 }}
@@ -550,7 +626,7 @@ const Customize = () => {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-vy-white text-sm font-semibold tracking-widest uppercase">Your Design</h2>
                     <button
-                      onClick={() => setStep(1)}
+                      onClick={() => setStep(2)}
                       className="text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors"
                     >
                       Edit
@@ -571,6 +647,7 @@ const Customize = () => {
                     )}
                     <div className="space-y-1.5">
                       {[
+                        ['Fit', fit],
                         ['Size', size],
                         ['Color', color],
                         ['Print Position', position],
@@ -613,6 +690,10 @@ const Customize = () => {
                     <div className="flex justify-between">
                       <span className="text-vy-grey">Position</span>
                       <span className="text-vy-white">{position}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-vy-grey">Fit</span>
+                      <span className="text-vy-white">{fit}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-vy-grey">T-Shirt Color</span>
