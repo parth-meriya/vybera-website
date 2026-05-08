@@ -44,7 +44,8 @@ export const getCustomizeSettings = async () => {
   }
 
   return {
-    prices: { Front: 700, Back: 700, Both: 900 },
+    oversizePrices: { Front: 700, Back: 700, Both: 900 },
+    regularPrices: { Front: 600, Back: 600, Both: 800 },
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
   };
 };

@@ -212,10 +212,11 @@ const Customize = () => {
     );
   }
 
-  const safePrices = prices || { Front: 700, Back: 700, Both: 900 };
-  const safeSizes  = sizes  || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const safeOversize = prices?.oversizePrices || { Front: 700, Back: 700, Both: 900 };
+  const safeRegular   = prices?.regularPrices   || { Front: 600, Back: 600, Both: 800 };
+  const safeSizes     = prices?.sizes           || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-  const basePrice     = (safePrices[position] || 700) - (fit === 'Regular' ? 100 : 0);
+  const basePrice     = fit === 'Oversize' ? (safeOversize[position] || 700) : (safeRegular[position] || 600);
   const finalPrice    = Math.max(0, basePrice - discount);
 
   const handlePositionChange = (pos) => {
@@ -559,7 +560,7 @@ const Customize = () => {
                       >
                         <span className="block">{pos}</span>
                         <span className={`text-xs font-normal mt-0.5 block ${position === pos ? 'text-vy-black/70' : 'text-vy-border'}`}>
-                          ₹{(prices[pos] || 0).toLocaleString()}
+                          ₹{(fit === 'Oversize' ? (safeOversize[pos] || 0) : (safeRegular[pos] || 0)).toLocaleString()}
                         </span>
                       </button>
                     ))}

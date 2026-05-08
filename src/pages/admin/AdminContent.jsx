@@ -356,30 +356,54 @@ const AdminContent = () => {
           {loading ? (
             <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
           ) : (
-            <div className="space-y-6">
-              {/* Prices */}
-              <div className="grid grid-cols-3 gap-3">
-                {Object.keys(customize.prices).map(pos => (
-                  <div key={pos}>
-                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">{pos} Price</label>
-                    <input 
-                      type="number"
-                      value={customize.prices[pos]} 
-                      onChange={e => setCustomize(c => ({ 
-                        ...c, 
-                        prices: { ...c.prices, [pos]: parseInt(e.target.value) || 0 } 
-                      }))}
-                      className="vy-input text-xs" 
-                    />
-                  </div>
-                ))}
+            <div className="space-y-8">
+              {/* Oversize Prices */}
+              <div>
+                <label className="text-vy-accent text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-vy-accent pl-2">Oversize Fit Prices</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {Object.keys(customize.oversizePrices || { Front: 700, Back: 700, Both: 900 }).map(pos => (
+                    <div key={pos}>
+                      <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">{pos}</label>
+                      <input 
+                        type="number"
+                        value={customize.oversizePrices?.[pos] || 0} 
+                        onChange={e => setCustomize(c => ({ 
+                          ...c, 
+                          oversizePrices: { ...(c.oversizePrices || { Front: 700, Back: 700, Both: 900 }), [pos]: parseInt(e.target.value) || 0 } 
+                        }))}
+                        className="vy-input text-xs" 
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Regular Prices */}
+              <div>
+                <label className="text-vy-white text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-vy-white pl-2">Regular Fit Prices</label>
+                <div className="grid grid-cols-3 gap-3">
+                  {Object.keys(customize.regularPrices || { Front: 600, Back: 600, Both: 800 }).map(pos => (
+                    <div key={pos}>
+                      <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">{pos}</label>
+                      <input 
+                        type="number"
+                        value={customize.regularPrices?.[pos] || 0} 
+                        onChange={e => setCustomize(c => ({ 
+                          ...c, 
+                          regularPrices: { ...(c.regularPrices || { Front: 600, Back: 600, Both: 800 }), [pos]: parseInt(e.target.value) || 0 } 
+                        }))}
+                        className="vy-input text-xs" 
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Sizes */}
               <div>
-                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-3">Available Sizes</label>
+                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-3">Available Sizes (Global)</label>
                 <div className="flex flex-wrap gap-2">
-                  {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                  {['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map(s => (
                     <button
                       key={s}
                       onClick={() => {
