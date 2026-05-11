@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { signIn, signInWithGoogle } from '../firebase/auth';
@@ -10,6 +10,8 @@ const Login = () => {
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const from = state?.from || '/';
 
   const onChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -19,7 +21,7 @@ const Login = () => {
     try {
       await signIn(form.email, form.password);
       toast.success('Welcome back.', { className: 'toast-vybera' });
-      navigate('/');
+      navigate(from);
     } catch (err) {
       toast.error(err.message.replace('Firebase: ', '').replace(/\(auth.*\)/, ''), { className: 'toast-vybera' });
     } finally {
@@ -32,7 +34,7 @@ const Login = () => {
     try {
       await signInWithGoogle();
       toast.success('Signed in with Google.', { className: 'toast-vybera' });
-      navigate('/');
+      navigate(from);
     } catch (err) {
       toast.error('Google sign-in failed.', { className: 'toast-vybera' });
     } finally {

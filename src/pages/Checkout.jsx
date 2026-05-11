@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -59,7 +59,7 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact =
     {/* Items */}
     <div className="space-y-3 mb-4 pb-4 border-b border-vy-border">
       {items.map(item => (
-        <div key={`${item.id}-${item.size}-${item.selectedColor}`} className="flex gap-3 items-center">
+        <div key={item.cartId || `${item.id}-${item.size}-${item.selectedColor}`} className="flex gap-3 items-center">
           <img
             src={item.image || PLACEHOLDER}
             alt={item.name}
@@ -70,6 +70,7 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact =
             <p className="text-vy-grey text-xs">
               Size: {item.size}
               {item.selectedColor && ` | Color: ${item.selectedColor}`}
+              {item.fit && ` | Fit: ${item.fit}`}
               {' '}× {item.quantity}
             </p>
           </div>
@@ -113,6 +114,8 @@ const Checkout = () => {
   const { items, coupon, discount, subtotal, total, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const from = state?.from || '/';
 
   const [step, setStep] = useState(1); // 1: Details, 2: Review, 3: Processing
   const [paymentState, setPaymentState] = useState('idle'); // idle | loading | success | failed
@@ -151,15 +154,17 @@ const Checkout = () => {
   };
 
   // ── Validation ───────────────────────────────────────────────
-  const validate = () => {
-    const newErrors = {};
+    const phoneDigits = form.phone?.replace(/\D/g, '');
+    const pincodeDigits = form.pincode?.replace(/\D/g, '');
+
     if (!form.name?.trim()) newErrors.name = 'Name is required';
     if (!form.email?.trim() || !/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Valid email required';
-    if (!form.phone?.trim() || !/^\d{10}$/.test(form.phone)) newErrors.phone = '10-digit phone required';
+    if (!phoneDigits || phoneDigits.length !== 10) newErrors.phone = '10-digit phone required';
     if (!form.address?.trim()) newErrors.address = 'Address is required';
     if (!form.city?.trim()) newErrors.city = 'City is required';
     if (!form.state?.trim()) newErrors.state = 'State is required';
-    if (!form.pincode?.trim() || !/^\d{6}$/.test(form.pincode)) newErrors.pincode = '6-digit pincode required';
+    if (!pincodeDigits || pincodeDigits.length !== 6) newErrors.pincode = '6-digit pincode required';
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -171,12 +176,16 @@ const Checkout = () => {
     }
     if (!user) {
       toast.error('Please sign in to continue.', { className: 'toast-vybera' });
-      navigate('/login');
+      navigate('/login', { state: { from: '/checkout' } });
       return;
     }
 
-    if (saveAddress) {
-      await updateUserProfile(user.uid, { savedAddress: form });
+    try {
+      if (saveAddress && user) {
+        await updateUserProfile(user.uid, { savedAddress: form });
+      }
+    } catch (err) {
+      console.error('Failed to save address:', err);
     }
 
     setStep(2);
@@ -215,6 +224,7 @@ const Checkout = () => {
           imageUrls: i.imageUrls || [],
           description: i.description || null,
           designStatus: i.designStatus || null,
+          fit: i.fit || null,
         })),
         address: { ...form },
         subtotal, discount, total,
