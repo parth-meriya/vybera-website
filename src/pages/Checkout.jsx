@@ -154,15 +154,25 @@ const Checkout = () => {
   };
 
   // ── Validation ───────────────────────────────────────────────
-    const phoneDigits = form.phone?.replace(/\D/g, '');
-    const pincodeDigits = form.pincode?.replace(/\D/g, '');
+  const validate = () => {
+    const newErrors = {};
+    const safeName = String(form.name || '');
+    const safeEmail = String(form.email || '');
+    const safePhone = String(form.phone || '');
+    const safeAddress = String(form.address || '');
+    const safeCity = String(form.city || '');
+    const safeState = String(form.state || '');
+    const safePincode = String(form.pincode || '');
 
-    if (!form.name?.trim()) newErrors.name = 'Name is required';
-    if (!form.email?.trim() || !/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Valid email required';
+    const phoneDigits = safePhone.replace(/\D/g, '');
+    const pincodeDigits = safePincode.replace(/\D/g, '');
+
+    if (!safeName.trim()) newErrors.name = 'Name is required';
+    if (!safeEmail.trim() || !/\S+@\S+\.\S+/.test(safeEmail)) newErrors.email = 'Valid email required';
     if (!phoneDigits || phoneDigits.length !== 10) newErrors.phone = '10-digit phone required';
-    if (!form.address?.trim()) newErrors.address = 'Address is required';
-    if (!form.city?.trim()) newErrors.city = 'City is required';
-    if (!form.state?.trim()) newErrors.state = 'State is required';
+    if (!safeAddress.trim()) newErrors.address = 'Address is required';
+    if (!safeCity.trim()) newErrors.city = 'City is required';
+    if (!safeState.trim()) newErrors.state = 'State is required';
     if (!pincodeDigits || pincodeDigits.length !== 6) newErrors.pincode = '6-digit pincode required';
     
     setErrors(newErrors);
