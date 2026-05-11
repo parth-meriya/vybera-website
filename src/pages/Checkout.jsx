@@ -116,6 +116,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const from = state?.from || '/';
+  const [apiHealth, setApiHealth] = useState('checking'); // checking | ok | error
 
   const [step, setStep] = useState(1); // 1: Details, 2: Review, 3: Processing
   const [paymentState, setPaymentState] = useState('idle'); // idle | loading | success | failed
@@ -146,6 +147,12 @@ const Checkout = () => {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then(r => r.ok ? setApiHealth('ok') : setApiHealth('error'))
+      .catch(() => setApiHealth('error'));
+  }, []);
 
   const onChange = e => {
     const { name, value } = e.target;
@@ -218,17 +225,16 @@ const Checkout = () => {
       // ─── STAGE 1: Create PENDING order first ───
       const orderData = {
         userId: user.uid,
-        userEmail: user.email,
+        userEmail: user.email || null,
         products: items.map(i => ({
-          id: i.id,
-          name: i.name,
-          price: i.price,
-          quantity: i.quantity,
-          size: i.size,
+          id: i.id || 'unknown',
+          name: i.name || 'Unknown Product',
+          price: i.price || 0,
+          quantity: i.quantity || 1,
+          size: i.size || 'N/A',
           image: i.image || '',
           isDrop: i.isDrop || false,
           selectedColor: i.selectedColor || null,
-          // Custom Item Fields
           isCustom: i.isCustom || false,
           position: i.position || null,
           imageUrls: i.imageUrls || [],
@@ -236,8 +242,18 @@ const Checkout = () => {
           designStatus: i.designStatus || null,
           fit: i.fit || null,
         })),
-        address: { ...form },
-        subtotal, discount, total,
+        address: {
+          name: form.name || '',
+          email: form.email || '',
+          phone: form.phone || '',
+          address: form.address || '',
+          city: form.city || '',
+          state: form.state || '',
+          pincode: form.pincode || '',
+        },
+        subtotal: subtotal || 0,
+        discount: discount || 0,
+        total: total || 0,
         couponCode: coupon?.code || null,
         status: 'pending',
         paymentStatus: 'unpaid',
@@ -584,11 +600,21 @@ const Checkout = () => {
                     </div>
                   </div>
 
+                  {apiHealth === 'error' && (
+                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+                      <AlertCircle size={14} className="text-red-400 shrink-0" />
+                      <p className="text-red-400 text-[10px] uppercase font-bold tracking-widest">
+                        Payment System Offline. Please refresh or try again later.
+                      </p>
+                    </div>
+                  )}
+
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handlePayment}
-                    className="btn-primary w-full flex items-center justify-center gap-3 text-sm py-4"
+                    disabled={apiHealth === 'error' || paymentState === 'loading'}
+                    className="btn-primary w-full flex items-center justify-center gap-3 text-sm py-4 disabled:opacity-50"
                   >
                     Pay ₹{total.toLocaleString()} with Razorpay
                   </motion.button>
