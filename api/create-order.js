@@ -42,6 +42,7 @@ const ALLOWED_ORIGINS = [
   'https://www.vybera.shop',
   'http://localhost:5173',
   'http://localhost:5174',
+  'https://project-vybera.vercel.app',
 ];
 
 export default async function handler(req, res) {
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
 
   // ── Origin Validation (production) ───────────────────────
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o));
+    const isAllowed = ALLOWED_ORIGINS.some(o => origin.startsWith(o)) || origin.endsWith('.vercel.app');
     if (!isAllowed && origin) {
       console.warn(`[Security] Blocked request from unauthorized origin: ${origin}`);
       return res.status(403).json({ error: 'Forbidden' });

@@ -613,7 +613,7 @@ const Checkout = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handlePayment}
-                    disabled={apiHealth === 'error' || paymentState === 'loading'}
+                    disabled={paymentState === 'loading'}
                     className="btn-primary w-full flex items-center justify-center gap-3 text-sm py-4 disabled:opacity-50"
                   >
                     Pay ₹{total.toLocaleString()} with Razorpay
