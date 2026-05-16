@@ -90,50 +90,69 @@ export const signIn = async (email, password) => {
 
 // ── Google OAuth (Secure) ─────────────────────────────────────
 export const signInWithGoogle = async () => {
-  const userCred = await signInWithPopup(auth, googleProvider);
-  const { user } = userCred;
+  // 1. Trigger the popup to get user credentials/email
+  const result = await signInWithPopup(auth, googleProvider);
+  const { user } = result;
 
+  // 2. Check existing Firestore record for this user
   const userRef = doc(db, 'users', user.uid);
   const snap = await getDoc(userRef);
 
-  if (!snap.exists()) {
-    // New Google user — create profile with 'user' role only
+  if (snap.exists()) {
+    const data = snap.data();
+    
+    // CASE 1: If account was originally 'email' but now has Google (via auto-link), block it
+    // This happens if an attacker created a password account first.
+    // Legitimate linking MUST happen through linkGoogleAccount() while signed in.
+    const providers = user.providerData.map(p => p.providerId);
+    if (data.provider === 'email' && providers.includes('password')) {
+      await signOut(auth);
+      const error = new Error('This email is already registered using password login. Please login using password first and then link Google account securely.');
+      error.code = 'custom/account-exists-with-password';
+      throw error;
+    }
+
+    // CASE 2 & 3: Already Google-only or properly linked — allow normally
+    await setDoc(userRef, {
+      ...data,
+      emailVerified: true,
+      lastLoginAt: serverTimestamp(),
+    }, { merge: true });
+  } else {
+    // New Google user (Case 2)
     await setDoc(userRef, {
       uid: user.uid,
       name: user.displayName,
       email: user.email,
-      role: 'user',         // Never trust client for role assignment
-      emailVerified: true,  // Google accounts are pre-verified
+      role: 'user',
+      emailVerified: true,
       provider: 'google',
       createdAt: serverTimestamp(),
     });
-  } else {
-    const existingData = snap.data();
-
-    // ── OAuth Account Takeover Prevention ─────────────────────────
-    // If the account existed but was NOT verified, and now Google logs in,
-    // we must invalidate the password provider because an attacker might have set it.
-    if (existingData.emailVerified === false) {
-      const hasPasswordProvider = user.providerData.some(p => p.providerId === 'password');
-      if (hasPasswordProvider) {
-        try {
-          await unlink(user, 'password');
-          console.warn('[Security] Unlinked password provider to prevent OAuth Account Takeover.');
-        } catch (unlinkErr) {
-          console.error('[Security] Failed to unlink password provider:', unlinkErr);
-        }
-      }
-    }
-
-    // Existing user — update emailVerified status but PRESERVE existing role
-    await setDoc(userRef, {
-      ...existingData,
-      emailVerified: true,
-      lastLoginAt: serverTimestamp(),
-    }, { merge: true });
   }
 
   return user;
+};
+
+// ── Secure Provider Linking (Case 3) ──────────────────────────
+export const linkGoogleAccount = async () => {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('You must be logged in to link accounts.');
+  
+  try {
+    await linkWithCredential(currentUser, googleProvider);
+    
+    // Update provider in Firestore
+    const userRef = doc(db, 'users', currentUser.uid);
+    await setDoc(userRef, { provider: 'google-linked' }, { merge: true });
+    
+    return currentUser;
+  } catch (error) {
+    if (error.code === 'auth/credential-already-in-use') {
+      throw new Error('This Google account is already linked to another user.');
+    }
+    throw error;
+  }
 };
 
 // ── Sign Out ──────────────────────────────────────────────────

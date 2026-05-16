@@ -212,6 +212,16 @@ body {
   font-size: 13px !important;
 }
 
+.toast-vybera-large {
+  background: #111111 !important;
+  color: #F2EFE6 !important;
+  border: 1px solid #55785F !important;
+  border-radius: 0 !important;
+  font-family: 'Inter', sans-serif !important;
+  padding: 16px !important;
+  max-width: 350px !important;
+}
+
 /* Fade page transition */
 .page-enter {
   opacity: 0;

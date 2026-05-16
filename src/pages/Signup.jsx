@@ -73,8 +73,34 @@ const Signup = () => {
       toast.success('Signed up with Google.', { className: 'toast-vybera' });
       navigate('/');
     } catch (err) {
-      if (err.code === 'auth/account-exists-with-different-credential') {
-        toast.error('An account already exists with this email. Please sign in instead.', { className: 'toast-vybera' });
+      if (err.code === 'custom/account-exists-with-password' || err.code === 'auth/account-exists-with-different-credential') {
+        toast((t) => (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium">
+              This email is already registered using password login. Please login using password first.
+            </p>
+            <div className="flex gap-2">
+              <Link
+                to="/login"
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1 bg-vy-white text-vy-black text-xs font-bold rounded"
+              >
+                Login with Password
+              </Link>
+              <Link
+                to="/forgot-password"
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1 border border-vy-white/20 text-vy-white text-xs font-bold rounded"
+              >
+                Forgot Password
+              </Link>
+            </div>
+          </div>
+        ), {
+          duration: 10000,
+          className: 'toast-vybera-large',
+          id: 'oauth-collision-warning-signup'
+        });
       } else {
         toast.error('Google sign-in failed. Please try again.', { className: 'toast-vybera' });
       }
