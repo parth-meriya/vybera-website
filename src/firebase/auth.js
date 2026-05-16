@@ -11,6 +11,7 @@ import {
   fetchSignInMethodsForEmail,
   EmailAuthProvider,
   linkWithCredential,
+  unlink,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config';
@@ -107,8 +108,24 @@ export const signInWithGoogle = async () => {
       createdAt: serverTimestamp(),
     });
   } else {
-    // Existing user — update emailVerified status but PRESERVE existing role
     const existingData = snap.data();
+
+    // ── OAuth Account Takeover Prevention ─────────────────────────
+    // If the account existed but was NOT verified, and now Google logs in,
+    // we must invalidate the password provider because an attacker might have set it.
+    if (existingData.emailVerified === false) {
+      const hasPasswordProvider = user.providerData.some(p => p.providerId === 'password');
+      if (hasPasswordProvider) {
+        try {
+          await unlink(user, 'password');
+          console.warn('[Security] Unlinked password provider to prevent OAuth Account Takeover.');
+        } catch (unlinkErr) {
+          console.error('[Security] Failed to unlink password provider:', unlinkErr);
+        }
+      }
+    }
+
+    // Existing user — update emailVerified status but PRESERVE existing role
     await setDoc(userRef, {
       ...existingData,
       emailVerified: true,
