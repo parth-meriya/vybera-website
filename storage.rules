@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════
+// VYBERA — Firebase Storage Security Rules (Production Hardened)
+// ═══════════════════════════════════════════════════════════════
+//
+// Security model:
+//  - Public reads are allowed (images/audio are public assets)
+//  - Public writes are BLOCKED
+//  - Authenticated users can upload customization images
+//  - Only admins can upload product images, banners, and audio
+//
+// Deploy: firebase deploy --only storage
+// ═══════════════════════════════════════════════════════════════
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Helper Functions ────────────────────────────────────────
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function hasAdminClaim() {
+      return isAuthed() && request.auth.token.admin == true;
+    }
+
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < 10 * 1024 * 1024; // Max 10MB
+    }
+
+    function isValidAudio() {
+      return request.resource.contentType.matches('audio/.*')
+        && request.resource.size < 20 * 1024 * 1024; // Max 20MB
+    }
+
+    // ── Product Images (Admin only) ─────────────────────────────
+    match /products/{allPaths=**} {
+      allow read: if true;                     // Public read for store display
+      allow write: if hasAdminClaim()
+        && isValidImage();
+    }
+
+    // ── Banner Images (Admin only) ──────────────────────────────
+    match /banners/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasAdminClaim()
+        && isValidImage();
+    }
+
+    // ── Audio Files (Admin only) ────────────────────────────────
+    match /audio/{allPaths=**} {
+      allow read: if true;
+      allow write: if hasAdminClaim()
+        && isValidAudio();
+    }
+
+    // ── Customization Uploads (Authenticated users) ─────────────
+    // Users upload their design images for customization requests
+    match /customizations/{userId}/{allPaths=**} {
+      allow read: if request.auth.uid == userId || hasAdminClaim();
+      allow write: if isAuthed()
+        && request.auth.uid == userId
+        && isValidImage();
+    }
+
+    // ── Default: Deny All ───────────────────────────────────────
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -33,9 +33,24 @@ try {
 
 const app = express();
 
+// Allowed origins
+const ALLOWED_ORIGINS = [
+  'https://vybera.shop',
+  'https://www.vybera.shop',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 // CORS setup for production
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: function(origin, callback) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 

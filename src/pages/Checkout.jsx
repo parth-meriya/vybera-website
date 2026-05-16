@@ -285,24 +285,33 @@ const Checkout = () => {
 
         onSuccess: async (response) => {
           try {
-            // ─── STAGE 2: Update existing order to PAID ───
-            await updateOrderPayment(orderId, {
-              paymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id || response.backendOrderId || null,
-              razorpaySignature: response.razorpay_signature || null,
+            // ─── STAGE 2: Verify payment signature securely on the backend ───
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id || response.backendOrderId,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                firebase_order_id: orderId
+              })
             });
+
+            if (!verifyRes.ok) {
+              const errorData = await verifyRes.json().catch(() => ({}));
+              throw new Error(errorData.error || 'Payment verification failed');
+            }
 
             clearCart();
             trackPurchase(response.razorpay_payment_id, total, items);
             setPaymentState('success');
             setTimeout(() => navigate('/order-success'), 800);
 
-          } catch (firestoreErr) {
-            console.error('Firestore update failed after payment:', firestoreErr);
-            clearCart();
-            setPaymentState('success');
-            toast.success('Payment successful! Your order is being processed.', { className: 'toast-vybera' });
-            setTimeout(() => navigate('/order-success'), 1000);
+          } catch (verifyErr) {
+            console.error('Payment verification failed:', verifyErr);
+            setPaymentState('failed');
+            setStep(2);
+            toast.error(verifyErr.message || 'Payment verification failed. If money was deducted, please contact support.', { className: 'toast-vybera' });
           }
         },
 

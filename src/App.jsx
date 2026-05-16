@@ -10,6 +10,7 @@ import ScrollToTop from './components/ui/ScrollToTop';
 import PageTransition from './components/ui/PageTransition';
 import BackgroundMusic from './components/ui/BackgroundMusic';
 import AdminLayout from './components/admin/AdminLayout';
+import ProtectedRoute from './components/ui/ProtectedRoute';
 
 // User Pages
 import Home from './pages/Home';
@@ -19,6 +20,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import OrderSuccess from './pages/OrderSuccess';
@@ -54,7 +56,6 @@ const UserLayout = ({ children }) => (
 
 const App = () => {
   const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
 
   return (
     <>
@@ -71,7 +72,7 @@ const App = () => {
 
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
-          {/* User Routes */}
+          {/* ── Public Routes ─────────────────────────────────────── */}
           <Route path="/" element={
             <UserLayout>
               <PageTransition><Home /></PageTransition>
@@ -107,16 +108,6 @@ const App = () => {
               <PageTransition><Cart /></PageTransition>
             </UserLayout>
           } />
-          <Route path="/checkout" element={
-            <UserLayout>
-              <PageTransition><Checkout /></PageTransition>
-            </UserLayout>
-          } />
-          <Route path="/order-success" element={
-            <UserLayout>
-              <PageTransition><OrderSuccess /></PageTransition>
-            </UserLayout>
-          } />
           <Route path="/about" element={
             <UserLayout>
               <PageTransition><About /></PageTransition>
@@ -130,11 +121,6 @@ const App = () => {
           <Route path="/customize" element={
             <UserLayout>
               <PageTransition><Customize /></PageTransition>
-            </UserLayout>
-          } />
-          <Route path="/my-orders" element={
-            <UserLayout>
-              <PageTransition><MyOrders /></PageTransition>
             </UserLayout>
           } />
           <Route path="/track-order/:id" element={
@@ -162,10 +148,36 @@ const App = () => {
               <PageTransition><ShippingPolicy /></PageTransition>
             </UserLayout>
           } />
+
+          {/* ── Auth Routes (public) ───────────────────────────────── */}
           <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
           <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
+          <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
 
-          {/* Admin Routes */}
+          {/* ── Protected Routes (require authentication) ─────────── */}
+          <Route path="/checkout" element={
+            <ProtectedRoute>
+              <UserLayout>
+                <PageTransition><Checkout /></PageTransition>
+              </UserLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/order-success" element={
+            <ProtectedRoute>
+              <UserLayout>
+                <PageTransition><OrderSuccess /></PageTransition>
+              </UserLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/my-orders" element={
+            <ProtectedRoute>
+              <UserLayout>
+                <PageTransition><MyOrders /></PageTransition>
+              </UserLayout>
+            </ProtectedRoute>
+          } />
+
+          {/* ── Admin Routes (require admin role — enforced in AdminLayout) ── */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />

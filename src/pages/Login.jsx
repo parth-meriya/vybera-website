@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff } from 'lucide-react';
-import { signIn, signInWithGoogle } from '../firebase/auth';
+import { Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { signIn, signInWithGoogle, resendVerificationEmail } from '../firebase/auth';
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [resending, setResending] = useState(false);
   const navigate = useNavigate();
   const { state } = useLocation();
   const from = state?.from || '/';
@@ -18,12 +20,25 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setShowResend(false);
     try {
       await signIn(form.email, form.password);
       toast.success('Welcome back.', { className: 'toast-vybera' });
-      navigate(from);
+      navigate(from, { replace: true });
     } catch (err) {
-      toast.error(err.message.replace('Firebase: ', '').replace(/\(auth.*\)/, ''), { className: 'toast-vybera' });
+      const msg = err.message || '';
+      // Show resend option if the error is about email verification
+      if (msg.toLowerCase().includes('verify your email')) {
+        setShowResend(true);
+        toast.error(msg, { className: 'toast-vybera', duration: 6000 });
+      } else {
+        // Sanitize Firebase error messages for user-friendly display
+        const clean = msg
+          .replace('Firebase: ', '')
+          .replace(/\(auth\/[^)]+\)\.?/, '')
+          .trim();
+        toast.error(clean || 'Sign-in failed. Please try again.', { className: 'toast-vybera' });
+      }
     } finally {
       setLoading(false);
     }
@@ -34,11 +49,28 @@ const Login = () => {
     try {
       await signInWithGoogle();
       toast.success('Signed in with Google.', { className: 'toast-vybera' });
-      navigate(from);
+      navigate(from, { replace: true });
     } catch (err) {
-      toast.error('Google sign-in failed.', { className: 'toast-vybera' });
+      // Don't expose internal OAuth errors
+      toast.error('Google sign-in failed. Please try again.', { className: 'toast-vybera' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      // Temporarily sign in to get the user object for resend
+      await resendVerificationEmail();
+      toast.success('Verification email sent! Check your inbox.', { className: 'toast-vybera' });
+      setShowResend(false);
+    } catch (err) {
+      // Re-attempt by asking them to enter creds again isn't practical here;
+      // guide them to the email for now
+      toast.error('Please sign in once to resend the verification email.', { className: 'toast-vybera' });
+    } finally {
+      setResending(false);
     }
   };
 
@@ -64,24 +96,36 @@ const Login = () => {
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Email</label>
             <input
+              id="login-email"
               name="email"
               type="email"
               value={form.email}
               onChange={onChange}
               required
+              autoComplete="email"
               className="vy-input"
               placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Password</label>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-vy-grey text-xs tracking-widest uppercase">Password</label>
+              <Link
+                to="/forgot-password"
+                className="text-vy-grey text-xs hover:text-vy-white transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <input
+                id="login-password"
                 name="password"
                 type={showPass ? 'text' : 'password'}
                 value={form.password}
                 onChange={onChange}
                 required
+                autoComplete="current-password"
                 className="vy-input pr-12"
                 placeholder="••••••••"
               />
@@ -89,6 +133,7 @@ const Login = () => {
                 type="button"
                 onClick={() => setShowPass(s => !s)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-vy-grey hover:text-vy-white transition-colors"
+                aria-label={showPass ? 'Hide password' : 'Show password'}
               >
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -106,6 +151,27 @@ const Login = () => {
           </motion.button>
         </form>
 
+        {/* Email Verification Resend Banner */}
+        {showResend && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 text-center"
+          >
+            <p className="text-yellow-400 text-xs mb-3">
+              Your email isn't verified yet. Didn't get the email?
+            </p>
+            <button
+              onClick={handleResendVerification}
+              disabled={resending}
+              className="text-yellow-400 hover:text-yellow-300 text-xs font-medium flex items-center gap-1.5 mx-auto transition-colors disabled:opacity-60"
+            >
+              <RefreshCw size={12} className={resending ? 'animate-spin' : ''} />
+              {resending ? 'Sending...' : 'Resend Verification Email'}
+            </button>
+          </motion.div>
+        )}
+
         <div className="flex items-center gap-4 my-6">
           <div className="flex-1 h-px bg-vy-border" />
           <span className="text-vy-grey text-xs tracking-wide">or</span>
@@ -113,6 +179,7 @@ const Login = () => {
         </div>
 
         <button
+          id="google-signin-btn"
           onClick={handleGoogle}
           disabled={loading}
           className="btn-outline w-full flex items-center justify-center gap-2 disabled:opacity-60"
