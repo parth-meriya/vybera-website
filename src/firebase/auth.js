@@ -47,21 +47,28 @@ export const signUp = async (email, password, name) => {
   }
 
   const userCred = await createUserWithEmailAndPassword(auth, email, password);
-  await updateProfile(userCred.user, { displayName: name });
 
-  // Send verification email immediately after account creation
-  await sendEmailVerification(userCred.user);
+  try {
+    await updateProfile(userCred.user, { displayName: name });
+    
+    // Send verification email immediately after account creation
+    await sendEmailVerification(userCred.user);
 
-  // All new users get 'user' role — admin must be set server-side via Firebase Admin SDK
-  await setDoc(doc(db, 'users', userCred.user.uid), {
-    uid: userCred.user.uid,
-    name,
-    email,
-    role: 'user',           // Never trust client for role assignment
-    emailVerified: false,
-    provider: 'email',
-    createdAt: serverTimestamp(),
-  });
+    // All new users get 'user' role — admin must be set server-side via Firebase Admin SDK
+    await setDoc(doc(db, 'users', userCred.user.uid), {
+      uid: userCred.user.uid,
+      name,
+      email,
+      role: 'user',           // Never trust client for role assignment
+      emailVerified: false,
+      provider: 'email',
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    // Rollback auth creation if DB fails
+    await userCred.user.delete().catch(() => {});
+    throw error;
+  }
 
   return userCred.user;
 };

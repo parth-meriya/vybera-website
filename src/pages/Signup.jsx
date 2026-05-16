@@ -47,11 +47,20 @@ const Signup = () => {
       await signUp(form.email.trim(), form.password, form.name.trim());
       setDone(true); // Show verification prompt instead of navigating away
     } catch (err) {
-      const clean = (err.message || '')
-        .replace('Firebase: ', '')
-        .replace(/\(auth\/[^)]+\)\.?/, '')
-        .trim();
-      toast.error(clean || 'Account creation failed. Please try again.', { className: 'toast-vybera' });
+      console.error('Signup error:', err);
+      let msg = 'Account creation failed. Please try again.';
+      if (err.code === 'auth/email-already-in-use') {
+        msg = 'An account with this email already exists. Please sign in instead.';
+      } else if (err.code === 'auth/invalid-email') {
+        msg = 'Invalid email address provided.';
+      } else if (err.code === 'auth/weak-password') {
+        msg = 'Password is too weak.';
+      } else if (err.code === 'permission-denied') {
+        msg = 'Database permission denied. (Check Firestore rules)';
+      } else if (err.message) {
+        msg = err.message.replace('Firebase:', '').replace(/\\(auth\\/.*\\)/, '').trim();
+      }
+      toast.error(msg, { className: 'toast-vybera' });
     } finally {
       setLoading(false);
     }
