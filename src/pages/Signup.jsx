@@ -58,7 +58,7 @@ const Signup = () => {
       } else if (err.code === 'permission-denied') {
         msg = 'Database permission denied. (Check Firestore rules)';
       } else if (err.message) {
-        msg = err.message.replace('Firebase:', '').replace(/\\(auth\\/.*\\)/, '').trim();
+        msg = err.message.replace('Firebase:', '').replace(/\(auth\/[^)]+\)\.?/, '').trim();
       }
       toast.error(msg, { className: 'toast-vybera' });
     } finally {
