@@ -73,7 +73,11 @@ const Signup = () => {
       toast.success('Signed up with Google.', { className: 'toast-vybera' });
       navigate('/');
     } catch (err) {
-      toast.error('Google sign-in failed. Please try again.', { className: 'toast-vybera' });
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        toast.error('An account already exists with this email. Please sign in instead.', { className: 'toast-vybera' });
+      } else {
+        toast.error('Google sign-in failed. Please try again.', { className: 'toast-vybera' });
+      }
     } finally {
       setLoading(false);
     }
