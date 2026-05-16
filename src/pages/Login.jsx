@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
-import { signIn, signInWithGoogle, resendVerificationEmail } from '../firebase/auth';
+import { signIn, signInWithGoogle, resendVerificationEmailWithCredentials } from '../firebase/auth';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -61,14 +61,11 @@ const Login = () => {
   const handleResendVerification = async () => {
     setResending(true);
     try {
-      // Temporarily sign in to get the user object for resend
-      await resendVerificationEmail();
+      await resendVerificationEmailWithCredentials(form.email, form.password);
       toast.success('Verification email sent! Check your inbox.', { className: 'toast-vybera' });
       setShowResend(false);
     } catch (err) {
-      // Re-attempt by asking them to enter creds again isn't practical here;
-      // guide them to the email for now
-      toast.error('Please sign in once to resend the verification email.', { className: 'toast-vybera' });
+      toast.error('Failed to resend. Please ensure your email and password are correct.', { className: 'toast-vybera' });
     } finally {
       setResending(false);
     }

@@ -159,6 +159,13 @@ export const resendVerificationEmail = async () => {
   await sendEmailVerification(currentUser);
 };
 
+export const resendVerificationEmailWithCredentials = async (email, password) => {
+  const userCred = await signInWithEmailAndPassword(auth, email, password);
+  if (userCred.user.emailVerified) throw new Error('Email is already verified.');
+  await sendEmailVerification(userCred.user);
+  await signOut(auth);
+};
+
 // ── Password Reset ────────────────────────────────────────────
 export const resetPassword = async (email) => {
   await sendPasswordResetEmail(auth, email);
