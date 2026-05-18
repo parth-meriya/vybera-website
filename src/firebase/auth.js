@@ -15,6 +15,14 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config';
+import {
+  validateName,
+  validatePhone,
+  validatePassword as validatePasswordRules,
+  validatePasswordNotEmail,
+  sanitizeInput,
+  sanitizeName,
+} from '../utils/validation';
 
 const googleProvider = new GoogleAuthProvider();
 // Always re-prompt account selection for security
@@ -28,23 +36,26 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
  * - At least one lowercase letter
  * - At least one digit
  * - At least one special character
+ * - Must NOT be the same as the user's email
  */
-export const validatePassword = (password) => {
-  const errors = [];
-  if (password.length < 8) errors.push('at least 8 characters');
-  if (!/[A-Z]/.test(password)) errors.push('an uppercase letter');
-  if (!/[a-z]/.test(password)) errors.push('a lowercase letter');
-  if (!/[0-9]/.test(password)) errors.push('a number');
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) errors.push('a special character');
+export const validatePassword = (password, email = '') => {
+  const errors = validatePasswordRules(password);
+  // Check password ≠ email
+  const emailCheck = validatePasswordNotEmail(password, email);
+  if (emailCheck) errors.push(emailCheck);
   return errors;
 };
 
 // ── Sign Up ───────────────────────────────────────────────────
-export const signUp = async (email, password, name) => {
+export const signUp = async (email, password, name, phone) => {
   // Enforce password policy before Firebase call
   const policyErrors = validatePassword(password);
   if (policyErrors.length > 0) {
     throw new Error(`Password must contain ${policyErrors.join(', ')}.`);
+  }
+
+  if (password === email) {
+    throw new Error('Password cannot be same as email');
   }
 
   const userCred = await createUserWithEmailAndPassword(auth, email, password);
@@ -60,6 +71,7 @@ export const signUp = async (email, password, name) => {
       uid: userCred.user.uid,
       name,
       email,
+      phoneNumber: phone || null,
       role: 'user',           // Never trust client for role assignment
       emailVerified: false,
       provider: 'email',

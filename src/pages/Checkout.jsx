@@ -176,7 +176,7 @@ const Checkout = () => {
 
     if (!safeName.trim()) newErrors.name = 'Name is required';
     if (!safeEmail.trim() || !/\S+@\S+\.\S+/.test(safeEmail)) newErrors.email = 'Valid email required';
-    if (!phoneDigits || phoneDigits.length !== 10) newErrors.phone = '10-digit phone required';
+    if (!/^[6-9]\d{9}$/.test(safePhone.trim())) newErrors.phone = 'Valid 10-digit Indian mobile required';
     if (!safeAddress.trim()) newErrors.address = 'Address is required';
     if (!safeCity.trim()) newErrors.city = 'City is required';
     if (!safeState.trim()) newErrors.state = 'State is required';
@@ -226,6 +226,8 @@ const Checkout = () => {
       const orderData = {
         userId: user.uid,
         userEmail: user.email || null,
+        customerName: form.name || '',
+        customerPhone: form.phone || '',
         products: items.map(i => ({
           id: i.id || 'unknown',
           name: i.name || 'Unknown Product',

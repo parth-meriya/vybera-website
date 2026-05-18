@@ -112,12 +112,14 @@ const AdminOrders = () => {
   };
 
   const handleMessageCustomer = (order) => {
-    const phone = order.address?.phone || '';
-    const name = order.address?.name || '';
-    const orderId = order.id.slice(0, 8);
-    const msg = `Hi ${name}, this is VYBERA. We noticed you were interested in some items but didn't complete your order (ID: ${orderId}). Would you like any help with your purchase?`;
+    const phone = order.customerPhone || order.address?.phone || '';
+    if (!phone) {
+      toast.error('No mobile number available for this customer', { className: 'toast-vybera' });
+      return;
+    }
     const cleanPhone = phone.replace(/\D/g, '');
     const finalPhone = cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone;
+    const msg = `Hello from VYBERA regarding your order.`;
     const url = `https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
   };
@@ -335,12 +337,21 @@ const AdminOrders = () => {
                               ))}
                             </div>
                           </div>
-                          {/* Delivery */}
+                          {/* Delivery & Contact */}
                           <div>
+                            <div className="mb-6">
+                              <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Customer Contact</h4>
+                              <div className="space-y-1.5">
+                                <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Name:</span> {order.customerName || order.address?.name}</p>
+                                <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Email:</span> {order.userEmail || order.address?.email}</p>
+                                <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Mobile:</span> {order.customerPhone || order.address?.phone}</p>
+                              </div>
+                            </div>
+                            
                             <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Delivery Address</h4>
                             <div className="space-y-1.5">
-                              {order.address && Object.entries(order.address).filter(([k]) => k !== 'email').map(([k, v]) => (
-                                <p key={k} className="text-vy-light text-xs">{v}</p>
+                              {order.address && Object.entries(order.address).filter(([k]) => !['email', 'name', 'phone'].includes(k)).map(([k, v]) => (
+                                <p key={k} className="text-vy-light text-xs capitalize"><span className="text-vy-grey inline-block w-16">{k}:</span> {v}</p>
                               ))}
                             </div>
                             <div className="mt-4 pt-4 border-t border-vy-border space-y-1">
@@ -363,14 +374,12 @@ const AdminOrders = () => {
                               <p className="text-vy-grey text-xs mt-3">Payment ID: <span className="font-mono text-vy-light">{order.paymentId}</span></p>
                             )}
                             
-                            {order.status === 'pending' && (
-                              <button 
-                                onClick={() => handleMessageCustomer(order)}
-                                className="mt-6 w-full py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
-                              >
-                                <MessageCircle size={14} /> Message Customer
-                              </button>
-                            )}
+                            <button 
+                              onClick={() => handleMessageCustomer(order)}
+                              className="mt-6 w-full py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
+                            >
+                              <MessageCircle size={14} /> Message on WhatsApp
+                            </button>
                           </div>
 
                           {/* Tracking & Admin Controls */}

@@ -42,7 +42,7 @@ const AdminUsers = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-vy-border">
-                {['Name', 'Email', 'Role', 'Joined', 'Orders'].map(h => (
+                {['Name', 'Email', 'Mobile', 'Role', 'Joined', 'Orders'].map(h => (
                   <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
                 ))}
               </tr>
@@ -53,6 +53,7 @@ const AdminUsers = () => {
                   <tr key={user.id} className="border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors">
                     <td className="px-4 py-3 text-vy-white text-xs font-medium">{user.name || '—'}</td>
                     <td className="px-4 py-3 text-vy-grey text-xs">{user.email}</td>
+                    <td className="px-4 py-3 text-vy-grey text-xs">{user.phoneNumber || '—'}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 border ${user.role === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-500/10' : 'text-vy-grey border-vy-border'}`}>
                         {user.role || 'user'}
@@ -72,7 +73,7 @@ const AdminUsers = () => {
                   </tr>
                   {expanded === (user.uid || user.id) && (
                     <tr key={`${user.id}-orders`} className="border-b border-vy-border/50 bg-vy-black/20">
-                      <td colSpan={5} className="px-8 py-5">
+                      <td colSpan={6} className="px-8 py-5">
                         {loadingOrders === (user.uid || user.id) ? (
                           <div className="flex justify-center py-4"><div className="spinner" /></div>
                         ) : (userOrders[user.uid || user.id] || []).length === 0 ? (

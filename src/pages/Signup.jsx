@@ -15,7 +15,7 @@ const requirements = [
 ];
 
 const Signup = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [showRequirements, setShowRequirements] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,15 +36,30 @@ const Signup = () => {
       toast.error(`Password must contain ${policyErrors[0]}.`, { className: 'toast-vybera' });
       return;
     }
+    
+    if (form.password === form.email) {
+      toast.error('Password cannot be same as email', { className: 'toast-vybera' });
+      return;
+    }
 
     if (!form.name.trim()) {
       toast.error('Please enter your full name.', { className: 'toast-vybera' });
       return;
     }
+    
+    if (!/^[A-Za-z ]+$/.test(form.name.trim())) {
+      toast.error('Name can contain only letters', { className: 'toast-vybera' });
+      return;
+    }
+    
+    if (!/^[6-9]\d{9}$/.test(form.phone.trim())) {
+      toast.error('Please enter a valid 10-digit Indian mobile number', { className: 'toast-vybera' });
+      return;
+    }
 
     setLoading(true);
     try {
-      await signUp(form.email.trim(), form.password, form.name.trim());
+      await signUp(form.email.trim(), form.password, form.name.trim(), form.phone.trim());
       setDone(true); // Show verification prompt instead of navigating away
     } catch (err) {
       console.error('Signup error:', err);
@@ -187,6 +202,25 @@ const Signup = () => {
               className="vy-input"
               placeholder="you@example.com"
             />
+          </div>
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Mobile Number</label>
+            <div className="flex">
+              <span className="bg-vy-dark border border-vy-border border-r-0 text-vy-grey px-4 py-3 text-sm flex items-center justify-center">
+                +91
+              </span>
+              <input
+                id="signup-phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={onChange}
+                required
+                maxLength="10"
+                className="vy-input flex-1"
+                placeholder="10-digit mobile number"
+              />
+            </div>
           </div>
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Password</label>
