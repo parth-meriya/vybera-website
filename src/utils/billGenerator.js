@@ -33,6 +33,11 @@ export function printShippingLabel(order) {
   const addr = order.address || {};
   const date = order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || new Date().toLocaleDateString('en-IN');
   
+  const customerName = addr.name || addr.fullName || order.customerName || 'Customer';
+  const streetAddress = addr.address || addr.street || 'No Address Provided';
+  const phone = addr.phone || order.customerPhone || '—';
+  const email = addr.email || order.customerEmail || order.userEmail || '—';
+  
   const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -64,11 +69,11 @@ export function printShippingLabel(order) {
     <div class="section">
       <div class="section-title">Deliver To</div>
       <div class="info">
-        <strong>${addr.name || addr.fullName || '—'}</strong><br>
-        ${addr.address || addr.street || ''}<br>
-        ${addr.city || ''}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || ''}<br>
-        <strong>Phone:</strong> ${addr.phone || '—'}<br>
-        <strong>Email:</strong> ${addr.email || order.userEmail || '—'}
+        <strong>${customerName}</strong><br>
+        ${streetAddress}<br>
+        ${addr.city || 'NA'}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || '000000'}<br>
+        <strong>Phone:</strong> ${phone}<br>
+        <strong>Email:</strong> ${email}
       </div>
     </div>
 
@@ -100,6 +105,11 @@ export function printOrderInvoice(order) {
   const addr = order.address || {};
   const date = order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || new Date().toLocaleDateString('en-IN');
   const products = order.products || [];
+
+  const customerName = addr.name || addr.fullName || order.customerName || 'Customer';
+  const streetAddress = addr.address || addr.street || 'No Address Provided';
+  const phone = addr.phone || order.customerPhone || '—';
+  const email = addr.email || order.customerEmail || order.userEmail || '—';
 
   const productRows = products.map(p => `
     <tr>
@@ -157,11 +167,11 @@ export function printOrderInvoice(order) {
     <div>
       <div class="section-title">Bill To</div>
       <div class="info">
-        <strong>${addr.name || addr.fullName || '—'}</strong><br>
-        ${addr.email || order.userEmail || ''}<br>
-        ${addr.phone || ''}<br>
-        ${addr.address || addr.street || ''}<br>
-        ${addr.city || ''}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || ''}
+        <strong>${customerName}</strong><br>
+        ${email}<br>
+        ${phone}<br>
+        ${streetAddress}<br>
+        ${addr.city || 'NA'}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || '000000'}
       </div>
     </div>
     <div>
