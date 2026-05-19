@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getAllUsers } from '../../firebase/users';
-import { getOrdersByUser } from '../../firebase/orders';
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User } from 'lucide-react';
+import { getOrdersByUser, createOrder } from '../../firebase/orders';
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -10,6 +11,11 @@ const AdminUsers = () => {
   const [userOrders, setUserOrders] = useState({});
   const [loadingOrders, setLoadingOrders] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Manual Order State
+  const [addingOrderFor, setAddingOrderFor] = useState(null);
+  const [manualForm, setManualForm] = useState({ productName: 'VYBERA Offline Order', amount: '', size: 'Free', qty: 1, status: 'confirmed' });
+  const [submittingOrder, setSubmittingOrder] = useState(false);
 
   useEffect(() => {
     getAllUsers().then(u => { setUsers(u); setLoading(false); });
@@ -48,6 +54,57 @@ const AdminUsers = () => {
       (user.phoneNumber || '').includes(q)
     );
   });
+
+  const handleCreateManualOrder = async () => {
+    if (!manualForm.amount || manualForm.amount <= 0) {
+      toast.error('Please enter a valid amount.', { className: 'toast-vybera' });
+      return;
+    }
+    setSubmittingOrder(true);
+    try {
+      const u = addingOrderFor;
+      const uid = u.uid || u.id;
+      const orderData = {
+        userId: uid,
+        customerName: u.name || 'Customer',
+        customerEmail: u.email,
+        customerPhone: u.phoneNumber || '',
+        total: Number(manualForm.amount),
+        status: manualForm.status,
+        paymentMethod: 'Manual/Offline',
+        paymentStatus: 'paid',
+        address: {
+          fullName: u.name || 'Customer',
+          phone: u.phoneNumber || '',
+          street: 'Manual Order Entry',
+          city: 'NA', state: 'NA', pincode: '000000'
+        },
+        products: [{
+          name: manualForm.productName || 'Manual Order',
+          size: manualForm.size || 'Free',
+          quantity: Number(manualForm.qty) || 1,
+          price: Number(manualForm.amount),
+          isCustom: true
+        }]
+      };
+      
+      await createOrder(orderData);
+      toast.success('Manual order created successfully!', { className: 'toast-vybera' });
+      setAddingOrderFor(null);
+      setManualForm({ productName: 'VYBERA Offline Order', amount: '', size: 'Free', qty: 1, status: 'confirmed' });
+      
+      // Refresh user's orders if expanded
+      if (expanded === uid) {
+        const orders = await getOrdersByUser(uid);
+        setUserOrders(prev => ({ ...prev, [uid]: orders }));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to create manual order.', { className: 'toast-vybera' });
+    } finally {
+      setSubmittingOrder(false);
+    }
+  };
 
   return (
     <div className="p-8">
@@ -131,6 +188,14 @@ const AdminUsers = () => {
                             <MessageCircle size={12} /> WhatsApp
                           </button>
                         )}
+                        {/* Add Manual Order Button */}
+                        <button
+                          onClick={() => setAddingOrderFor(user)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-vy-accent/10 border border-vy-accent/30 text-vy-accent text-[10px] font-bold tracking-wider uppercase hover:bg-vy-accent/20 transition-all"
+                          title="Add Manual Order"
+                        >
+                          <Plus size={12} /> Add Order
+                        </button>
                         {/* Order History Toggle */}
                         <button
                           onClick={() => toggleUser(user.uid || user.id)}
@@ -186,6 +251,107 @@ const AdminUsers = () => {
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Manual Order Modal */}
+      {addingOrderFor && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setAddingOrderFor(null)}>
+          <div className="bg-vy-dark border border-vy-border w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-vy-border">
+              <h2 className="text-vy-white text-sm font-semibold tracking-wider flex items-center gap-2">
+                <Package size={16} className="text-vy-accent" />
+                New Manual Order
+              </h2>
+              <button onClick={() => setAddingOrderFor(null)} className="text-vy-grey hover:text-vy-white transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <p className="text-vy-grey text-xs tracking-widest uppercase mb-4">For: <span className="text-vy-white">{addingOrderFor.name || addingOrderFor.email}</span></p>
+
+              <div>
+                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Product / Description</label>
+                <input 
+                  value={manualForm.productName}
+                  onChange={e => setManualForm(p => ({ ...p, productName: e.target.value }))}
+                  className="vy-input text-xs" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Total Amount (₹)</label>
+                  <input 
+                    type="number"
+                    value={manualForm.amount}
+                    onChange={e => setManualForm(p => ({ ...p, amount: e.target.value }))}
+                    className="vy-input text-xs" 
+                    placeholder="e.g. 1500"
+                  />
+                </div>
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Quantity</label>
+                  <input 
+                    type="number" min="1"
+                    value={manualForm.qty}
+                    onChange={e => setManualForm(p => ({ ...p, qty: e.target.value }))}
+                    className="vy-input text-xs" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Size</label>
+                  <select 
+                    value={manualForm.size}
+                    onChange={e => setManualForm(p => ({ ...p, size: e.target.value }))}
+                    className="vy-input text-xs cursor-pointer"
+                  >
+                    <option value="Free">Free / Custom</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="XXL">XXL</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Status</label>
+                  <select 
+                    value={manualForm.status}
+                    onChange={e => setManualForm(p => ({ ...p, status: e.target.value }))}
+                    className="vy-input text-xs cursor-pointer"
+                  >
+                    <option value="confirmed">Confirmed (Paid)</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  onClick={() => setAddingOrderFor(null)}
+                  className="btn-ghost flex-1 text-xs py-3"
+                  disabled={submittingOrder}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleCreateManualOrder}
+                  className="btn-primary flex-1 text-xs py-3"
+                  disabled={submittingOrder}
+                >
+                  {submittingOrder ? 'Creating...' : 'Create Order'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

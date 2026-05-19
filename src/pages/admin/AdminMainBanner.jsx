@@ -284,10 +284,9 @@ const AdminMainBanner = () => {
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
-                {!imagePreview.startsWith('/') && !imagePreview.includes('firebasestorage') && (
-                  <button
-                    type="button"
-                    onClick={() => {
+                <button
+                  type="button"
+                  onClick={() => {
                       setCropImage(imagePreview);
                       setCrop({ x: 0, y: 0 });
                       setZoom(1);
@@ -297,7 +296,6 @@ const AdminMainBanner = () => {
                   >
                     <Crop size={14} />
                   </button>
-                )}
                 <button
                   type="button"
                   onClick={() => { setImagePreview(''); setImageFile(null); setBanner(b => ({ ...b, imageUrl: '' })); }}
