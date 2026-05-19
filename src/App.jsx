@@ -47,6 +47,7 @@ import AdminCustomOrders from './pages/admin/AdminCustomOrders';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminReviews from './pages/admin/AdminReviews';
 import AdminPopupBanner from './pages/admin/AdminPopupBanner';
+import AdminMainBanner from './pages/admin/AdminMainBanner';
 
 const UserLayout = ({ children }) => (
   <>
@@ -192,6 +193,7 @@ const App = () => {
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="content" element={<AdminContent />} />
             <Route path="popup-banners" element={<AdminPopupBanner />} />
+            <Route path="main-banner" element={<AdminMainBanner />} />
           </Route>
         </Routes>
       </AnimatePresence>
