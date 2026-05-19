@@ -10,8 +10,17 @@ import {
   where,
   serverTimestamp,
   onSnapshot,
+  deleteDoc
 } from 'firebase/firestore';
 import { db } from './config';
+
+export const deleteOrder = async (id) => {
+  await deleteDoc(doc(db, 'orders', id));
+};
+
+export const updateOrderFull = async (id, data) => {
+  await updateDoc(doc(db, 'orders', id), data);
+};
 
 export const createOrder = async (orderData) => {
   const docRef = await addDoc(collection(db, 'orders'), {

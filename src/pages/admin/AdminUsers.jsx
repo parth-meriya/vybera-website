@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getAllUsers } from '../../firebase/users';
-import { getOrdersByUser, createOrder } from '../../firebase/orders';
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package } from 'lucide-react';
+import { getOrdersByUser, createOrder, deleteOrder, updateOrderFull } from '../../firebase/orders';
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminUsers = () => {
@@ -18,6 +18,7 @@ const AdminUsers = () => {
     productName: 'VYBERA Offline Order', amount: '', size: 'Free', color: 'Black', qty: 1, status: 'confirmed',
     customerName: '', customerPhone: '', street: '', city: '', state: '', pincode: ''
   });
+  const [editingOrderId, setEditingOrderId] = useState(null);
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
   useEffect(() => {
@@ -94,9 +95,16 @@ const AdminUsers = () => {
         }]
       };
       
-      await createOrder(orderData);
-      toast.success('Manual order created successfully!', { className: 'toast-vybera' });
+      if (editingOrderId) {
+        await updateOrderFull(editingOrderId, orderData);
+        toast.success('Order updated successfully!', { className: 'toast-vybera' });
+      } else {
+        await createOrder(orderData);
+        toast.success('Manual order created successfully!', { className: 'toast-vybera' });
+      }
+
       setAddingOrderFor(null);
+      setEditingOrderId(null);
       setManualForm({ 
         productName: 'VYBERA Offline Order', amount: '', size: 'Free', color: 'Black', qty: 1, status: 'confirmed',
         customerName: '', customerPhone: '', street: '', city: '', state: '', pincode: ''
@@ -109,9 +117,21 @@ const AdminUsers = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to create manual order.', { className: 'toast-vybera' });
+      toast.error('Failed to save manual order.', { className: 'toast-vybera' });
     } finally {
       setSubmittingOrder(false);
+    }
+  };
+
+  const handleDeleteOrder = async (uid, orderId) => {
+    if (!window.confirm('Are you sure you want to delete this manual order? This cannot be undone.')) return;
+    try {
+      await deleteOrder(orderId);
+      toast.success('Order deleted.', { className: 'toast-vybera' });
+      const orders = await getOrdersByUser(uid);
+      setUserOrders(prev => ({ ...prev, [uid]: orders }));
+    } catch (err) {
+      toast.error('Failed to delete order.', { className: 'toast-vybera' });
     }
   };
 
@@ -231,13 +251,13 @@ const AdminUsers = () => {
                           <p className="text-vy-grey text-xs tracking-widest uppercase">No orders found</p>
                         ) : (
                           <div className="space-y-2">
-                            <div className="grid grid-cols-5 gap-4 mb-2">
-                              {['Order ID', 'Amount', 'Status', 'Phone', 'Date'].map(h => (
+                            <div className="grid grid-cols-6 gap-4 mb-2">
+                              {['Order ID', 'Amount', 'Status', 'Phone', 'Date', 'Actions'].map(h => (
                                 <span key={h} className="text-vy-grey text-[10px] tracking-widest uppercase font-medium">{h}</span>
                               ))}
                             </div>
                             {userOrders[user.uid || user.id].map(order => (
-                              <div key={order.id} className="grid grid-cols-5 gap-4 items-center bg-vy-border/20 px-4 py-2">
+                              <div key={order.id} className="grid grid-cols-6 gap-4 items-center bg-vy-border/20 px-4 py-2">
                                 <span className="text-vy-grey text-xs font-mono">{order.id.slice(0, 12)}...</span>
                                 <span className="text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</span>
                                 <span className={`text-xs ${
@@ -249,6 +269,43 @@ const AdminUsers = () => {
                                   {order.customerPhone || order.address?.phone || '—'}
                                 </span>
                                 <span className="text-vy-grey text-xs">{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN')}</span>
+                                <div className="flex gap-2">
+                                  {order.paymentMethod === 'Manual/Offline' ? (
+                                    <>
+                                      <button 
+                                        onClick={() => {
+                                          setAddingOrderFor(user);
+                                          setEditingOrderId(order.id);
+                                          setManualForm({
+                                            productName: order.products?.[0]?.name || 'VYBERA Offline Order',
+                                            amount: order.total || '',
+                                            size: order.products?.[0]?.size || 'Free',
+                                            color: order.products?.[0]?.color || 'Black',
+                                            qty: order.products?.[0]?.quantity || 1,
+                                            status: order.status || 'confirmed',
+                                            customerName: order.customerName || order.address?.fullName || '',
+                                            customerPhone: order.customerPhone || order.address?.phone || '',
+                                            street: order.address?.street || '',
+                                            city: order.address?.city || '',
+                                            state: order.address?.state || '',
+                                            pincode: order.address?.pincode || ''
+                                          });
+                                        }}
+                                        className="text-blue-400 hover:text-blue-300 transition-colors p-1" title="Edit Manual Order"
+                                      >
+                                        <Edit2 size={13} />
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteOrder(user.uid || user.id, order.id)}
+                                        className="text-red-400 hover:text-red-300 transition-colors p-1" title="Delete Manual Order"
+                                      >
+                                        <Trash2 size={13} />
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span className="text-vy-border text-[9px] uppercase tracking-widest">Web Order</span>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -272,14 +329,14 @@ const AdminUsers = () => {
 
       {/* Manual Order Modal */}
       {addingOrderFor && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto py-10" onClick={() => setAddingOrderFor(null)}>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto py-10" onClick={() => { setAddingOrderFor(null); setEditingOrderId(null); }}>
           <div className="bg-vy-dark border border-vy-border w-full max-w-2xl my-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-vy-border sticky top-0 bg-vy-dark z-10">
               <h2 className="text-vy-white text-sm font-semibold tracking-wider flex items-center gap-2">
                 <Package size={16} className="text-vy-accent" />
-                New Manual Order
+                {editingOrderId ? 'Edit Manual Order' : 'New Manual Order'}
               </h2>
-              <button onClick={() => setAddingOrderFor(null)} className="text-vy-grey hover:text-vy-white transition-colors">
+              <button onClick={() => { setAddingOrderFor(null); setEditingOrderId(null); }} className="text-vy-grey hover:text-vy-white transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -416,7 +473,7 @@ const AdminUsers = () => {
 
               <div className="pt-4 flex gap-3 sticky bottom-0 bg-vy-dark border-t border-vy-border py-4">
                 <button 
-                  onClick={() => setAddingOrderFor(null)}
+                  onClick={() => { setAddingOrderFor(null); setEditingOrderId(null); }}
                   className="btn-ghost flex-1 text-xs py-3"
                   disabled={submittingOrder}
                 >
@@ -427,7 +484,7 @@ const AdminUsers = () => {
                   className="btn-primary flex-1 text-xs py-3"
                   disabled={submittingOrder}
                 >
-                  {submittingOrder ? 'Creating Order...' : 'Create Order & Label'}
+                  {submittingOrder ? 'Saving Order...' : (editingOrderId ? 'Update Order' : 'Create Order & Label')}
                 </button>
               </div>
             </div>
