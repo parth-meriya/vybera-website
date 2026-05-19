@@ -64,8 +64,8 @@ export function printShippingLabel(order) {
     <div class="section">
       <div class="section-title">Deliver To</div>
       <div class="info">
-        <strong>${addr.name || '—'}</strong><br>
-        ${addr.address || ''}<br>
+        <strong>${addr.name || addr.fullName || '—'}</strong><br>
+        ${addr.address || addr.street || ''}<br>
         ${addr.city || ''}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || ''}<br>
         <strong>Phone:</strong> ${addr.phone || '—'}<br>
         <strong>Email:</strong> ${addr.email || order.userEmail || '—'}
@@ -157,10 +157,10 @@ export function printOrderInvoice(order) {
     <div>
       <div class="section-title">Bill To</div>
       <div class="info">
-        <strong>${addr.name || '—'}</strong><br>
+        <strong>${addr.name || addr.fullName || '—'}</strong><br>
         ${addr.email || order.userEmail || ''}<br>
         ${addr.phone || ''}<br>
-        ${addr.address || ''}<br>
+        ${addr.address || addr.street || ''}<br>
         ${addr.city || ''}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || ''}
       </div>
     </div>
