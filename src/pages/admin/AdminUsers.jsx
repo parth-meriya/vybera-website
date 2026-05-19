@@ -14,7 +14,10 @@ const AdminUsers = () => {
 
   // Manual Order State
   const [addingOrderFor, setAddingOrderFor] = useState(null);
-  const [manualForm, setManualForm] = useState({ productName: 'VYBERA Offline Order', amount: '', size: 'Free', qty: 1, status: 'confirmed' });
+  const [manualForm, setManualForm] = useState({ 
+    productName: 'VYBERA Offline Order', amount: '', size: 'Free', color: 'Black', qty: 1, status: 'confirmed',
+    customerName: '', customerPhone: '', street: '', city: '', state: '', pincode: ''
+  });
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
   useEffect(() => {
@@ -66,22 +69,25 @@ const AdminUsers = () => {
       const uid = u.uid || u.id;
       const orderData = {
         userId: uid,
-        customerName: u.name || 'Customer',
+        customerName: manualForm.customerName || u.name || 'Customer',
         customerEmail: u.email,
-        customerPhone: u.phoneNumber || '',
+        customerPhone: manualForm.customerPhone || u.phoneNumber || '',
         total: Number(manualForm.amount),
         status: manualForm.status,
         paymentMethod: 'Manual/Offline',
         paymentStatus: 'paid',
         address: {
-          fullName: u.name || 'Customer',
-          phone: u.phoneNumber || '',
-          street: 'Manual Order Entry',
-          city: 'NA', state: 'NA', pincode: '000000'
+          fullName: manualForm.customerName || u.name || 'Customer',
+          phone: manualForm.customerPhone || u.phoneNumber || '',
+          street: manualForm.street || 'Manual Order Entry',
+          city: manualForm.city || 'NA', 
+          state: manualForm.state || 'NA', 
+          pincode: manualForm.pincode || '000000'
         },
         products: [{
           name: manualForm.productName || 'Manual Order',
           size: manualForm.size || 'Free',
+          color: manualForm.color || 'Black',
           quantity: Number(manualForm.qty) || 1,
           price: Number(manualForm.amount),
           isCustom: true
@@ -91,7 +97,10 @@ const AdminUsers = () => {
       await createOrder(orderData);
       toast.success('Manual order created successfully!', { className: 'toast-vybera' });
       setAddingOrderFor(null);
-      setManualForm({ productName: 'VYBERA Offline Order', amount: '', size: 'Free', qty: 1, status: 'confirmed' });
+      setManualForm({ 
+        productName: 'VYBERA Offline Order', amount: '', size: 'Free', color: 'Black', qty: 1, status: 'confirmed',
+        customerName: '', customerPhone: '', street: '', city: '', state: '', pincode: ''
+      });
       
       // Refresh user's orders if expanded
       if (expanded === uid) {
@@ -190,7 +199,14 @@ const AdminUsers = () => {
                         )}
                         {/* Add Manual Order Button */}
                         <button
-                          onClick={() => setAddingOrderFor(user)}
+                          onClick={() => {
+                            setAddingOrderFor(user);
+                            setManualForm(prev => ({
+                              ...prev,
+                              customerName: user.name || '',
+                              customerPhone: user.phoneNumber || ''
+                            }));
+                          }}
                           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-vy-accent/10 border border-vy-accent/30 text-vy-accent text-[10px] font-bold tracking-wider uppercase hover:bg-vy-accent/20 transition-all"
                           title="Add Manual Order"
                         >
@@ -256,9 +272,9 @@ const AdminUsers = () => {
 
       {/* Manual Order Modal */}
       {addingOrderFor && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setAddingOrderFor(null)}>
-          <div className="bg-vy-dark border border-vy-border w-full max-w-md" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-vy-border">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto py-10" onClick={() => setAddingOrderFor(null)}>
+          <div className="bg-vy-dark border border-vy-border w-full max-w-2xl my-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-vy-border sticky top-0 bg-vy-dark z-10">
               <h2 className="text-vy-white text-sm font-semibold tracking-wider flex items-center gap-2">
                 <Package size={16} className="text-vy-accent" />
                 New Manual Order
@@ -268,73 +284,137 @@ const AdminUsers = () => {
               </button>
             </div>
             
-            <div className="p-6 space-y-4">
-              <p className="text-vy-grey text-xs tracking-widest uppercase mb-4">For: <span className="text-vy-white">{addingOrderFor.name || addingOrderFor.email}</span></p>
-
+            <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+              {/* Product Info Section */}
               <div>
-                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Product / Description</label>
-                <input 
-                  value={manualForm.productName}
-                  onChange={e => setManualForm(p => ({ ...p, productName: e.target.value }))}
-                  className="vy-input text-xs" 
-                />
+                <h3 className="text-vy-accent text-[10px] uppercase tracking-widest mb-3 border-b border-vy-border/50 pb-2">Product Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="md:col-span-2">
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Product / Description</label>
+                    <input 
+                      value={manualForm.productName}
+                      onChange={e => setManualForm(p => ({ ...p, productName: e.target.value }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Total Amount (₹)</label>
+                    <input 
+                      type="number"
+                      value={manualForm.amount}
+                      onChange={e => setManualForm(p => ({ ...p, amount: e.target.value }))}
+                      className="vy-input text-xs" 
+                      placeholder="e.g. 1500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Quantity</label>
+                    <input 
+                      type="number" min="1"
+                      value={manualForm.qty}
+                      onChange={e => setManualForm(p => ({ ...p, qty: e.target.value }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Size</label>
+                    <select 
+                      value={manualForm.size}
+                      onChange={e => setManualForm(p => ({ ...p, size: e.target.value }))}
+                      className="vy-input text-xs cursor-pointer"
+                    >
+                      <option value="Free">Free / Custom</option>
+                      <option value="XS">XS</option>
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="XXL">XXL</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Color</label>
+                    <input 
+                      value={manualForm.color}
+                      onChange={e => setManualForm(p => ({ ...p, color: e.target.value }))}
+                      className="vy-input text-xs" 
+                      placeholder="e.g. Black"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Order Status</label>
+                    <select 
+                      value={manualForm.status}
+                      onChange={e => setManualForm(p => ({ ...p, status: e.target.value }))}
+                      className="vy-input text-xs cursor-pointer"
+                    >
+                      <option value="confirmed">Confirmed (Paid)</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Total Amount (₹)</label>
-                  <input 
-                    type="number"
-                    value={manualForm.amount}
-                    onChange={e => setManualForm(p => ({ ...p, amount: e.target.value }))}
-                    className="vy-input text-xs" 
-                    placeholder="e.g. 1500"
-                  />
-                </div>
-                <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Quantity</label>
-                  <input 
-                    type="number" min="1"
-                    value={manualForm.qty}
-                    onChange={e => setManualForm(p => ({ ...p, qty: e.target.value }))}
-                    className="vy-input text-xs" 
-                  />
+              {/* Shipping Address Section */}
+              <div>
+                <h3 className="text-vy-accent text-[10px] uppercase tracking-widest mb-3 border-b border-vy-border/50 pb-2">Shipping Information (For Label)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Customer Name</label>
+                    <input 
+                      value={manualForm.customerName}
+                      onChange={e => setManualForm(p => ({ ...p, customerName: e.target.value }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Phone Number</label>
+                    <input 
+                      value={manualForm.customerPhone}
+                      onChange={e => setManualForm(p => ({ ...p, customerPhone: e.target.value }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Full Street Address</label>
+                    <textarea 
+                      value={manualForm.street}
+                      onChange={e => setManualForm(p => ({ ...p, street: e.target.value }))}
+                      className="vy-input text-xs resize-none" 
+                      rows={2}
+                      placeholder="House No, Building, Street, Area..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">City</label>
+                    <input 
+                      value={manualForm.city}
+                      onChange={e => setManualForm(p => ({ ...p, city: e.target.value }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">State</label>
+                    <input 
+                      value={manualForm.state}
+                      onChange={e => setManualForm(p => ({ ...p, state: e.target.value }))}
+                      className="vy-input text-xs" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Pincode</label>
+                    <input 
+                      value={manualForm.pincode}
+                      onChange={e => setManualForm(p => ({ ...p, pincode: e.target.value }))}
+                      className="vy-input text-xs font-mono" 
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Size</label>
-                  <select 
-                    value={manualForm.size}
-                    onChange={e => setManualForm(p => ({ ...p, size: e.target.value }))}
-                    className="vy-input text-xs cursor-pointer"
-                  >
-                    <option value="Free">Free / Custom</option>
-                    <option value="XS">XS</option>
-                    <option value="S">S</option>
-                    <option value="M">M</option>
-                    <option value="L">L</option>
-                    <option value="XL">XL</option>
-                    <option value="XXL">XXL</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Status</label>
-                  <select 
-                    value={manualForm.status}
-                    onChange={e => setManualForm(p => ({ ...p, status: e.target.value }))}
-                    className="vy-input text-xs cursor-pointer"
-                  >
-                    <option value="confirmed">Confirmed (Paid)</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
+              <div className="pt-4 flex gap-3 sticky bottom-0 bg-vy-dark border-t border-vy-border py-4">
                 <button 
                   onClick={() => setAddingOrderFor(null)}
                   className="btn-ghost flex-1 text-xs py-3"
@@ -347,7 +427,7 @@ const AdminUsers = () => {
                   className="btn-primary flex-1 text-xs py-3"
                   disabled={submittingOrder}
                 >
-                  {submittingOrder ? 'Creating...' : 'Create Order'}
+                  {submittingOrder ? 'Creating Order...' : 'Create Order & Label'}
                 </button>
               </div>
             </div>
