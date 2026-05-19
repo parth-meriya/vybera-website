@@ -4,11 +4,52 @@
  * Full CRUD for popup banners with optimized image compression
  * and upload progress tracking. Same compression pipeline as products.
  */
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, X, Upload, Eye, EyeOff, Image, ExternalLink, Megaphone, Zap, FolderOpen } from 'lucide-react';
+import { Plus, Trash2, X, Upload, Eye, EyeOff, Image, ExternalLink, Megaphone, Zap, FolderOpen, Crop, Scissors } from 'lucide-react';
+import Cropper from 'react-easy-crop';
 import { getAllPopups, createPopup, updatePopup, deletePopup, togglePopupActive } from '../../firebase/popupBanner';
 import toast from 'react-hot-toast';
+
+// ── Crop Helper — extract cropped area from canvas ────────────
+const getCroppedImg = (imageSrc, croppedAreaPixels) => {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.src = imageSrc;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(
+        img,
+        croppedAreaPixels.x, croppedAreaPixels.y,
+        croppedAreaPixels.width, croppedAreaPixels.height,
+        0, 0,
+        croppedAreaPixels.width, croppedAreaPixels.height
+      );
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return resolve(null);
+          resolve(new File([blob], `banner_cropped_${Date.now()}.webp`, {
+            type: 'image/webp', lastModified: Date.now(),
+          }));
+        },
+        'image/webp',
+        0.8
+      );
+    };
+    img.onerror = () => resolve(null);
+  });
+};
+
+const ASPECT_OPTIONS = [
+  { label: '4:5 Mobile', value: 4 / 5 },
+  { label: '3:2 Desktop', value: 3 / 2 },
+  { label: '1:1 Square', value: 1 },
+  { label: 'Free', value: undefined },
+];
 
 // ── Lightning-Fast Image Compressor ───────────────────────────
 // Key optimizations:
@@ -81,6 +122,13 @@ const AdminPopupBanner = () => {
   const [saving, setSaving] = useState(false);
   const [savingLabel, setSavingLabel] = useState('');
   const [compressing, setCompressing] = useState(false);
+  // Crop state
+  const [showCrop, setShowCrop] = useState(false);
+  const [cropImage, setCropImage] = useState('');
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [cropAspect, setCropAspect] = useState(4 / 5);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileRef = useRef();
 
   const fetchPopups = async () => {
@@ -110,6 +158,8 @@ const AdminPopupBanner = () => {
     setImageFile(null);
     setUploadProgress(0);
     setCompressing(false);
+    setShowCrop(false);
+    setCropImage('');
     setShowEditor(true);
   };
 
@@ -122,6 +172,8 @@ const AdminPopupBanner = () => {
     setSaving(false);
     setSavingLabel('');
     setCompressing(false);
+    setShowCrop(false);
+    setCropImage('');
   };
 
   const onFileChange = (e) => {
@@ -129,26 +181,49 @@ const AdminPopupBanner = () => {
     if (!file) return;
     if (fileRef.current) fileRef.current.value = '';
 
-    // INSTANT preview — zero delay
-    setImagePreview(URL.createObjectURL(file));
+    // Open crop modal with the selected image
+    const url = URL.createObjectURL(file);
+    setCropImage(url);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setShowCrop(true);
+  };
 
-    // Small files don't need compression
-    if (file.size < 500 * 1024) {
-      setImageFile(file);
-      setSavingLabel(`Ready — ${formatBytes(file.size)}`);
+  const onCropComplete = useCallback((_, croppedPixels) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  const handleCropConfirm = async () => {
+    if (!croppedAreaPixels || !cropImage) return;
+
+    setSavingLabel('Cropping...');
+    setCompressing(true);
+    setShowCrop(false);
+
+    const croppedFile = await getCroppedImg(cropImage, croppedAreaPixels);
+    if (!croppedFile) {
+      toast.error('Crop failed. Try again.', { className: 'toast-vybera' });
+      setCompressing(false);
       return;
     }
 
-    // Large files: compress in background
-    setCompressing(true);
-    setSavingLabel(`Optimizing ${formatBytes(file.size)}...`);
+    // Set preview from cropped blob
+    setImagePreview(URL.createObjectURL(croppedFile));
 
-    compressImageFast(file).then((compressed) => {
-      setImageFile(compressed);
+    // Compress if needed
+    if (croppedFile.size > 500 * 1024) {
+      setSavingLabel(`Optimizing ${formatBytes(croppedFile.size)}...`);
+      compressImageFast(croppedFile).then((compressed) => {
+        setImageFile(compressed);
+        setCompressing(false);
+        const ratio = ((1 - compressed.size / croppedFile.size) * 100).toFixed(0);
+        setSavingLabel(`Ready — ${formatBytes(compressed.size)} (${ratio}% reduced)`);
+      });
+    } else {
+      setImageFile(croppedFile);
       setCompressing(false);
-      const ratio = ((1 - compressed.size / file.size) * 100).toFixed(0);
-      setSavingLabel(`Ready — ${formatBytes(compressed.size)} (${ratio}% reduced)`);
-    });
+      setSavingLabel(`Ready — ${formatBytes(croppedFile.size)}`);
+    }
   };
 
   // Pick a local image from public/popbanner/ — INSTANT, no upload
@@ -372,13 +447,30 @@ const AdminPopupBanner = () => {
                         className="w-full h-full object-cover"
                         onError={(e) => { e.target.src = PLACEHOLDER; }}
                       />
-                      <button
-                        type="button"
-                        onClick={() => { setImagePreview(''); setImageFile(null); }}
-                        className="absolute top-2 right-2 w-7 h-7 bg-black/60 border border-white/10 flex items-center justify-center text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-all"
-                      >
-                        <X size={14} />
-                      </button>
+                      <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                        {/* Re-crop button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCropImage(imagePreview);
+                            setCrop({ x: 0, y: 0 });
+                            setZoom(1);
+                            setShowCrop(true);
+                          }}
+                          className="w-7 h-7 bg-black/60 border border-white/10 flex items-center justify-center text-vy-accent hover:text-white transition-all"
+                          title="Crop image"
+                        >
+                          <Crop size={13} />
+                        </button>
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={() => { setImagePreview(''); setImageFile(null); setSavingLabel(''); }}
+                          className="w-7 h-7 bg-black/60 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div
@@ -386,10 +478,112 @@ const AdminPopupBanner = () => {
                       className="aspect-[3/2] border-2 border-dashed border-vy-border flex flex-col items-center justify-center cursor-pointer hover:border-vy-accent/50 transition-all bg-vy-card group"
                     >
                       <Upload size={28} className="text-vy-border mb-2 group-hover:text-vy-accent transition-colors" />
-                      <p className="text-vy-grey text-xs tracking-wider">Click to upload</p>
+                      <p className="text-vy-grey text-xs tracking-wider">Click to upload & crop</p>
                       <p className="text-vy-border text-[10px] mt-1">Auto-compressed to WebP ≤500KB</p>
                     </div>
                   )}
+
+                  {/* ── Crop Modal ──────────────────────────── */}
+                  <AnimatePresence>
+                    {showCrop && cropImage && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[60] bg-black/90 flex flex-col"
+                      >
+                        {/* Crop Header */}
+                        <div className="flex items-center justify-between px-4 py-3 bg-vy-dark border-b border-vy-border">
+                          <div className="flex items-center gap-2">
+                            <Scissors size={16} className="text-vy-accent" />
+                            <span className="text-vy-white text-sm font-semibold tracking-wider">Crop Banner Image</span>
+                          </div>
+                          <button
+                            onClick={() => setShowCrop(false)}
+                            className="text-vy-grey hover:text-vy-white transition-colors"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+
+                        {/* Cropper Area */}
+                        <div className="flex-1 relative">
+                          <Cropper
+                            image={cropImage}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={cropAspect}
+                            onCropChange={setCrop}
+                            onZoomChange={setZoom}
+                            onCropComplete={onCropComplete}
+                            cropShape="rect"
+                            showGrid={true}
+                            style={{
+                              containerStyle: { background: '#0a0a0a' },
+                              cropAreaStyle: { border: '2px solid rgba(183, 142, 92, 0.6)' },
+                            }}
+                          />
+                        </div>
+
+                        {/* Crop Controls */}
+                        <div className="px-4 py-3 bg-vy-dark border-t border-vy-border space-y-3">
+                          {/* Aspect Ratio Selector */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-vy-grey text-[10px] tracking-widest uppercase w-16">Ratio</span>
+                            <div className="flex gap-1.5">
+                              {ASPECT_OPTIONS.map((opt) => (
+                                <button
+                                  key={opt.label}
+                                  type="button"
+                                  onClick={() => setCropAspect(opt.value)}
+                                  className={`px-2.5 py-1 text-[9px] font-bold tracking-wider uppercase border transition-all ${
+                                    cropAspect === opt.value
+                                      ? 'border-vy-accent bg-vy-accent/20 text-vy-accent'
+                                      : 'border-vy-border text-vy-grey hover:border-vy-grey'
+                                  }`}
+                                >
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Zoom Slider */}
+                          <div className="flex items-center gap-3">
+                            <span className="text-vy-grey text-[10px] tracking-widest uppercase w-16">Zoom</span>
+                            <input
+                              type="range"
+                              min={1}
+                              max={3}
+                              step={0.05}
+                              value={zoom}
+                              onChange={(e) => setZoom(Number(e.target.value))}
+                              className="flex-1 accent-[#B78E5C] h-1 cursor-pointer"
+                            />
+                            <span className="text-vy-accent text-xs font-mono w-10 text-right">{zoom.toFixed(1)}x</span>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setShowCrop(false)}
+                              className="btn-ghost flex-1 text-xs"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCropConfirm}
+                              className="btn-primary flex-1 text-xs flex items-center justify-center gap-2"
+                            >
+                              <Crop size={13} /> Apply Crop
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   <input
                     ref={fileRef}
