@@ -8,23 +8,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 import { getActivePopup } from '../../firebase/popupBanner';
 
 const SESSION_KEY = 'vy_popup_shown';
 const PLACEHOLDER = 'https://placehold.co/600x400/1C2A21/B78E5C?text=VYBERA';
 
 const PopupBanner = () => {
-  const { user } = useAuth();
   const [popup, setPopup] = useState(null);
   const [visible, setVisible] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-
-    // Only show once per session (per login)
+    // Show once per session for every visitor
     const alreadyShown = sessionStorage.getItem(SESSION_KEY);
     if (alreadyShown) return;
 
@@ -39,19 +35,19 @@ const PopupBanner = () => {
         img.src = data.imageUrl;
         img.onload = () => {
           setImgLoaded(true);
-          // Small delay for smoother UX after login transition
-          setTimeout(() => setVisible(true), 600);
+          // Small delay so page loads first
+          setTimeout(() => setVisible(true), 1000);
         };
         img.onerror = () => {
           setImgError(true);
           setImgLoaded(true);
-          setTimeout(() => setVisible(true), 600);
+          setTimeout(() => setVisible(true), 1000);
         };
       }
     };
 
     fetchPopup();
-  }, [user]);
+  }, []);
 
   const handleClose = useCallback(() => {
     setVisible(false);
