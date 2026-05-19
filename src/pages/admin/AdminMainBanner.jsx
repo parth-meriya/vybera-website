@@ -347,9 +347,9 @@ const AdminMainBanner = () => {
             <p className="text-vy-grey text-[10px] mb-3">Select from <code className="text-vy-accent">/public/mainbanner/</code>.</p>
             <div className="flex flex-wrap gap-2">
               {[
-                '/mainbanner/banner1.webp',
-                '/mainbanner/banner2.webp',
-                '/mainbanner/banner1.png'
+                '/mainbanner/anniversary_banner.png',
+                '/hero_banner.png',
+                '/anniversary_manual.png'
               ].map((path) => (
                 <button
                   key={path}
