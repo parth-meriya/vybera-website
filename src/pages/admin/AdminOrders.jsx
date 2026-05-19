@@ -77,13 +77,14 @@ const AdminOrders = () => {
         }
       }
 
-      // Search (name, email, order ID)
+      // Search (name, email, phone, order ID)
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        const name = (o.address?.name || '').toLowerCase();
+        const name = (o.customerName || o.address?.name || '').toLowerCase();
         const email = (o.userEmail || o.address?.email || '').toLowerCase();
+        const phone = (o.customerPhone || o.address?.phone || '').toLowerCase();
         const id = o.id.toLowerCase();
-        if (!name.includes(q) && !email.includes(q) && !id.includes(q)) return false;
+        if (!name.includes(q) && !email.includes(q) && !phone.includes(q) && !id.includes(q)) return false;
       }
 
       return true;
@@ -267,8 +268,11 @@ const AdminOrders = () => {
                   >
                     <td className="px-4 py-3 text-vy-grey text-xs font-mono">{order.id.slice(0, 10)}...</td>
                     <td className="px-4 py-3">
-                      <p className="text-vy-white text-xs font-medium">{order.address?.name || '—'}</p>
+                      <p className="text-vy-white text-xs font-medium">{order.customerName || order.address?.name || '—'}</p>
                       <p className="text-vy-grey text-xs">{order.userEmail || order.address?.email || ''}</p>
+                      {(order.customerPhone || order.address?.phone) && (
+                        <p className="text-vy-light text-[10px] font-mono mt-0.5">📱 +91 {order.customerPhone || order.address?.phone}</p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-vy-grey text-xs">{order.products?.length || 0} item(s)</td>
                     <td className="px-4 py-3 text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</td>
@@ -376,7 +380,7 @@ const AdminOrders = () => {
                             
                             <button 
                               onClick={() => handleMessageCustomer(order)}
-                              className="mt-6 w-full py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
+                              className="mt-6 w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
                             >
                               <MessageCircle size={14} /> Message on WhatsApp
                             </button>

@@ -1,44 +1,82 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle, XCircle, Phone } from 'lucide-react';
 import { signUp, signInWithGoogle, validatePassword } from '../firebase/auth';
+import { PASSWORD_RULES, validateName, validatePhone, validatePasswordNotEmail, sanitizeName, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
 
-// Password strength requirement display
+// Password strength requirement display (uses shared rules)
 const requirements = [
-  { label: '8+ characters', test: (p) => p.length >= 8 },
-  { label: 'Uppercase letter', test: (p) => /[A-Z]/.test(p) },
-  { label: 'Lowercase letter', test: (p) => /[a-z]/.test(p) },
-  { label: 'Number', test: (p) => /[0-9]/.test(p) },
-  { label: 'Special character (!@#$…)', test: (p) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(p) },
+  ...PASSWORD_RULES,
+  { label: 'Not same as email', test: (p, e) => !e || p.toLowerCase() !== e.toLowerCase() },
 ];
 
 const Signup = () => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [showPass, setShowPass] = useState(false);
   const [showRequirements, setShowRequirements] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
   const navigate = useNavigate();
 
-  const onChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+  const onChange = e => {
+    const { name, value } = e.target;
+    let sanitized = value;
 
-  const passwordScore = requirements.filter(r => r.test(form.password)).length;
-  const isPasswordValid = passwordScore === requirements.length;
+    // Real-time sanitization
+    if (name === 'name') sanitized = sanitizeName(value);
+    if (name === 'phone') sanitized = sanitizePhone(value);
+
+    setForm(f => ({ ...f, [name]: sanitized }));
+
+    // Clear field error on change
+    if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  // Real-time validation on blur
+  const onBlur = (e) => {
+    const { name, value } = e.target;
+    let error = '';
+    if (name === 'name') error = validateName(value);
+    if (name === 'phone') error = validatePhone(value);
+    if (name === 'password') {
+      const emailCheck = validatePasswordNotEmail(value, form.email);
+      if (emailCheck) error = emailCheck;
+    }
+    if (error) setFieldErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const passwordScore = requirements.filter(r => r.test(form.password, form.email)).length;
+  const isPasswordValid = PASSWORD_RULES.every(r => r.test(form.password)) && 
+    (!form.email || form.password.toLowerCase() !== form.email.toLowerCase());
+
+  const isPhoneValid = /^[6-9]\d{9}$/.test(form.phone);
+  const isNameValid = /^[A-Za-z ]+$/.test(form.name.trim()) && form.name.trim().length >= 2;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Client-side password policy enforcement
-    const policyErrors = validatePassword(form.password);
-    if (policyErrors.length > 0) {
-      toast.error(`Password must contain ${policyErrors[0]}.`, { className: 'toast-vybera' });
+    // Validate all fields
+    const nameErr = validateName(form.name);
+    const phoneErr = validatePhone(form.phone);
+    const emailCheck = validatePasswordNotEmail(form.password, form.email);
+
+    if (nameErr || phoneErr || emailCheck) {
+      const errors = {};
+      if (nameErr) errors.name = nameErr;
+      if (phoneErr) errors.phone = phoneErr;
+      if (emailCheck) errors.password = emailCheck;
+      setFieldErrors(errors);
+      toast.error(nameErr || phoneErr || emailCheck, { className: 'toast-vybera' });
       return;
     }
-    
-    if (form.password === form.email) {
-      toast.error('Password cannot be same as email', { className: 'toast-vybera' });
+
+    // Client-side password policy enforcement (includes email check)
+    const policyErrors = validatePassword(form.password, form.email);
+    if (policyErrors.length > 0) {
+      toast.error(`Password must contain ${policyErrors[0]}.`, { className: 'toast-vybera' });
       return;
     }
 
@@ -46,20 +84,10 @@ const Signup = () => {
       toast.error('Please enter your full name.', { className: 'toast-vybera' });
       return;
     }
-    
-    if (!/^[A-Za-z ]+$/.test(form.name.trim())) {
-      toast.error('Name can contain only letters', { className: 'toast-vybera' });
-      return;
-    }
-    
-    if (!/^[6-9]\d{9}$/.test(form.phone.trim())) {
-      toast.error('Please enter a valid 10-digit Indian mobile number', { className: 'toast-vybera' });
-      return;
-    }
 
     setLoading(true);
     try {
-      await signUp(form.email.trim(), form.password, form.name.trim(), form.phone.trim());
+      await signUp(form.email.trim(), form.password, form.name.trim(), form.phone);
       setDone(true); // Show verification prompt instead of navigating away
     } catch (err) {
       console.error('Signup error:', err);
@@ -175,6 +203,7 @@ const Signup = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Full Name */}
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Full Name</label>
             <input
@@ -183,12 +212,27 @@ const Signup = () => {
               type="text"
               value={form.name}
               onChange={onChange}
+              onBlur={onBlur}
               required
               autoComplete="name"
-              className="vy-input"
-              placeholder="Your name"
+              className={`vy-input ${fieldErrors.name ? 'border-red-500/60' : ''}`}
+              placeholder="Your name (letters only)"
             />
+            <AnimatePresence>
+              {fieldErrors.name && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+                >
+                  <XCircle size={11} className="shrink-0" /> {fieldErrors.name}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* Email */}
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Email</label>
             <input
@@ -203,25 +247,50 @@ const Signup = () => {
               placeholder="you@example.com"
             />
           </div>
+
+          {/* Mobile Number */}
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Mobile Number</label>
-            <div className="flex">
-              <span className="bg-vy-dark border border-vy-border border-r-0 text-vy-grey px-4 py-3 text-sm flex items-center justify-center">
-                +91
-              </span>
+            <div className="relative flex">
+              <div className="flex items-center gap-1.5 px-3 border border-vy-border border-r-0 bg-vy-border/10 text-vy-grey text-sm select-none shrink-0">
+                <Phone size={13} className="text-vy-grey" />
+                <span className="text-xs font-medium tracking-wider">+91</span>
+              </div>
               <input
                 id="signup-phone"
                 name="phone"
                 type="tel"
+                inputMode="numeric"
                 value={form.phone}
                 onChange={onChange}
+                onBlur={onBlur}
                 required
-                maxLength="10"
-                className="vy-input flex-1"
-                placeholder="10-digit mobile number"
+                autoComplete="tel"
+                maxLength={10}
+                className={`vy-input flex-1 ${fieldErrors.phone ? 'border-red-500/60' : ''}`}
+                placeholder="9876543210"
               />
             </div>
+            <AnimatePresence>
+              {fieldErrors.phone && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+                >
+                  <XCircle size={11} className="shrink-0" /> {fieldErrors.phone}
+                </motion.p>
+              )}
+            </AnimatePresence>
+            {form.phone && !fieldErrors.phone && isPhoneValid && (
+              <p className="text-green-400 text-xs mt-1.5 flex items-center gap-1">
+                <CheckCircle size={11} className="shrink-0" /> Valid mobile number
+              </p>
+            )}
           </div>
+
+          {/* Password */}
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Password</label>
             <div className="relative">
@@ -232,9 +301,10 @@ const Signup = () => {
                 value={form.password}
                 onChange={onChange}
                 onFocus={() => setShowRequirements(true)}
+                onBlur={onBlur}
                 required
                 autoComplete="new-password"
-                className="vy-input pr-12"
+                className={`vy-input pr-12 ${fieldErrors.password ? 'border-red-500/60' : ''}`}
                 placeholder="Min. 8 characters"
               />
               <button
@@ -247,17 +317,31 @@ const Signup = () => {
               </button>
             </div>
 
+            {/* Password error (email match) */}
+            <AnimatePresence>
+              {fieldErrors.password && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+                >
+                  <XCircle size={11} className="shrink-0" /> {fieldErrors.password}
+                </motion.p>
+              )}
+            </AnimatePresence>
+
             {/* Password strength bar */}
             {form.password.length > 0 && (
               <div className="mt-2 flex gap-1">
-                {[1, 2, 3, 4, 5].map(i => (
+                {[1, 2, 3, 4, 5, 6].map(i => (
                   <div
                     key={i}
                     className={`h-1 flex-1 rounded-full transition-all duration-300 ${
                       passwordScore >= i
                         ? passwordScore <= 2 ? 'bg-red-500'
                         : passwordScore <= 3 ? 'bg-yellow-500'
-                        : passwordScore <= 4 ? 'bg-blue-400'
+                        : passwordScore <= 5 ? 'bg-blue-400'
                         : 'bg-green-500'
                         : 'bg-vy-border'
                     }`}
@@ -276,7 +360,7 @@ const Signup = () => {
                   className="mt-3 space-y-1 overflow-hidden"
                 >
                   {requirements.map((req) => {
-                    const passed = req.test(form.password);
+                    const passed = req.test(form.password, form.email);
                     return (
                       <li key={req.label} className={`flex items-center gap-2 text-xs transition-colors ${passed ? 'text-green-400' : 'text-vy-grey'}`}>
                         {passed
@@ -296,7 +380,7 @@ const Signup = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
-            disabled={loading || !isPasswordValid}
+            disabled={loading || !isPasswordValid || !isPhoneValid || !isNameValid}
             className="btn-primary w-full flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
           >
             {loading

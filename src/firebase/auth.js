@@ -47,21 +47,30 @@ export const validatePassword = (password, email = '') => {
 };
 
 // ── Sign Up ───────────────────────────────────────────────────
-export const signUp = async (email, password, name, phone) => {
-  // Enforce password policy before Firebase call
-  const policyErrors = validatePassword(password);
+export const signUp = async (email, password, name, phoneNumber) => {
+  // Sanitize all inputs
+  const cleanName = sanitizeName(name).trim();
+  const cleanEmail = sanitizeInput(email).trim().toLowerCase();
+  const cleanPhone = (phoneNumber || '').replace(/\D/g, '');
+
+  // Validate name (letters and spaces only)
+  const nameError = validateName(cleanName);
+  if (nameError) throw new Error(nameError);
+
+  // Validate phone (Indian 10-digit mobile)
+  const phoneError = validatePhone(cleanPhone);
+  if (phoneError) throw new Error(phoneError);
+
+  // Enforce password policy (includes password ≠ email check)
+  const policyErrors = validatePassword(password, cleanEmail);
   if (policyErrors.length > 0) {
-    throw new Error(`Password must contain ${policyErrors.join(', ')}.`);
+    throw new Error(`Password must contain ${policyErrors[0]}.`);
   }
 
-  if (password === email) {
-    throw new Error('Password cannot be same as email');
-  }
-
-  const userCred = await createUserWithEmailAndPassword(auth, email, password);
+  const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
 
   try {
-    await updateProfile(userCred.user, { displayName: name });
+    await updateProfile(userCred.user, { displayName: cleanName });
     
     // Send verification email immediately after account creation
     await sendEmailVerification(userCred.user);
@@ -69,9 +78,9 @@ export const signUp = async (email, password, name, phone) => {
     // All new users get 'user' role — admin must be set server-side via Firebase Admin SDK
     await setDoc(doc(db, 'users', userCred.user.uid), {
       uid: userCred.user.uid,
-      name,
-      email,
-      phoneNumber: phone || null,
+      name: cleanName,
+      email: cleanEmail,
+      phoneNumber: cleanPhone,
       role: 'user',           // Never trust client for role assignment
       emailVerified: false,
       provider: 'email',
@@ -134,8 +143,9 @@ export const signInWithGoogle = async () => {
     // New Google user (Case 2)
     await setDoc(userRef, {
       uid: user.uid,
-      name: user.displayName,
+      name: user.displayName || '',
       email: user.email,
+      phoneNumber: user.phoneNumber || null,
       role: 'user',
       emailVerified: true,
       provider: 'google',

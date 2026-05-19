@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { ShoppingBag, CheckCircle, AlertCircle, Loader2, Phone } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder, updateOrderPayment } from '../firebase/orders';
 import { getUserProfile, updateUserProfile } from '../firebase/users';
 import { openRazorpay } from '../utils/razorpay';
 import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
+import { validateName, validatePhone, sanitizeName, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
 
 const PLACEHOLDER = 'https://placehold.co/80x100/141414/888888?text=NX';
@@ -156,7 +157,11 @@ const Checkout = () => {
 
   const onChange = e => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    let sanitized = value;
+    // Real-time sanitization for name and phone
+    if (name === 'name') sanitized = sanitizeName(value);
+    if (name === 'phone') sanitized = sanitizePhone(value);
+    setForm(f => ({ ...f, [name]: sanitized }));
     if (errors[name]) setErrors(e => ({ ...e, [name]: '' }));
   };
 
@@ -171,12 +176,18 @@ const Checkout = () => {
     const safeState = String(form.state || '');
     const safePincode = String(form.pincode || '');
 
-    const phoneDigits = safePhone.replace(/\D/g, '');
     const pincodeDigits = safePincode.replace(/\D/g, '');
 
-    if (!safeName.trim()) newErrors.name = 'Name is required';
+    // Name: letters and spaces only
+    const nameErr = validateName(safeName);
+    if (nameErr) newErrors.name = nameErr;
+
     if (!safeEmail.trim() || !/\S+@\S+\.\S+/.test(safeEmail)) newErrors.email = 'Valid email required';
-    if (!/^[6-9]\d{9}$/.test(safePhone.trim())) newErrors.phone = 'Valid 10-digit Indian mobile required';
+
+    // Phone: Indian mobile validation (starts with 6-9, exactly 10 digits)
+    const phoneErr = validatePhone(safePhone);
+    if (phoneErr) newErrors.phone = phoneErr;
+
     if (!safeAddress.trim()) newErrors.address = 'Address is required';
     if (!safeCity.trim()) newErrors.city = 'City is required';
     if (!safeState.trim()) newErrors.state = 'State is required';
@@ -422,7 +433,7 @@ const Checkout = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className={errors.name ? 'relative' : ''}>
                     <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Full Name *</label>
-                    <input name="name" value={form.name} onChange={onChange} className={`vy-input ${errors.name ? 'border-red-500/60' : ''}`} placeholder="Your full name" />
+                    <input name="name" value={form.name} onChange={onChange} className={`vy-input ${errors.name ? 'border-red-500/60' : ''}`} placeholder="Letters only" />
                     {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                   </div>
 
@@ -433,8 +444,14 @@ const Checkout = () => {
                   </div>
 
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Phone *</label>
-                    <input name="phone" value={form.phone} onChange={onChange} className={`vy-input ${errors.phone ? 'border-red-500/60' : ''}`} placeholder="10-digit mobile" maxLength={10} />
+                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Mobile Number *</label>
+                    <div className="relative flex">
+                      <div className="flex items-center gap-1.5 px-3 border border-vy-border border-r-0 bg-vy-border/10 text-vy-grey text-sm select-none shrink-0">
+                        <Phone size={13} className="text-vy-grey" />
+                        <span className="text-xs font-medium tracking-wider">+91</span>
+                      </div>
+                      <input name="phone" type="tel" inputMode="numeric" value={form.phone} onChange={onChange} className={`vy-input flex-1 ${errors.phone ? 'border-red-500/60' : ''}`} placeholder="9876543210" maxLength={10} />
+                    </div>
                     {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                   </div>
 

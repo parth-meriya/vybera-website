@@ -12,6 +12,7 @@ import {
   Star,
   LogOut,
   Percent,
+  Megaphone,
 } from 'lucide-react';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
@@ -23,6 +24,7 @@ const navItems = [
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/coupons', label: 'Coupons', icon: Tag },
   { to: '/admin/custom-orders', label: 'Custom Orders', icon: Paintbrush },
+  { to: '/admin/popup-banners', label: 'Popup Banners', icon: Megaphone },
   { to: '/admin/support', label: 'Support', icon: MessageSquare },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/content', label: 'Content', icon: FileText },

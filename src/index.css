@@ -239,3 +239,41 @@ body {
   opacity: 0;
   transition: opacity 300ms;
 }
+
+/* ── Validation & Form Enhancement Styles ──────────────────── */
+
+/* Error state input highlight */
+.vy-input.border-red-500\/60 {
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+  animation: field-shake 0.3s ease-in-out;
+}
+
+@keyframes field-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+/* Phone input group styling */
+.vy-input:focus {
+  border-color: var(--vy-accent);
+  box-shadow: 0 0 0 1px rgba(183, 142, 92, 0.2);
+}
+
+/* WhatsApp button hover glow */
+button[title="Message on WhatsApp"]:hover {
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+}
+
+/* Validation checkmark animation */
+@keyframes check-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.text-green-400 svg {
+  animation: check-pop 0.25s ease-out;
+}

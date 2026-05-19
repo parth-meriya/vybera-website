@@ -11,6 +11,7 @@ import PageTransition from './components/ui/PageTransition';
 import BackgroundMusic from './components/ui/BackgroundMusic';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/ui/ProtectedRoute';
+import PopupBanner from './components/ui/PopupBanner';
 
 // User Pages
 import Home from './pages/Home';
@@ -45,6 +46,7 @@ import AdminContent from './pages/admin/AdminContent';
 import AdminCustomOrders from './pages/admin/AdminCustomOrders';
 import AdminSupport from './pages/admin/AdminSupport';
 import AdminReviews from './pages/admin/AdminReviews';
+import AdminPopupBanner from './pages/admin/AdminPopupBanner';
 
 const UserLayout = ({ children }) => (
   <>
@@ -62,6 +64,7 @@ const App = () => {
       <ScrollToTop />
       <CustomCursor />
       <BackgroundMusic />
+      <PopupBanner />
       <Toaster
         position="bottom-right"
         toastOptions={{
@@ -188,6 +191,7 @@ const App = () => {
             <Route path="support" element={<AdminSupport />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="content" element={<AdminContent />} />
+            <Route path="popup-banners" element={<AdminPopupBanner />} />
           </Route>
         </Routes>
       </AnimatePresence>

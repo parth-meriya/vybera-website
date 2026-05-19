@@ -89,9 +89,87 @@ app.post('/api/create-order', async (req, res) => {
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'VYBERA Production API' }));
 
+// ── Server-Side Validation Helpers ──────────────────────────────
+const NAME_REGEX = /^[A-Za-z ]+$/;
+const PHONE_REGEX = /^[6-9]\d{9}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validateServerInputs = (data) => {
+  const errors = [];
+  const { name, email, phone, password } = data;
+
+  // Name validation
+  if (name !== undefined) {
+    const trimName = (name || '').trim();
+    if (!trimName) errors.push('Name is required');
+    else if (!NAME_REGEX.test(trimName)) errors.push('Name can contain only letters');
+    else if (trimName.length < 2) errors.push('Name must be at least 2 characters');
+  }
+
+  // Email validation
+  if (email !== undefined) {
+    const trimEmail = (email || '').trim();
+    if (!trimEmail || !EMAIL_REGEX.test(trimEmail)) errors.push('Valid email required');
+  }
+
+  // Phone validation (Indian mobile)
+  if (phone !== undefined) {
+    const digits = (phone || '').replace(/\D/g, '');
+    if (!digits) errors.push('Mobile number is required');
+    else if (!PHONE_REGEX.test(digits)) errors.push('Enter a valid Indian mobile number (10 digits, starts with 6-9)');
+  }
+
+  // Password validation
+  if (password !== undefined) {
+    if (password.length < 8) errors.push('Password must be at least 8 characters');
+    if (!/[A-Z]/.test(password)) errors.push('Password needs an uppercase letter');
+    if (!/[a-z]/.test(password)) errors.push('Password needs a lowercase letter');
+    if (!/[0-9]/.test(password)) errors.push('Password needs a number');
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password)) errors.push('Password needs a special character');
+    if (email && password.toLowerCase() === email.toLowerCase()) errors.push('Password cannot be same as email');
+  }
+
+  return errors;
+};
+
+// Input sanitizer middleware
+const sanitizeBody = (req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    for (const key of Object.keys(req.body)) {
+      if (typeof req.body[key] === 'string') {
+        req.body[key] = req.body[key].replace(/[<>]/g, '').replace(/javascript:/gi, '');
+      }
+    }
+  }
+  next();
+};
+
+app.use(sanitizeBody);
+
+// ── Validate Signup Data (server-side check) ────────────────────
+app.post('/api/validate-signup', (req, res) => {
+  const errors = validateServerInputs(req.body);
+  if (errors.length > 0) {
+    return res.status(400).json({ valid: false, errors });
+  }
+  return res.json({ valid: true });
+});
+
+// ── Validate Order Contact (server-side check) ──────────────────
+app.post('/api/validate-order-contact', (req, res) => {
+  const { name, email, phone } = req.body;
+  const errors = validateServerInputs({ name, email, phone });
+  if (errors.length > 0) {
+    return res.status(400).json({ valid: false, errors });
+  }
+  return res.json({ valid: true });
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`\n🚀 VYBERA API Server running on port ${PORT}`);
   console.log(`   Health Check: GET /api/health`);
-  console.log(`   Razorpay: POST /api/create-order\n`);
+  console.log(`   Razorpay: POST /api/create-order`);
+  console.log(`   Validation: POST /api/validate-signup`);
+  console.log(`   Validation: POST /api/validate-order-contact\n`);
 });
