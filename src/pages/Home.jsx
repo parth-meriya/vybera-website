@@ -321,7 +321,7 @@ const Home = () => {
           >
             "Not just clothing.<br />
             <span className="text-vy-grey">A mindset for those</span><br />
-            who wear the next era."
+            who wear the era of vibes."
           </motion.p>
           <motion.div
             initial={{ scaleX: 0 }}

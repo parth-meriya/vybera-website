@@ -63,7 +63,7 @@ export function printShippingLabel(order) {
   <div class="label">
     <div class="header">
       <h1>VYBERA</h1>
-      <p>Wear The Next</p>
+      <p>The Era of Vibes</p>
     </div>
     
     <div class="section">
@@ -151,7 +151,7 @@ export function printOrderInvoice(order) {
   <div class="header">
     <div class="brand">
       <h1>VYBERA</h1>
-      <p>Wear The Next</p>
+      <p>The Era of Vibes</p>
     </div>
     <div class="invoice-meta">
       <strong>INVOICE</strong><br>

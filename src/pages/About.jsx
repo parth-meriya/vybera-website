@@ -83,7 +83,7 @@ const About = () => {
                 Our drops are limited. Our standards are not. Each collection is produced in small batches to ensure quality and exclusivity. When a drop ends, it ends — no restocks, no compromises.
               </p>
               <p className="text-vy-white font-medium text-lg">
-                Wear the Next. Always.
+                The Era of Vibes. Always.
               </p>
             </motion.div>
           )}

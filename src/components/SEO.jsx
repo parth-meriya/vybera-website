@@ -24,7 +24,7 @@ const SEO = ({
   image = DEFAULT_OG_IMAGE,
   type = 'website',
 }) => {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Wear The Next`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — The Era of Vibes`;
   const canonicalUrl = `${SITE_URL}${path}`;
 
   return (
