@@ -85,7 +85,8 @@ const CustomCursor = () => {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-[9999] flex items-center justify-center mix-blend-difference"
+      className="fixed top-0 left-0 pointer-events-none z-[999999] flex items-center justify-center mix-blend-difference"
+      style={{ zIndex: 999999 }}
       animate={{
         x: position.x - (isPointer ? 14 : 10), // Adjust centering based on size
         y: position.y - (isPointer ? 14 : 10),
