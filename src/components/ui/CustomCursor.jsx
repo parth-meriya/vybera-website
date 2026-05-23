@@ -30,41 +30,56 @@ const CustomCursor = () => {
       setPosition({ x, y });
     };
 
-    const handleMouseLeave = () => setHidden(true);
+    const handleMouseLeave = (e) => {
+      if (
+        e.clientY <= 0 || 
+        e.clientX <= 0 || 
+        e.clientX >= window.innerWidth || 
+        e.clientY >= window.innerHeight
+      ) {
+        setHidden(true);
+      }
+    };
+    
     const handleMouseEnter = () => setHidden(false);
 
     const handleMouseOver = (e) => {
+      if (!e.target) return;
       const target = e.target;
-      if (
-        target.tagName.toLowerCase() === 'a' ||
-        target.tagName.toLowerCase() === 'button' ||
-        target.tagName.toLowerCase() === 'input' ||
-        target.tagName.toLowerCase() === 'textarea' ||
-        target.closest('a') ||
-        target.closest('button') ||
-        window.getComputedStyle(target).cursor === 'pointer'
-      ) {
-        setIsPointer(true);
-      } else {
+      try {
+        if (
+          target.tagName?.toLowerCase() === 'a' ||
+          target.tagName?.toLowerCase() === 'button' ||
+          target.tagName?.toLowerCase() === 'input' ||
+          target.tagName?.toLowerCase() === 'textarea' ||
+          target.closest('a') ||
+          target.closest('button') ||
+          window.getComputedStyle(target).cursor === 'pointer'
+        ) {
+          setIsPointer(true);
+        } else {
+          setIsPointer(false);
+        }
+      } catch (err) {
         setIsPointer(false);
       }
     };
 
-    window.addEventListener('mousemove', updatePosition);
-    window.addEventListener('touchmove', updatePosition, { passive: true });
-    window.addEventListener('touchstart', updatePosition, { passive: true });
-    window.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('mouseenter', handleMouseEnter);
-    window.addEventListener('mouseover', handleMouseOver);
+    document.addEventListener('mousemove', updatePosition);
+    document.addEventListener('touchmove', updatePosition, { passive: true });
+    document.addEventListener('touchstart', updatePosition, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnter);
+    document.addEventListener('mouseover', handleMouseOver);
 
     return () => {
       document.head.removeChild(style);
-      window.removeEventListener('mousemove', updatePosition);
-      window.removeEventListener('touchmove', updatePosition);
-      window.removeEventListener('touchstart', updatePosition);
-      window.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('mouseenter', handleMouseEnter);
-      window.removeEventListener('mouseover', handleMouseOver);
+      document.removeEventListener('mousemove', updatePosition);
+      document.removeEventListener('touchmove', updatePosition);
+      document.removeEventListener('touchstart', updatePosition);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnter);
+      document.removeEventListener('mouseover', handleMouseOver);
     };
   }, []);
 
