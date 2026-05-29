@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { createOrder, updateOrderPayment } from '../firebase/orders';
 import { getUserProfile, updateUserProfile } from '../firebase/users';
+import { getRewardSettings } from '../firebase/rewards';
 import { openRazorpay } from '../utils/razorpay';
 import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
 import { validateName, validatePhone, sanitizeName, sanitizePhone } from '../utils/validation';
@@ -134,18 +135,28 @@ const Checkout = () => {
   const [saveAddress, setSaveAddress] = useState(true);
   const [errors, setErrors] = useState({});
 
+  const [rewardPoints, setRewardPoints] = useState(0);
+  const [useRewards, setUseRewards] = useState(false);
+  const [rewardsSettings, setRewardsSettings] = useState({ enabled: true, minPayable: 99, redemptionRate: 1 });
+
   useEffect(() => {
     if (user) {
       getUserProfile(user.uid).then(profile => {
-        if (profile && profile.savedAddress) {
-          setForm(f => ({
-            ...f,
-            ...profile.savedAddress,
-            name: f.name || profile.savedAddress.name,
-            email: f.email || profile.savedAddress.email
-          }));
+        if (profile) {
+          if (profile.savedAddress) {
+            setForm(f => ({
+              ...f,
+              ...profile.savedAddress,
+              name: f.name || profile.savedAddress.name,
+              email: f.email || profile.savedAddress.email
+            }));
+          }
+          if (profile.rewardPoints !== undefined) {
+            setRewardPoints(profile.rewardPoints);
+          }
         }
       });
+      getRewardSettings().then(setRewardsSettings).catch(console.error);
     }
   }, [user]);
 
@@ -227,6 +238,15 @@ const Checkout = () => {
       return;
     }
 
+    const maxDiscountAllowed = Math.max(0, total - rewardsSettings.minPayable);
+    const maxPointsValue = rewardPoints * rewardsSettings.redemptionRate;
+    const availablePointsToUse = rewardsSettings.enabled && useRewards 
+      ? Math.min(maxPointsValue, maxDiscountAllowed) 
+      : 0;
+    
+    const finalTotal = total - availablePointsToUse;
+    const pointsRedeemed = availablePointsToUse / rewardsSettings.redemptionRate;
+
     setPaymentState('loading');
     setStep(3);
 
@@ -268,6 +288,7 @@ const Checkout = () => {
         discount: discount || 0,
         total: total || 0,
         couponCode: coupon?.code || null,
+        pointsRedeemed: pointsRedeemed || 0,
         status: 'pending',
         paymentStatus: 'unpaid',
         paymentReceipt: receipt,
@@ -286,8 +307,12 @@ const Checkout = () => {
       // Create the pending order in DB
       const orderId = await createOrder(orderData);
 
+      const { auth } = await import('../firebase/config');
+      const idToken = await auth.currentUser?.getIdToken();
+
       await openRazorpay({
-        amount: total,
+        firebaseOrderId: orderId,
+        idToken,
         receipt,
         description: `VYBERA Order — ${items.length} item${items.length > 1 ? 's' : ''}`,
         prefill: {
@@ -606,6 +631,36 @@ const Checkout = () => {
                     </div>
                   )}
 
+                  {/* Rewards Toggle */}
+                  {rewardsSettings.enabled && rewardPoints > 0 && Math.max(0, total - rewardsSettings.minPayable) > 0 && (
+                    <div className="mb-6 p-4 bg-vy-black border border-vy-border">
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center mt-0.5">
+                          <input 
+                            type="checkbox" 
+                            checked={useRewards}
+                            onChange={(e) => setUseRewards(e.target.checked)}
+                            className="w-5 h-5 appearance-none border border-vy-border bg-vy-black rounded-none checked:bg-vy-white transition-all cursor-pointer"
+                          />
+                          {useRewards && <CheckCircle size={12} className="absolute text-vy-black pointer-events-none" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-vy-white text-sm font-semibold tracking-wider">
+                            Use VYBERA Rewards
+                          </p>
+                          <p className="text-vy-grey text-xs mt-1">
+                            Balance: {rewardPoints} Points (₹{rewardPoints * rewardsSettings.redemptionRate})
+                          </p>
+                          {useRewards && (rewardsSettings.enabled ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0) > 0 && (
+                            <p className="text-green-400 text-xs mt-2 font-medium">
+                              Applying {(rewardsSettings.enabled ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0) / rewardsSettings.redemptionRate} Points for ₹{rewardsSettings.enabled ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0} discount.
+                            </p>
+                          )}
+                        </div>
+                      </label>
+                    </div>
+                  )}
+
                   {/* Secure badge */}
                   <div className="flex items-center gap-2 mb-5">
                     <div className="w-px h-6 bg-vy-border" />
@@ -619,8 +674,10 @@ const Checkout = () => {
                   <div className="flex items-baseline justify-between mb-6">
                     <span className="text-vy-grey text-sm">You pay</span>
                     <div className="text-right">
-                      <span className="text-vy-white font-bold text-2xl">₹{total.toLocaleString()}</span>
-                      {discount > 0 && (
+                      <span className="text-vy-white font-bold text-2xl">
+                        ₹{(total - (rewardsSettings.enabled && useRewards ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0)).toLocaleString()}
+                      </span>
+                      {(discount > 0 || (rewardsSettings.enabled && useRewards)) && (
                         <p className="text-vy-grey text-xs line-through">
                           ₹{subtotal.toLocaleString()}
                         </p>
@@ -644,7 +701,7 @@ const Checkout = () => {
                     disabled={paymentState === 'loading'}
                     className="btn-primary w-full flex items-center justify-center gap-3 text-sm py-4 disabled:opacity-50"
                   >
-                    Pay ₹{total.toLocaleString()} with Razorpay
+                    Pay ₹{(total - (rewardsSettings.enabled && useRewards ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0)).toLocaleString()} with Razorpay
                   </motion.button>
 
                   <p className="text-vy-grey text-[10px] text-center mt-3 tracking-wide">

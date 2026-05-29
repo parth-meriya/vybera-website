@@ -26,7 +26,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const KEY_PATH = join(__dirname, '..', 'serviceAccountKey.json');
 
 // ── CONFIG ─────────────────────────────────────────────────────
-const TARGET_EMAIL = 'parthmeriya32@gmail.com';
+const args = process.argv.slice(2);
+const TARGET_EMAIL = args[0];
+
+if (!TARGET_EMAIL) {
+  console.error('Usage: node scripts/set-admin-claim.js <email>');
+  process.exit(1);
+}
 // ───────────────────────────────────────────────────────────────
 
 // Check service account key exists

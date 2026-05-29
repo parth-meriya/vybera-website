@@ -47,9 +47,13 @@ const Login = () => {
   const handleGoogle = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
-      toast.success('Signed in with Google.', { className: 'toast-vybera' });
-      navigate(from, { replace: true });
+      const result = await signInWithGoogle();
+      if (result.needsOnboarding) {
+        navigate('/onboarding', { replace: true, state: { from } });
+      } else {
+        toast.success('Signed in with Google.', { className: 'toast-vybera' });
+        navigate(from, { replace: true });
+      }
     } catch (err) {
       if (err.code === 'custom/account-exists-with-password' || err.code === 'auth/account-exists-with-different-credential') {
         toast((t) => (

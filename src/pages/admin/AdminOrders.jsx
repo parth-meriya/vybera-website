@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { listenToAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus } from '../../firebase/orders';
+import { listenToAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus, deleteOrder, updateOrderFull } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
-import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown, MessageCircle } from 'lucide-react';
+import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown, MessageCircle, Trash2, Edit3, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -23,6 +23,8 @@ const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [trackingInputs, setTrackingInputs] = useState({});
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   // ── Filters ──────────────────────────────────
   const [showFilters, setShowFilters] = useState(false);
@@ -107,9 +109,32 @@ const AdminOrders = () => {
   };
 
   const handleStatusChange = async (id, status) => {
-    await updateOrderTracking(id, status, trackingInputs[id]);
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-    toast.success('Status updated', { className: 'toast-vybera' });
+    try {
+      const { auth } = await import('../../firebase/config');
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch('/api/admin/update-order-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          orderId: id,
+          newStatus: status,
+          trackingId: trackingInputs[id]
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      toast.success('Status updated', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error(err.message, { className: 'toast-vybera' });
+    }
   };
 
   const handleMessageCustomer = (order) => {
@@ -126,9 +151,73 @@ const AdminOrders = () => {
   };
 
   const handleTrackingSave = async (order) => {
-    await updateOrderTracking(order.id, order.status, trackingInputs[order.id]);
-    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, trackingId: trackingInputs[order.id] } : o));
-    toast.success('Tracking ID saved', { className: 'toast-vybera' });
+    try {
+      const { auth } = await import('../../firebase/config');
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch('/api/admin/update-order-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          orderId: order.id,
+          newStatus: order.status,
+          trackingId: trackingInputs[order.id]
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+
+      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, trackingId: trackingInputs[order.id] } : o));
+      toast.success('Tracking ID saved', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error(err.message, { className: 'toast-vybera' });
+    }
+  };
+
+  const handleDeleteOrder = async (id) => {
+    if (!window.confirm(`Are you sure you want to permanently delete order ${id}?`)) return;
+    try {
+      await deleteOrder(id);
+      setOrders(prev => prev.filter(o => o.id !== id));
+      if (expanded === id) setExpanded(null);
+      toast.success('Order deleted', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error('Failed to delete order', { className: 'toast-vybera' });
+    }
+  };
+
+  const startEditing = (order) => {
+    setEditingOrder(order.id);
+    setEditForm({
+      customerName: order.customerName || order.address?.name || '',
+      userEmail: order.userEmail || order.address?.email || '',
+      customerPhone: order.customerPhone || order.address?.phone || '',
+      total: order.total || 0,
+      subtotal: order.subtotal || 0,
+      discount: order.discount || 0
+    });
+  };
+
+  const handleEditSave = async (order) => {
+    try {
+      await updateOrderFull(order.id, {
+        customerName: editForm.customerName,
+        userEmail: editForm.userEmail,
+        customerPhone: editForm.customerPhone,
+        total: Number(editForm.total),
+        subtotal: Number(editForm.subtotal),
+        discount: Number(editForm.discount),
+      });
+      setEditingOrder(null);
+      toast.success('Order details updated', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error('Failed to update order', { className: 'toast-vybera' });
+    }
   };
 
   return (
@@ -344,11 +433,31 @@ const AdminOrders = () => {
                           {/* Delivery & Contact */}
                           <div>
                             <div className="mb-6">
-                              <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Customer Contact</h4>
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-vy-grey text-xs tracking-widest uppercase">Customer Contact</h4>
+                                {editingOrder === order.id ? (
+                                  <div className="flex gap-2">
+                                    <button onClick={() => setEditingOrder(null)} className="text-vy-grey text-xs hover:text-vy-white transition-colors">Cancel</button>
+                                    <button onClick={() => handleEditSave(order)} className="flex items-center gap-1 text-green-400 text-xs hover:text-green-300 transition-colors"><Save size={12}/> Save</button>
+                                  </div>
+                                ) : (
+                                  <button onClick={() => startEditing(order)} className="flex items-center gap-1 text-vy-grey text-xs hover:text-vy-white transition-colors"><Edit3 size={12} /> Edit</button>
+                                )}
+                              </div>
                               <div className="space-y-1.5">
-                                <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Name:</span> {order.customerName || order.address?.name}</p>
-                                <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Email:</span> {order.userEmail || order.address?.email}</p>
-                                <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Mobile:</span> {order.customerPhone || order.address?.phone}</p>
+                                {editingOrder === order.id ? (
+                                  <>
+                                    <input value={editForm.customerName} onChange={e => setEditForm(p => ({...p, customerName: e.target.value}))} className="vy-input text-xs w-full mb-1" placeholder="Name" />
+                                    <input value={editForm.userEmail} onChange={e => setEditForm(p => ({...p, userEmail: e.target.value}))} className="vy-input text-xs w-full mb-1" placeholder="Email" />
+                                    <input value={editForm.customerPhone} onChange={e => setEditForm(p => ({...p, customerPhone: e.target.value}))} className="vy-input text-xs w-full mb-1" placeholder="Phone" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Name:</span> {order.customerName || order.address?.name}</p>
+                                    <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Email:</span> {order.userEmail || order.address?.email}</p>
+                                    <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Mobile:</span> {order.customerPhone || order.address?.phone}</p>
+                                  </>
+                                )}
                               </div>
                             </div>
                             
@@ -359,20 +468,39 @@ const AdminOrders = () => {
                               ))}
                             </div>
                             <div className="mt-4 pt-4 border-t border-vy-border space-y-1">
-                              <div className="flex justify-between text-xs">
-                                <span className="text-vy-grey">Subtotal</span>
-                                <span className="text-vy-white">₹{order.subtotal?.toLocaleString()}</span>
-                              </div>
-                              {order.discount > 0 && (
-                                <div className="flex justify-between text-xs">
-                                  <span className="text-green-400">Coupon ({order.couponCode})</span>
-                                  <span className="text-green-400">−₹{order.discount?.toLocaleString()}</span>
-                                </div>
+                              {editingOrder === order.id ? (
+                                <>
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-vy-grey">Subtotal</span>
+                                    <input type="number" value={editForm.subtotal} onChange={e => setEditForm(p => ({...p, subtotal: e.target.value}))} className="vy-input text-xs w-24 text-right" />
+                                  </div>
+                                  <div className="flex justify-between items-center text-xs">
+                                    <span className="text-green-400">Coupon Discount</span>
+                                    <input type="number" value={editForm.discount} onChange={e => setEditForm(p => ({...p, discount: e.target.value}))} className="vy-input text-xs w-24 text-right" />
+                                  </div>
+                                  <div className="flex justify-between items-center text-xs font-semibold">
+                                    <span className="text-vy-white">Total</span>
+                                    <input type="number" value={editForm.total} onChange={e => setEditForm(p => ({...p, total: e.target.value}))} className="vy-input text-xs w-24 text-right" />
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-vy-grey">Subtotal</span>
+                                    <span className="text-vy-white">₹{order.subtotal?.toLocaleString()}</span>
+                                  </div>
+                                  {order.discount > 0 && (
+                                    <div className="flex justify-between text-xs">
+                                      <span className="text-green-400">Coupon ({order.couponCode})</span>
+                                      <span className="text-green-400">−₹{order.discount?.toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                  <div className="flex justify-between text-xs font-semibold">
+                                    <span className="text-vy-white">Total</span>
+                                    <span className="text-vy-white">₹{order.total?.toLocaleString()}</span>
+                                  </div>
+                                </>
                               )}
-                              <div className="flex justify-between text-xs font-semibold">
-                                <span className="text-vy-white">Total</span>
-                                <span className="text-vy-white">₹{order.total?.toLocaleString()}</span>
-                              </div>
                             </div>
                             {order.paymentId && (
                               <p className="text-vy-grey text-xs mt-3">Payment ID: <span className="font-mono text-vy-light">{order.paymentId}</span></p>
@@ -383,6 +511,13 @@ const AdminOrders = () => {
                               className="mt-6 w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
                             >
                               <MessageCircle size={14} /> Message on WhatsApp
+                            </button>
+                            
+                            <button 
+                              onClick={() => handleDeleteOrder(order.id)}
+                              className="mt-3 w-full py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold tracking-widest uppercase hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+                            >
+                              <Trash2 size={14} /> Delete Order
                             </button>
                           </div>
 

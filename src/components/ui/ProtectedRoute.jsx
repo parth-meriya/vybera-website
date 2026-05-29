@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
  * destination so they are returned there after signing in.
  */
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -25,6 +25,17 @@ const ProtectedRoute = ({ children }) => {
   if (!user) {
     // Save current path so login can redirect back
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  // If user is logged in via Firebase but has no Firestore profile,
+  // force them to complete onboarding (unless they are already on the onboarding page).
+  if (!userProfile && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
+  }
+
+  // If user has a profile but tries to visit the onboarding page, redirect away
+  if (userProfile && location.pathname === '/onboarding') {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;

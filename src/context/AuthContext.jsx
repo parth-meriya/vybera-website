@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { onAuthStateChanged, getIdTokenResult } from 'firebase/auth';
-import { auth } from '../firebase/config';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from '../firebase/config';
 import { getUserRole } from '../firebase/auth';
 
 const AuthContext = createContext(null);
@@ -39,24 +40,48 @@ const checkIsAdmin = async (firebaseUser) => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubProfile = null;
+
+    const unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
       if (firebaseUser) {
         const adminStatus = await checkIsAdmin(firebaseUser);
         setIsAdmin(adminStatus);
+
+        // Listen to Firestore user profile document
+        let isFirstSnapshot = true;
+        unsubProfile = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            setUserProfile(docSnap.data());
+          } else {
+            setUserProfile(null);
+          }
+          if (isFirstSnapshot) {
+            isFirstSnapshot = false;
+            setLoading(false);
+          }
+        });
       } else {
         setIsAdmin(false);
+        setUserProfile(null);
+        if (unsubProfile) {
+          unsubProfile();
+          unsubProfile = null;
+        }
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
-    return unsub;
+    return () => {
+      unsubAuth();
+      if (unsubProfile) unsubProfile();
+    };
   }, []);
 
   /**
@@ -84,7 +109,7 @@ export const AuthProvider = ({ children }) => {
   }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, isAdmin, loading, refreshAdminStatus, getIdToken }}>
+    <AuthContext.Provider value={{ user, userProfile, isAdmin, loading, refreshAdminStatus, getIdToken }}>
       {children}
     </AuthContext.Provider>
   );

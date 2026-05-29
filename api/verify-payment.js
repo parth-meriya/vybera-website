@@ -97,13 +97,51 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Payment amount mismatch. Payment rejected.' });
     }
 
-    await orderRef.update({
-      paymentId: razorpay_payment_id,
-      razorpayOrderId: razorpay_order_id,
-      razorpaySignature: razorpay_signature,
-      status: 'confirmed',
-      paymentStatus: 'paid',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    // ── 4. Process Rewards & Update Order (Atomic Transaction) ──
+    const userId = orderData.userId;
+    const pointsRedeemed = orderData.pointsRedeemed || 0;
+
+    await db.runTransaction(async (transaction) => {
+      // If points were used, read the user doc first
+      let userDocRef, userDocData;
+      if (pointsRedeemed > 0) {
+        userDocRef = db.collection('users').doc(userId);
+        const userSnap = await transaction.get(userDocRef);
+        if (!userSnap.exists) throw new Error('User not found for point deduction');
+        userDocData = userSnap.data();
+
+        if ((userDocData.rewardPoints || 0) < pointsRedeemed) {
+          throw new Error('Insufficient reward points during checkout completion');
+        }
+      }
+
+      // Update Order Status
+      transaction.update(orderRef, {
+        paymentId: razorpay_payment_id,
+        razorpayOrderId: razorpay_order_id,
+        razorpaySignature: razorpay_signature,
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Deduct Points & Log Transaction
+      if (pointsRedeemed > 0 && userDocRef) {
+        transaction.update(userDocRef, {
+          rewardPoints: admin.firestore.FieldValue.increment(-pointsRedeemed),
+          totalRedeemedPoints: admin.firestore.FieldValue.increment(pointsRedeemed),
+        });
+
+        const txRef = db.collection('rewardTransactions').doc();
+        transaction.set(txRef, {
+          userId: userId,
+          orderId: firebase_order_id,
+          points: pointsRedeemed,
+          type: 'REDEEM',
+          description: `Redeemed points for order #${firebase_order_id.slice(0, 8)}`,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
     });
 
     console.log(`[Payment] Successfully verified and updated order ${firebase_order_id}`);
@@ -111,6 +149,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, message: 'Payment verified and order confirmed' });
   } catch (error) {
     console.error('[Payment Verification] Error:', error);
-    return res.status(500).json({ error: 'Internal server error during verification' });
+    return res.status(500).json({ error: error.message || 'Internal server error during verification' });
   }
 }

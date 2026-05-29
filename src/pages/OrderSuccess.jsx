@@ -44,7 +44,7 @@ const OrderSuccess = () => {
         className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md"
       >
         <Link 
-          to="/my-orders" 
+          to="/dashboard/orders" 
           className="btn-primary flex items-center justify-center gap-3 py-4 text-xs font-bold"
         >
           <ShoppingBag size={16} /> VIEW MY ORDERS

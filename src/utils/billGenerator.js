@@ -71,7 +71,7 @@ export function printShippingLabel(order) {
       <div class="info">
         <strong>${customerName}</strong><br>
         ${streetAddress}<br>
-        ${addr.city || 'NA'}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || '000000'}<br>
+        ${addr.city || 'NA'}${addr.state ? ', ' + addr.state : ''} - ${addr.pincode || '000000'}<br>
         <strong>Phone:</strong> ${phone}<br>
         <strong>Email:</strong> ${email}
       </div>
@@ -168,10 +168,10 @@ export function printOrderInvoice(order) {
       <div class="section-title">Bill To</div>
       <div class="info">
         <strong>${customerName}</strong><br>
-        ${email}<br>
-        ${phone}<br>
         ${streetAddress}<br>
-        ${addr.city || 'NA'}${addr.state ? ', ' + addr.state : ''} — ${addr.pincode || '000000'}
+        ${addr.city || 'NA'}${addr.state ? ', ' + addr.state : ''} - ${addr.pincode || '000000'}<br>
+        <strong>Phone:</strong> ${phone}<br>
+        <strong>Email:</strong> ${email}
       </div>
     </div>
     <div>

@@ -22,11 +22,22 @@ import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import Onboarding from './pages/Onboarding';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import OrderSuccess from './pages/OrderSuccess';
 import Customize from './pages/Customize';
-import MyOrders from './pages/MyOrders';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+import Overview from './pages/dashboard/Overview';
+import Orders from './pages/dashboard/Orders';
+import Rewards from './pages/dashboard/Rewards';
+import CustomDesigns from './pages/dashboard/CustomDesigns';
+import Wishlist from './pages/dashboard/Wishlist';
+import Addresses from './pages/dashboard/Addresses';
+import Coupons from './pages/dashboard/Coupons';
+import Notifications from './pages/dashboard/Notifications';
+import Settings from './pages/dashboard/Settings';
+import Security from './pages/dashboard/Security';
 import TrackOrder from './pages/TrackOrder';
 import Couple from './pages/Couple';
 import Embroidery from './pages/Embroidery';
@@ -42,6 +53,7 @@ import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminCoupons from './pages/admin/AdminCoupons';
+import AdminRewards from './pages/admin/AdminRewards';
 import AdminContent from './pages/admin/AdminContent';
 import AdminCustomOrders from './pages/admin/AdminCustomOrders';
 import AdminSupport from './pages/admin/AdminSupport';
@@ -159,6 +171,13 @@ const App = () => {
           <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
 
           {/* ── Protected Routes (require authentication) ─────────── */}
+          <Route path="/onboarding" element={
+            <ProtectedRoute>
+              <UserLayout>
+                <PageTransition><Onboarding /></PageTransition>
+              </UserLayout>
+            </ProtectedRoute>
+          } />
           <Route path="/checkout" element={
             <ProtectedRoute>
               <UserLayout>
@@ -173,13 +192,22 @@ const App = () => {
               </UserLayout>
             </ProtectedRoute>
           } />
-          <Route path="/my-orders" element={
+          <Route path="/dashboard" element={
             <ProtectedRoute>
-              <UserLayout>
-                <PageTransition><MyOrders /></PageTransition>
-              </UserLayout>
+              <DashboardLayout />
             </ProtectedRoute>
-          } />
+          }>
+            <Route index element={<PageTransition><Overview /></PageTransition>} />
+            <Route path="orders" element={<PageTransition><Orders /></PageTransition>} />
+            <Route path="custom-designs" element={<PageTransition><CustomDesigns /></PageTransition>} />
+            <Route path="rewards" element={<PageTransition><Rewards /></PageTransition>} />
+            <Route path="wishlist" element={<PageTransition><Wishlist /></PageTransition>} />
+            <Route path="addresses" element={<PageTransition><Addresses /></PageTransition>} />
+            <Route path="coupons" element={<PageTransition><Coupons /></PageTransition>} />
+            <Route path="notifications" element={<PageTransition><Notifications /></PageTransition>} />
+            <Route path="settings" element={<PageTransition><Settings /></PageTransition>} />
+            <Route path="security" element={<PageTransition><Security /></PageTransition>} />
+          </Route>
 
           {/* ── Admin Routes (require admin role — enforced in AdminLayout) ── */}
           <Route path="/admin" element={<AdminLayout />}>
@@ -188,6 +216,7 @@ const App = () => {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="coupons" element={<AdminCoupons />} />
+            <Route path="rewards" element={<AdminRewards />} />
             <Route path="custom-orders" element={<AdminCustomOrders />} />
             <Route path="support" element={<AdminSupport />} />
             <Route path="reviews" element={<AdminReviews />} />

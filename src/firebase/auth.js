@@ -139,21 +139,14 @@ export const signInWithGoogle = async () => {
       emailVerified: true,
       lastLoginAt: serverTimestamp(),
     }, { merge: true });
-  } else {
-    // New Google user (Case 2)
-    await setDoc(userRef, {
-      uid: user.uid,
-      name: user.displayName || '',
-      email: user.email,
-      phoneNumber: user.phoneNumber || null,
-      role: 'user',
-      emailVerified: true,
-      provider: 'google',
-      createdAt: serverTimestamp(),
-    });
-  }
 
-  return user;
+    return { user, needsOnboarding: false };
+  } else {
+    // New Google user (needs onboarding)
+    // We DO NOT create the Firestore document here anymore.
+    // It will be created by the backend verify-otp API after phone verification.
+    return { user, needsOnboarding: true };
+  }
 };
 
 // ── Secure Provider Linking (Case 3) ──────────────────────────

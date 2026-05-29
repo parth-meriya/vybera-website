@@ -110,11 +110,11 @@ const Navbar = () => {
                           <p className="text-xs text-vy-grey truncate">{user.email}</p>
                         </div>
                         <Link
-                          to="/my-orders"
+                          to="/dashboard"
                           onClick={() => setUserMenuOpen(false)}
                           className="block px-4 py-2.5 text-xs text-vy-grey hover:text-vy-white hover:bg-vy-border transition-colors"
                         >
-                          My Orders
+                          Dashboard
                         </Link>
                         <button
                           onClick={handleLogout}

@@ -29,15 +29,16 @@ export const loadRazorpay = () => {
 
 /**
  * Create a Razorpay order via our backend API.
- * @param {number} amount - Final amount in ₹ (after discount)
+ * @param {string} orderId - Firebase order ID
+ * @param {string} idToken - Firebase auth token
  * @param {string} receipt - Unique receipt ID
  * @returns {Promise<{id: string, amount: number, currency: string}>}
  */
-export const createRazorpayOrder = async (amount, receipt) => {
+export const createRazorpayOrder = async (orderId, idToken, receipt) => {
   const response = await fetch('/api/create-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount, receipt }),
+    body: JSON.stringify({ orderId, idToken, receipt }),
   });
 
   if (!response.ok) {
@@ -53,15 +54,17 @@ export const createRazorpayOrder = async (amount, receipt) => {
  * 1. Creates backend order → 2. Opens SDK checkout → 3. Calls success/failure handlers
  *
  * @param {Object} options
- * @param {number}   options.amount       - Final ₹ amount to charge
- * @param {string}   options.receipt      - Unique receipt (e.g. user email + timestamp)
+ * @param {string}   options.firebaseOrderId - the order ID in Firestore
+ * @param {string}   options.idToken      - Firebase ID token
+ * @param {string}   options.receipt      - Unique receipt
  * @param {string}   options.description  - Short payment description
  * @param {Object}   options.prefill      - { name, email, contact }
  * @param {Function} options.onSuccess    - Called with { razorpay_payment_id, razorpay_order_id, razorpay_signature }
  * @param {Function} options.onFailure    - Called on payment failure or modal dismiss
  */
 export const openRazorpay = async ({
-  amount,
+  firebaseOrderId,
+  idToken,
   receipt,
   description,
   prefill = {},
@@ -79,7 +82,7 @@ export const openRazorpay = async ({
   // ── Step 2: Create Order on Backend ─────────────────────────
   let razorpayOrder;
   try {
-    razorpayOrder = await createRazorpayOrder(amount, receipt);
+    razorpayOrder = await createRazorpayOrder(firebaseOrderId, idToken, receipt);
   } catch (err) {
     console.error('[Razorpay] Backend order creation failed:', err.message);
     if (onFailure) onFailure({ reason: 'backend_failure', message: err.message });
@@ -90,7 +93,7 @@ export const openRazorpay = async ({
   return new Promise((resolve, reject) => {
     const options = {
       key: keyId,
-      amount: Math.round(amount * 100),  // paise — matches backend order
+      amount: razorpayOrder.amount, // backend already computed Math.round(total * 100)
       currency: 'INR',
       name: 'VYBERA',
       description: description || 'VYBERA Order',
@@ -118,7 +121,6 @@ export const openRazorpay = async ({
         },
       },
       handler: (response) => {
-        // response = { razorpay_payment_id, razorpay_order_id, razorpay_signature }
         if (onSuccess) onSuccess({ ...response, backendOrderId: razorpayOrder?.id });
         resolve({ success: true, ...response, backendOrderId: razorpayOrder?.id });
       },

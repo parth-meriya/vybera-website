@@ -88,7 +88,7 @@ const PopupBanner = () => {
     <AnimatePresence>
       {visible && (
         <>
-          {/* Backdrop Overlay (darkens background, pointer interactions enabled) */}
+          {/* Backdrop Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -99,15 +99,15 @@ const PopupBanner = () => {
             onClick={handleClose}
           />
 
-          {/* Popup Container (centered, transparent to pointer events outside the modal) */}
+          {/* Popup Container */}
           <div
-            className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-none"
+            className="fixed inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-auto"
             style={{ zIndex: 9999 }}
             role="dialog"
             aria-modal="true"
             aria-label="Announcement"
           >
-            {/* Popup Card (allows interactions, supports all screen sizes) */}
+            {/* Popup Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.88, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -120,14 +120,14 @@ const PopupBanner = () => {
               <div className="absolute -inset-1 bg-gradient-to-br from-vy-accent/20 via-transparent to-vy-accent/10 blur-xl opacity-60 pointer-events-none" />
 
               <div className="relative bg-vy-dark border border-vy-border/60 overflow-hidden shadow-2xl shadow-black/50">
-                {/* Close (X) Button (always visible, z-index 10000, 40x40px clickable size) */}
+                {/* Close (X) Button */}
                 <button
                   onClick={handleClose}
                   className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-black/60 backdrop-blur-sm border border-white/10 text-white/70 hover:text-white hover:bg-black/80 hover:scale-105 transition-all duration-300 rounded-full pointer-events-auto group"
                   style={{ zIndex: 10000 }}
                   aria-label="Close popup"
                 >
-                  <X size={18} className="group-hover:rotate-90 transition-transform duration-300" />
+                  <X size={18} className="group-hover:rotate-90 transition-transform duration-300 pointer-events-none" />
                 </button>
 
                 {/* Banner Image — 4:5 portrait on mobile, 3:2 landscape on desktop */}

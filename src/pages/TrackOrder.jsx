@@ -57,7 +57,7 @@ const TrackOrder = () => {
     return (
       <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-4">
         <p className="text-vy-white font-semibold text-xl">Order Not Found</p>
-        <Link to="/my-orders" className="btn-outline">Return to My Orders</Link>
+        <Link to="/dashboard/orders" className="btn-outline">Return to Orders</Link>
       </div>
     );
   }
@@ -79,7 +79,7 @@ const TrackOrder = () => {
   return (
     <div className="min-h-screen bg-vy-black pt-24 pb-16">
       <div className="max-w-screen-md mx-auto px-6 md:px-12 py-12">
-        <Link to="/my-orders" className="inline-flex items-center gap-2 text-vy-grey hover:text-vy-white transition-colors mb-8 text-xs tracking-widest uppercase font-semibold">
+        <Link to="/dashboard/orders" className="inline-flex items-center gap-2 text-vy-grey hover:text-vy-white transition-colors mb-8 text-xs tracking-widest uppercase font-semibold">
           <ArrowLeft size={14} /> Back to Orders
         </Link>
 

@@ -15,23 +15,53 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
+// ── CONFIG ─────────────────────────────────────
+// Retrieve credentials from command line arguments
+const args = process.argv.slice(2);
+const ADMIN_EMAIL = args[0];
+const ADMIN_PASSWORD = args[1];
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.error('Usage: node scripts/setup-admin.js <email> <password>');
+  process.exit(1);
+}
+
+// Ensure you have these environment variables set, or load them from .env if needed.
+// Vite loads them automatically for the frontend, but we need them here.
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+try {
+  const envFile = readFileSync(join(__dirname, '..', '.env'), 'utf8');
+  envFile.split('\n').forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx > 0) {
+        const key = trimmed.slice(0, eqIdx).trim();
+        const value = trimmed.slice(eqIdx + 1).trim();
+        if (!process.env[key]) process.env[key] = value;
+      }
+    }
+  });
+} catch {
+  console.warn('Could not read .env file');
+}
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAJt__OJXQBjetNTfMZO9FSw_W-3zFxt0Y",
-  authDomain: "nexvra-81837.firebaseapp.com",
-  projectId: "nexvra-81837",
-  storageBucket: "nexvra-81837.firebasestorage.app",
-  messagingSenderId: "881446002031",
-  appId: "1:881446002031:web:3455d2a9744066f9ad5c9a",
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-// ── CONFIG ─────────────────────────────────────
-const ADMIN_EMAIL = 'YOUR_ADMIN_EMAIL@example.com';   // ← CHANGE THIS
-const ADMIN_PASSWORD = 'YOUR_ADMIN_PASSWORD';           // ← CHANGE THIS
-// ───────────────────────────────────────────────
 
 const sampleProducts = [
   {
@@ -159,7 +189,7 @@ Every piece in our collection is designed with intention. The weight of the fabr
 
 Our drops are limited. Our standards are not. Each collection is produced in small batches to ensure quality and exclusivity. When a drop ends, it ends — no restocks, no compromises.
 
-Wear the Next. Always.`,
+the era of vibes.`,
     });
     console.log('  ✅ About content seeded.');
 

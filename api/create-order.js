@@ -10,6 +10,18 @@
  */
 
 import Razorpay from 'razorpay';
+import admin from 'firebase-admin';
+
+// Lazy-initialize Firebase Admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }),
+  });
+}
 
 // ── Rate Limiter (in-memory per cold-start) ──────────────────
 const rateMap = new Map();
@@ -86,42 +98,91 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, receipt } = req.body || {};
+    const { orderId, idToken, receipt } = req.body || {};
 
-    // ── Payload Validation ───────────────────────────────
-    if (typeof amount !== 'number' || !isFinite(amount)) {
-      return res.status(400).json({ error: 'Invalid amount type' });
+    if (!orderId || !idToken) {
+      return res.status(400).json({ error: 'Missing orderId or idToken' });
     }
 
-    if (amount < 1) {
-      return res.status(400).json({ error: 'Amount must be at least ₹1' });
+    // ── 1. Verify User Token ─────────────────────────────
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    // ── 2. Fetch Order from Firestore ────────────────────
+    const db = admin.firestore();
+    const orderRef = db.collection('orders').doc(orderId);
+    const orderSnap = await orderRef.get();
+
+    if (!orderSnap.exists) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const orderData = orderSnap.data();
+
+    if (orderData.userId !== uid) {
+      return res.status(403).json({ error: 'Unauthorized to process this order' });
+    }
+    
+    if (orderData.status !== 'pending' && orderData.paymentStatus !== 'pending') {
+      return res.status(400).json({ error: 'Order is already processed' });
+    }
+
+    const amount = orderData.total;
+    const pointsRedeemed = orderData.pointsRedeemed || 0;
+
+    // ── 3. Validate Payload & Rewards ────────────────────
+    if (typeof amount !== 'number' || !isFinite(amount)) {
+      return res.status(400).json({ error: 'Invalid order total' });
+    }
+
+    // Fetch Global Rewards Settings
+    const settingsSnap = await db.collection('settings').doc('rewards').get();
+    const settings = settingsSnap.exists ? settingsSnap.data() : { enabled: true, minPayable: 99 };
+    const minPayable = settings.enabled ? (settings.minPayable || 99) : 1;
+
+    if (amount < minPayable) {
+      return res.status(400).json({ error: `Amount must be at least ₹${minPayable}` });
     }
 
     if (amount > 50000) {
       return res.status(400).json({ error: 'Amount exceeds maximum allowed (₹50,000)' });
     }
 
+    if (pointsRedeemed > 0) {
+      if (!settings.enabled) {
+        return res.status(400).json({ error: 'Rewards system is currently disabled' });
+      }
+
+      const userSnap = await db.collection('users').doc(uid).get();
+      const userData = userSnap.exists ? userSnap.data() : {};
+      const userPoints = userData.rewardPoints || 0;
+
+      if (userPoints < pointsRedeemed) {
+        return res.status(400).json({ error: 'Insufficient reward points' });
+      }
+    }
+
     const safeReceipt = typeof receipt === 'string' 
       ? receipt.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64) 
-      : `vybera_${Date.now()}`;
+      : orderId.slice(0, 30); // Use orderId as receipt if none provided
 
-    // ── Create Razorpay Order ────────────────────────────
-    const order = await razorpay.orders.create({
+    // ── 4. Create Razorpay Order ────────────────────────────
+    const rzpOrder = await razorpay.orders.create({
       amount: Math.round(amount * 100), // Convert ₹ to paise
       currency: 'INR',
       receipt: safeReceipt,
       notes: {
-        platform: 'VYBERA',
-        mode: 'live',
+        orderId: orderId,
+        uid: uid,
         ip: ip.slice(0, 45), // Log IP for fraud detection
       },
     });
 
     return res.status(200).json({
-      id: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      receipt: order.receipt,
+      id: rzpOrder.id,
+      amount: rzpOrder.amount,
+      currency: rzpOrder.currency,
+      receipt: rzpOrder.receipt,
     });
   } catch (error) {
     console.error('[API] Razorpay order creation failed:', error);

@@ -14,6 +14,7 @@ import {
   Percent,
   Megaphone,
   Image as ImageIcon,
+  Award
 } from 'lucide-react';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
@@ -24,6 +25,7 @@ const navItems = [
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/coupons', label: 'Coupons', icon: Tag },
+  { to: '/admin/rewards', label: 'Rewards', icon: Award },
   { to: '/admin/custom-orders', label: 'Custom Orders', icon: Paintbrush },
   { to: '/admin/popup-banners', label: 'Popup Banners', icon: Megaphone },
   { to: '/admin/main-banner', label: 'Main Banner', icon: ImageIcon },
