@@ -11,6 +11,7 @@ import { openRazorpay } from '../utils/razorpay';
 import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
 import { validateName, validatePhone, sanitizeName, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
+import BackButton from '../components/ui/BackButton';
 
 const PLACEHOLDER = 'https://placehold.co/80x100/141414/888888?text=NX';
 
@@ -373,7 +374,8 @@ const Checkout = () => {
   // ── Empty cart guard ─────────────────────────────────────────
   if (items.length === 0 && paymentState !== 'success') {
     return (
-      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6 px-6">
+      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6 px-6 relative">
+        <BackButton className="absolute top-24 left-6 md:left-12" />
         <ShoppingBag size={48} className="text-vy-border" />
         <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white">No items in cart</h2>
         <Link to="/shop" className="btn-primary">Shop Now</Link>
@@ -384,7 +386,9 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-vy-black pt-24">
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
-
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-display font-bold text-3xl tracking-wider text-vy-white mb-8 border-b border-vy-border pb-6">
             Checkout

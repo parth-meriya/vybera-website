@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { getReviewsByProduct, addReview, deleteReview } from '../firebase/reviews';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 import { trackViewProduct, trackAddToCart } from '../utils/analytics';
 
 const ProductDetail = () => {
@@ -198,12 +199,9 @@ const ProductDetail = () => {
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
         {/* Back */}
-        <Link
-          to="/shop"
-          className="inline-flex items-center gap-2 text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors mb-8"
-        >
-          <ArrowLeft size={13} /> Back
-        </Link>
+        <div className="mb-8">
+          <BackButton />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
           {/* Image */}

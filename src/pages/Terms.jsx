@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const Terms = () => {
   return (
@@ -10,6 +11,9 @@ const Terms = () => {
         path="/terms"
       />
       <div className="max-w-3xl mx-auto px-6 md:px-12">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

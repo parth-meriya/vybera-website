@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { resetPassword } from '../firebase/auth';
 import toast from 'react-hot-toast';
+import BackButton from '../components/ui/BackButton';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');

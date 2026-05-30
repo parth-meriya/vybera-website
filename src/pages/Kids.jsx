@@ -4,6 +4,7 @@ import { SlidersHorizontal, X, Baby } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getProductsByCategory } from '../firebase/products';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const SIZES = ['2-3Y', '4-5Y', '6-7Y', '8-9Y', '10-12Y', 'S', 'M', 'L', 'XL', 'XXL'];
 const PRICE_RANGES = [
@@ -58,13 +59,16 @@ const Kids = () => {
   /* ── Empty / Coming Soon state ─────────────────────── */
   if (!loading && products.length === 0) {
     return (
-      <div className="min-h-screen bg-vy-black pt-24 flex items-center justify-center">
+      <div className="min-h-screen bg-vy-black pt-24 flex items-center justify-center relative">
         <SEO
           title="Kids Collection"
           description="Premium kids streetwear coming soon to VYBERA. Stylish, comfy, and bold outfits for little trendsetters."
           keywords="kids streetwear, kids oversized tees, kids fashion India, VYBERA kids collection"
           path="/kids"
         />
+        <div className="absolute top-24 left-6 md:left-12">
+          <BackButton />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,7 +115,9 @@ const Kids = () => {
         path="/kids"
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-
+        <div className="mb-6">
+          <BackButton />
+        </div>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

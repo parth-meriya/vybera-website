@@ -1,15 +1,19 @@
 import { motion } from 'framer-motion';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const ShippingPolicy = () => {
   return (
     <div className="min-h-screen bg-vy-black pt-24 pb-16">
       <SEO
-        title="Shipping & Delivery Policy"
-        description="Learn about VYBERA's shipping times, delivery partners, and dispatch processes across India."
+        title="Shipping Policy"
+        description="Information on shipping rates, delivery times, and order tracking for VYBERA products."
         path="/shipping-policy"
       />
       <div className="max-w-3xl mx-auto px-6 md:px-12">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

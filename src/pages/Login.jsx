@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { signIn, signInWithGoogle, resendVerificationEmailWithCredentials } from '../firebase/auth';
 import toast from 'react-hot-toast';
+import BackButton from '../components/ui/BackButton';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -107,7 +108,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-vy-black flex items-center justify-center px-6">
+    <div className="min-h-screen bg-vy-black flex items-center justify-center px-6 relative">
+      <BackButton className="absolute top-6 left-6 md:top-10 md:left-10" />
+      
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

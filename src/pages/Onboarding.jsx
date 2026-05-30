@@ -5,6 +5,7 @@ import { Phone, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validatePhone, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
+import BackButton from '../components/ui/BackButton';
 
 const Onboarding = () => {
   const { user, userProfile, getIdToken, refreshAdminStatus } = useAuth();
@@ -177,7 +178,8 @@ const Onboarding = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-vy-black flex items-center justify-center px-6 pt-20">
+    <div className="min-h-screen bg-vy-black flex items-center justify-center px-6 relative pt-24 pb-12">
+      <BackButton className="absolute top-6 left-6 md:top-10 md:left-10" />
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

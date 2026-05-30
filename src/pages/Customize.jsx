@@ -13,6 +13,7 @@ import { getCustomizeSettings } from '../firebase/content';
 import { validateCoupon } from '../firebase/coupons';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
@@ -376,7 +377,9 @@ const Customize = () => {
         path="/customize"
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
-
+        <div className="mb-6">
+          <BackButton />
+        </div>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

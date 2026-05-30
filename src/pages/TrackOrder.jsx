@@ -5,6 +5,7 @@ import { getOrderById, submitReturnRequest } from '../firebase/orders';
 import { getCustomOrderById } from '../firebase/customOrders';
 import { CheckCircle, ArrowLeft, Package, Truck, Home, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import BackButton from '../components/ui/BackButton';
 
 const STATUS_STAGES = [
   { id: 'confirmed', label: 'Confirmed', icon: CheckCircle },
@@ -79,9 +80,9 @@ const TrackOrder = () => {
   return (
     <div className="min-h-screen bg-vy-black pt-24 pb-16">
       <div className="max-w-screen-md mx-auto px-6 md:px-12 py-12">
-        <Link to="/dashboard/orders" className="inline-flex items-center gap-2 text-vy-grey hover:text-vy-white transition-colors mb-8 text-xs tracking-widest uppercase font-semibold">
-          <ArrowLeft size={14} /> Back to Orders
-        </Link>
+        <div className="mb-8">
+          <BackButton />
+        </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-10">

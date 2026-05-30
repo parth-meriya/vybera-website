@@ -5,6 +5,7 @@ import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { validateCoupon, getAllCoupons } from '../firebase/coupons';
 import toast from 'react-hot-toast';
+import BackButton from '../components/ui/BackButton';
 
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
@@ -43,7 +44,8 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6 px-6">
+      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6 px-6 relative">
+        <BackButton className="absolute top-24 left-6 md:left-12" />
         <ShoppingBag size={48} className="text-vy-border" />
         <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white">Your cart is empty</h2>
         <p className="text-vy-grey text-sm tracking-wide">Add products to get started.</p>
@@ -55,6 +57,9 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-vy-black pt-24">
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

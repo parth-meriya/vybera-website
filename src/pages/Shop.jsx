@@ -4,6 +4,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
 import { getProducts } from '../firebase/products';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 const PRICE_RANGES = [
@@ -82,7 +83,9 @@ const Shop = () => {
         path="/shop"
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-
+        <div className="mb-6">
+          <BackButton />
+        </div>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

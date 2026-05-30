@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const About = () => {
   const [content, setContent] = useState('');
@@ -23,6 +24,9 @@ const About = () => {
         keywords="about VYBERA, streetwear brand story, Indian fashion brand, premium clothing brand, VYBERA mission"
         path="/about"
       />
+      <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-6">
+        <BackButton />
+      </div>
       {/* Hero */}
       <section className="relative h-[60vh] overflow-hidden flex items-end pb-16 border-b border-vy-border">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-vy-black z-10" />

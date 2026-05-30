@@ -4,6 +4,7 @@ import { Mail, Phone, MapPin, Send, MessageSquare, Search, CheckCircle, Clock } 
 import { submitContactQuery, trackSupportQuery } from '../firebase/contact';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
+import BackButton from '../components/ui/BackButton';
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -63,6 +64,9 @@ const Contact = () => {
         path="/contact"
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 pt-12">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
