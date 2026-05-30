@@ -183,9 +183,14 @@ const Navbar = () => {
             ))}
             <div className="border-t border-vy-border pt-6 flex flex-col gap-4">
               {user ? (
-                <button onClick={handleLogout} className="text-vy-grey text-sm tracking-widest uppercase">
-                  Sign Out
-                </button>
+                <>
+                  <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-vy-white text-sm tracking-widest uppercase">
+                    Dashboard
+                  </Link>
+                  <button onClick={handleLogout} className="text-vy-grey text-sm tracking-widest uppercase text-left">
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <>
                   <Link to="/login" onClick={() => setMobileOpen(false)} className="text-vy-grey text-sm tracking-widest uppercase">Sign In</Link>
