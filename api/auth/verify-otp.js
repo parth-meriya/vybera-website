@@ -86,7 +86,7 @@ export default async function handler(req, res) {
       provider: 'google',
       createdAt: FieldValue.serverTimestamp(),
       lastLoginAt: FieldValue.serverTimestamp()
-    });
+    }, { merge: true });
 
     // Delete the OTP document so it can't be reused
     await otpRef.delete();
