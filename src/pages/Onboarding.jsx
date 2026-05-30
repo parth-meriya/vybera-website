@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import { validatePhone, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
 import BackButton from '../components/ui/BackButton';
+import { RecaptchaVerifier, linkWithPhoneNumber } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../firebase/config';
 
 const Onboarding = () => {
   const { user, userProfile, getIdToken, refreshAdminStatus } = useAuth();
@@ -26,6 +29,7 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [countdown, setCountdown] = useState(0);
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   // Focus management for OTP
   useEffect(() => {
@@ -34,6 +38,21 @@ const Onboarding = () => {
       if (firstInput) firstInput.focus();
     }
   }, [step]);
+
+  // Setup reCAPTCHA
+  useEffect(() => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          toast.error("reCAPTCHA expired. Please try again.", { className: 'toast-vybera' });
+        }
+      });
+    }
+  }, []);
 
   // Countdown timer for Resend OTP
   useEffect(() => {
@@ -63,34 +82,23 @@ const Onboarding = () => {
 
     setLoading(true);
     try {
-      const token = await getIdToken();
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ phoneNumber: form.phone })
-      });
+      const phoneNumber = '+91' + form.phone;
+      const appVerifier = window.recaptchaVerifier;
+      const confirmation = await linkWithPhoneNumber(user, phoneNumber, appVerifier);
+      setConfirmationResult(confirmation);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
-
-      toast.success('OTP sent to ' + form.phone, { className: 'toast-vybera' });
-      
-      // Development convenience (simulated SMS)
-      if (data._devOtp) {
-        toast(`Test OTP: ${data._devOtp}`, { 
-          icon: '🛠️', 
-          duration: 10000,
-          className: 'toast-vybera' 
-        });
-      }
-
+      toast.success('OTP sent via SMS', { className: 'toast-vybera' });
       setStep(2);
       setCountdown(30); // 30 second wait before allowing resend
     } catch (err) {
-      toast.error(err.message, { className: 'toast-vybera' });
+      console.error(err);
+      if (err.code === 'auth/credential-already-in-use') {
+        toast.error('This phone number is already registered to another account.', { className: 'toast-vybera' });
+      } else if (err.code === 'auth/too-many-requests') {
+        toast.error('Too many requests. Please try again later.', { className: 'toast-vybera' });
+      } else {
+        toast.error(err.message, { className: 'toast-vybera' });
+      }
     } finally {
       setLoading(false);
     }
@@ -136,26 +144,23 @@ const Onboarding = () => {
       return;
     }
 
+    if (!confirmationResult) {
+      toast.error('Session expired. Please request a new OTP.', { className: 'toast-vybera' });
+      return;
+    }
+
     setLoading(true);
     try {
-      const token = await getIdToken();
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          phoneNumber: form.phone,
-          otp: fullOtp,
-          gender: form.gender || null
-        })
-      });
+      // 1. Verify OTP with Firebase
+      await confirmationResult.confirm(fullOtp);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to verify OTP');
+      // 2. Update Firestore with the phone number and gender
+      await setDoc(doc(db, 'users', user.uid), {
+        phoneNumber: form.phone,
+        gender: form.gender || null
+      }, { merge: true });
 
-      toast.success('Account successfully created!', { className: 'toast-vybera' });
+      toast.success('Account successfully verified!', { className: 'toast-vybera' });
       
       // Refresh auth context so it fetches the new userProfile
       await refreshAdminStatus();
@@ -164,11 +169,15 @@ const Onboarding = () => {
       // or we can manually push them
       navigate(from, { replace: true });
     } catch (err) {
-      toast.error(err.message, { className: 'toast-vybera' });
-      // If it says "too many attempts" or "expired", force back to step 1
-      if (err.message.includes('expired') || err.message.includes('Too many')) {
+      console.error(err);
+      if (err.code === 'auth/invalid-verification-code') {
+        toast.error('Incorrect OTP. Please try again.', { className: 'toast-vybera' });
+      } else if (err.code === 'auth/code-expired') {
+        toast.error('OTP expired. Please request a new one.', { className: 'toast-vybera' });
         setStep(1);
         setOtp(['', '', '', '', '', '']);
+      } else {
+        toast.error(err.message, { className: 'toast-vybera' });
       }
     } finally {
       setLoading(false);
@@ -365,6 +374,7 @@ const Onboarding = () => {
           </AnimatePresence>
         </div>
       </motion.div>
+      <div id="recaptcha-container"></div>
     </div>
   );
 };
