@@ -40,7 +40,7 @@ const Overview = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">Dashboard Overview</h2>
+        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">My Profile</h2>
         <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Manage your premium VYBERA experience</p>
       </div>
 

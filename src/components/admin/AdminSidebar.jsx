@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
+import BackButton from '../ui/BackButton';
 
 const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -45,6 +46,9 @@ const AdminSidebar = () => {
 
   return (
     <aside className="w-60 flex-shrink-0 bg-vy-dark border-r border-vy-border min-h-screen flex flex-col">
+      <div className="p-4 border-b border-vy-border">
+        <BackButton />
+      </div>
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-vy-border">
         <Link to="/" className="font-display font-bold text-lg tracking-[0.3em] text-vy-white hover:opacity-80 transition-opacity">

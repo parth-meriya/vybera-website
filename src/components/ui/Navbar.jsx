@@ -106,22 +106,13 @@ const Navbar = () => {
                   >
                     {user ? (
                       <>
-                        <div className="px-4 py-2 border-b border-vy-border">
-                          <p className="text-xs text-vy-grey truncate">{user.email}</p>
-                        </div>
                         <Link
                           to="/dashboard"
                           onClick={() => setUserMenuOpen(false)}
                           className="block px-4 py-2.5 text-xs text-vy-grey hover:text-vy-white hover:bg-vy-border transition-colors"
                         >
-                          Dashboard
+                          My Profile
                         </Link>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full text-left px-4 py-2.5 text-xs text-vy-grey hover:text-vy-white hover:bg-vy-border transition-colors border-t border-vy-border"
-                        >
-                          Sign Out
-                        </button>
                       </>
                     ) : (
                       <>
@@ -185,11 +176,8 @@ const Navbar = () => {
               {user ? (
                 <>
                   <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-vy-white text-sm tracking-widest uppercase">
-                    Dashboard
+                    My Profile
                   </Link>
-                  <button onClick={handleLogout} className="text-vy-grey text-sm tracking-widest uppercase text-left">
-                    Sign Out
-                  </button>
                 </>
               ) : (
                 <>

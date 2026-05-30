@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
+import BackButton from '../ui/BackButton';
 
 const navItems = [
   { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, exact: true },
@@ -53,7 +54,10 @@ const DashboardLayout = () => {
       
       {/* Mobile Menu Toggle */}
       <div className="md:hidden flex justify-between items-center px-6 pb-6 border-b border-vy-border">
-        <h1 className="font-display font-bold text-xl tracking-widest uppercase">My Profile</h1>
+        <div className="flex items-center gap-4">
+          <BackButton />
+          <h1 className="font-display font-bold text-xl tracking-widest uppercase">My Profile</h1>
+        </div>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-vy-white hover:text-vy-accent transition-colors">
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -66,6 +70,9 @@ const DashboardLayout = () => {
         className={`md:!h-auto md:!opacity-100 overflow-hidden md:overflow-visible md:w-64 shrink-0 px-6 md:px-8 py-4 md:py-8 border-r-0 md:border-r border-vy-border ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}
       >
         <div className="hidden md:block mb-8">
+          <div className="mb-6">
+            <BackButton />
+          </div>
           <p className="text-vy-grey text-[10px] tracking-widest uppercase mb-2">Welcome Back</p>
           <p className="font-display font-bold text-lg truncate">{user?.displayName || 'VYBERA Member'}</p>
         </div>
