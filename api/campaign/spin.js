@@ -88,6 +88,10 @@ export default async function handler(req, res) {
     }
     const campaignData = campaignSnap.data();
 
+    if (campaignData.usageLimit > 0 && (campaignData.totalSpins || 0) >= campaignData.usageLimit) {
+      return res.status(403).json({ error: 'This campaign has reached its maximum participation limit.' });
+    }
+
     // 3. Prevent Multiple Spins
     // We check if this exact uid OR this exact phoneNumber has already spun for this campaign.
     const spinsRef = db.collection('spinResults');

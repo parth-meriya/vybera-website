@@ -45,15 +45,16 @@ const AdminCampaigns = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!currentCampaign.id) {
-      toast.error('Campaign ID is required (e.g., street-challenge)');
+    if (!currentCampaign.id || currentCampaign.id.length < 3) {
+      toast.error('Campaign ID must be at least 3 characters long (e.g., street-challenge)');
       return;
     }
     
     // Auto-generate token if not present
     const campaignToSave = {
       ...currentCampaign,
-      token: currentCampaign.token || Math.random().toString(36).substring(2, 15)
+      token: currentCampaign.token || Math.random().toString(36).substring(2, 15),
+      usageLimit: parseInt(currentCampaign.usageLimit) || 0
     };
 
     try {
@@ -63,6 +64,17 @@ const AdminCampaigns = () => {
       fetchCampaigns();
     } catch (err) {
       toast.error('Failed to save campaign');
+    }
+  };
+
+  const deleteCampaign = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'campaigns', id));
+      toast.success('Campaign deleted');
+      fetchCampaigns();
+    } catch (err) {
+      toast.error('Failed to delete campaign');
     }
   };
 
@@ -157,6 +169,7 @@ const AdminCampaigns = () => {
               <div key={c.id} className="bg-vy-card border border-vy-border p-5 relative group">
                 <div className="absolute top-4 right-4 flex gap-2">
                   <button onClick={() => { setCurrentCampaign(c); setIsEditing(true); }} className="text-vy-grey hover:text-vy-white"><Edit2 size={16} /></button>
+                  <button onClick={() => deleteCampaign(c.id)} className="text-vy-grey hover:text-red-400"><Trash2 size={16} /></button>
                 </div>
                 
                 <div className="flex items-start gap-4 mb-4">
@@ -192,6 +205,10 @@ const AdminCampaigns = () => {
                   <div>
                     <p className="uppercase text-[10px] opacity-70">Total Spins</p>
                     <p className="text-vy-white font-bold text-lg">{c.totalSpins || 0}</p>
+                  </div>
+                  <div>
+                    <p className="uppercase text-[10px] opacity-70">Limit</p>
+                    <p className="text-vy-white font-bold text-lg">{c.usageLimit > 0 ? c.usageLimit : '∞'}</p>
                   </div>
                 </div>
 
@@ -316,6 +333,18 @@ const AdminCampaigns = () => {
                     className="vy-input"
                     placeholder="https://..."
                   />
+                </div>
+
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Total Spin Limit (Optional)</label>
+                  <input
+                    type="number"
+                    value={currentCampaign.usageLimit || ''}
+                    onChange={e => setCurrentCampaign({ ...currentCampaign, usageLimit: e.target.value })}
+                    className="vy-input"
+                    placeholder="e.g. 100 (0 for unlimited)"
+                  />
+                  <p className="text-[10px] text-vy-grey mt-1">Once this many spins are reached, the campaign will stop accepting spins.</p>
                 </div>
 
                 <div className="pt-4 border-t border-vy-border flex justify-end gap-3">

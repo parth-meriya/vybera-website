@@ -28,9 +28,14 @@ export const validateCoupon = async (code, orderTotal, userUid = null) => {
     return { valid: false, message: 'This coupon is not valid for your account.' };
   }
 
-  // Check if it's already used
+  // Check if it's already used (for single-use)
   if (coupon.used) {
     return { valid: false, message: 'This coupon has already been used.' };
+  }
+
+  // Check usage limit
+  if (coupon.usageLimit && coupon.usageLimit > 0 && (coupon.timesUsed || 0) >= coupon.usageLimit) {
+    return { valid: false, message: 'This coupon has reached its maximum usage limit.' };
   }
 
   // Check expiry

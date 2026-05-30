@@ -16,9 +16,9 @@ const emptyForm = {
   value: '',
   minOrder: '',
   maxDiscount: '',
-  expiry: '',
   active: true,
   showToUser: false,
+  usageLimit: '',
 };
 
 const CouponModal = ({ coupon, onClose, onSaved }) => {
@@ -40,6 +40,7 @@ const CouponModal = ({ coupon, onClose, onSaved }) => {
         value: Number(form.value),
         minOrder: form.minOrder ? Number(form.minOrder) : 0,
         maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
+        usageLimit: form.usageLimit ? Number(form.usageLimit) : 0,
       };
       if (coupon?.id) {
         await updateCoupon(coupon.id, data);
@@ -104,7 +105,11 @@ const CouponModal = ({ coupon, onClose, onSaved }) => {
               <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Max Discount (₹)</label>
               <input name="maxDiscount" type="number" value={form.maxDiscount} onChange={onChange} className="vy-input" placeholder="Optional" />
             </div>
-            <div className="col-span-2">
+            <div>
+              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Usage Limit (0=∞)</label>
+              <input name="usageLimit" type="number" value={form.usageLimit} onChange={onChange} className="vy-input" placeholder="0" />
+            </div>
+            <div>
               <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Expiry Date</label>
               <input name="expiry" type="date" value={form.expiry} onChange={onChange} className="vy-input" />
             </div>
@@ -185,7 +190,7 @@ const AdminCoupons = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-vy-border">
-                {['Code', 'Type', 'Value', 'Min Order', 'Max Discount', 'Expiry', 'Visible', 'Status', 'Actions'].map(h => (
+                {['Code', 'Type', 'Value', 'Min Order', 'Limit', 'Used', 'Expiry', 'Visible', 'Status', 'Actions'].map(h => (
                   <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
                 ))}
               </tr>
@@ -199,7 +204,8 @@ const AdminCoupons = () => {
                     {coupon.type === 'percentage' ? `${coupon.value}%` : `₹${coupon.value}`}
                   </td>
                   <td className="px-4 py-3 text-vy-grey text-xs">{coupon.minOrder ? `₹${coupon.minOrder}` : '—'}</td>
-                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.maxDiscount ? `₹${coupon.maxDiscount}` : '—'}</td>
+                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.usageLimit > 0 ? coupon.usageLimit : '∞'}</td>
+                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.timesUsed || 0}</td>
                   <td className="px-4 py-3 text-vy-grey text-xs">{coupon.expiry || '—'}</td>
                   <td className="px-4 py-3 text-vy-grey text-xs font-semibold">{coupon.showToUser ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-3">

@@ -138,11 +138,15 @@ export default async function handler(req, res) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Mark single-use coupon as used
+      // Mark single-use coupon as used, or increment usage
       if (couponDocRef) {
         const couponData = (await transaction.get(couponDocRef)).data();
         if (couponData.singleUse && !couponData.used) {
           transaction.update(couponDocRef, { used: true });
+        } else if (!couponData.singleUse) {
+          transaction.update(couponDocRef, { 
+            timesUsed: admin.firestore.FieldValue.increment(1) 
+          });
         }
       }
 
