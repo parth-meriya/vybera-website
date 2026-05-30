@@ -17,7 +17,7 @@ import {
   Palette
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { logoutUser } from '../../firebase/auth';
+import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
 
 const navItems = [
@@ -40,9 +40,9 @@ const DashboardLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await logoutUser();
-      toast.success('Logged out successfully', { className: 'toast-vybera' });
-      navigate('/login');
+      await logOut();
+      toast.success('Signed out successfully', { className: 'toast-vybera' });
+      navigate('/');
     } catch (err) {
       toast.error('Failed to log out', { className: 'toast-vybera' });
     }
