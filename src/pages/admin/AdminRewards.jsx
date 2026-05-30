@@ -83,8 +83,8 @@ const AdminRewards = () => {
   };
 
   const filteredUsers = users.filter(u => 
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (u.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

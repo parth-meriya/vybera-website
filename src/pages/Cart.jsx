@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { validateCoupon, getAllCoupons } from '../firebase/coupons';
 import toast from 'react-hot-toast';
 import BackButton from '../components/ui/BackButton';
@@ -11,6 +12,7 @@ const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, coupon, discount, applyCoupon, removeCoupon, subtotal, total, itemCount } = useCart();
+  const { user } = useAuth();
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
@@ -27,7 +29,7 @@ const Cart = () => {
     if (!code) return;
     setCouponLoading(true);
     try {
-      const result = await validateCoupon(code, subtotal);
+      const result = await validateCoupon(code, subtotal, user?.uid);
       if (result.valid) {
         applyCoupon(result.coupon);
         setCouponCode('');

@@ -141,12 +141,27 @@ service cloud.firestore {
       allow read, update, delete: if hasAdminClaim();
     }
 
-    // ── Sales / Campaigns Collection ───────────────────────────
+    // ── Sales / Content Collections ───────────────────────────
     // Everyone can read active sales.
     // Only admins can manage sales.
     match /sales/{saleId} {
       allow read: if true;
       allow write: if hasAdminClaim();
+    }
+
+    // ── QR Spin Wheel Campaigns ────────────────────────────────
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow write: if hasAdminClaim();
+    }
+
+    match /spinResults/{resultId} {
+      allow read, write: if hasAdminClaim();
+    }
+
+    match /rewardTransactions/{txId} {
+      allow read: if isAuthed() && resource.data.userId == request.auth.uid;
+      allow read, write: if hasAdminClaim();
     }
 
     // ── Default: Deny All ───────────────────────────────────────

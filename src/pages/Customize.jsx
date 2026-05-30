@@ -281,7 +281,7 @@ const Customize = () => {
     setCouponLoading(true);
     setCouponError('');
     try {
-      const result = await validateCoupon(couponCode.trim().toUpperCase(), basePrice);
+      const result = await validateCoupon(couponCode.trim().toUpperCase(), basePrice, user?.uid);
       if (result.valid) {
         setCoupon(result.coupon);
         setDiscount(result.discountAmount);

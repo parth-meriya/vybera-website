@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 
-export const validateCoupon = async (code, orderTotal) => {
+export const validateCoupon = async (code, orderTotal, userUid = null) => {
   const q = query(
     collection(db, 'coupons'),
     where('code', '==', code.toUpperCase())
@@ -22,6 +22,16 @@ export const validateCoupon = async (code, orderTotal) => {
 
   const coupon = { id: snap.docs[0].id, ...snap.docs[0].data() };
   if (!coupon.active) return { valid: false, message: 'Invalid coupon code.' };
+
+  // Check if it's a campaign coupon tied to a specific user
+  if (coupon.uid && coupon.uid !== userUid) {
+    return { valid: false, message: 'This coupon is not valid for your account.' };
+  }
+
+  // Check if it's already used
+  if (coupon.used) {
+    return { valid: false, message: 'This coupon has already been used.' };
+  }
 
   // Check expiry
   if (coupon.expiry && new Date(coupon.expiry) < new Date()) {

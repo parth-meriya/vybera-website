@@ -12,6 +12,9 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+import spinHandler from './api/campaign/spin.js';
+import verifyPaymentHandler from './api/verify-payment.js';
+
 // Load .env manually (Vite handles this for the frontend, but Node needs it separately)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 try {
@@ -88,6 +91,10 @@ app.post('/api/create-order', async (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'VYBERA Production API' }));
+
+// Vercel function wrappers for local dev / Render
+app.post('/api/campaign/spin', spinHandler);
+app.post('/api/verify-payment', verifyPaymentHandler);
 
 // ── Server-Side Validation Helpers ──────────────────────────────
 const NAME_REGEX = /^[A-Za-z ]+$/;

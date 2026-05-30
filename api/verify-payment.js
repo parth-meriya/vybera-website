@@ -14,14 +14,16 @@ import admin from 'firebase-admin';
 import Razorpay from 'razorpay';
 
 // Lazy-initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
+function initAdmin() {
+  if (!admin.apps.length) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }),
+    });
+  }
 }
 
 const ALLOWED_ORIGINS = [
@@ -71,6 +73,7 @@ export default async function handler(req, res) {
     }
 
     // ── 2. Update Firestore Order securely ──────────────────────
+    initAdmin();
     const db = admin.firestore();
     const orderRef = db.collection('orders').doc(firebase_order_id);
     
@@ -100,6 +103,7 @@ export default async function handler(req, res) {
     // ── 4. Process Rewards & Update Order (Atomic Transaction) ──
     const userId = orderData.userId;
     const pointsRedeemed = orderData.pointsRedeemed || 0;
+    const couponCode = orderData.couponCode || null;
 
     await db.runTransaction(async (transaction) => {
       // If points were used, read the user doc first
@@ -115,6 +119,15 @@ export default async function handler(req, res) {
         }
       }
 
+      // If coupon used, fetch the coupon document
+      let couponDocRef;
+      if (couponCode) {
+        const couponsQuery = await db.collection('coupons').where('code', '==', couponCode).get();
+        if (!couponsQuery.empty) {
+          couponDocRef = couponsQuery.docs[0].ref;
+        }
+      }
+
       // Update Order Status
       transaction.update(orderRef, {
         paymentId: razorpay_payment_id,
@@ -124,6 +137,14 @@ export default async function handler(req, res) {
         paymentStatus: 'paid',
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
+
+      // Mark single-use coupon as used
+      if (couponDocRef) {
+        const couponData = (await transaction.get(couponDocRef)).data();
+        if (couponData.singleUse && !couponData.used) {
+          transaction.update(couponDocRef, { used: true });
+        }
+      }
 
       // Deduct Points & Log Transaction
       if (pointsRedeemed > 0 && userDocRef) {

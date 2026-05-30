@@ -13,6 +13,7 @@ import {
   Award,
   MapPin,
   Gift,
+  Ticket,
   Bell,
   Palette
 } from 'lucide-react';
@@ -29,6 +30,7 @@ const navItems = [
   { name: 'Wishlist', path: '/dashboard/wishlist', icon: Heart },
   { name: 'Address Book', path: '/dashboard/addresses', icon: MapPin },
   { name: 'Coupons', path: '/dashboard/coupons', icon: Gift },
+  { name: 'Campaign Rewards', path: '/dashboard/campaign-rewards', icon: Ticket },
   { name: 'Notifications', path: '/dashboard/notifications', icon: Bell },
   { name: 'Settings', path: '/dashboard/settings', icon: Settings },
   { name: 'Security', path: '/dashboard/security', icon: ShieldCheck },

@@ -27,6 +27,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import OrderSuccess from './pages/OrderSuccess';
 import Customize from './pages/Customize';
+import Campaign from './pages/campaign/Campaign';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import Overview from './pages/dashboard/Overview';
 import Orders from './pages/dashboard/Orders';
@@ -35,6 +36,7 @@ import CustomDesigns from './pages/dashboard/CustomDesigns';
 import Wishlist from './pages/dashboard/Wishlist';
 import Addresses from './pages/dashboard/Addresses';
 import Coupons from './pages/dashboard/Coupons';
+import CampaignRewards from './pages/dashboard/CampaignRewards';
 import Notifications from './pages/dashboard/Notifications';
 import Settings from './pages/dashboard/Settings';
 import Security from './pages/dashboard/Security';
@@ -60,6 +62,7 @@ import AdminSupport from './pages/admin/AdminSupport';
 import AdminReviews from './pages/admin/AdminReviews';
 import AdminPopupBanner from './pages/admin/AdminPopupBanner';
 import AdminMainBanner from './pages/admin/AdminMainBanner';
+import AdminCampaigns from './pages/admin/AdminCampaigns';
 
 const UserLayout = ({ children }) => (
   <>
@@ -139,6 +142,11 @@ const App = () => {
               <PageTransition><Customize /></PageTransition>
             </UserLayout>
           } />
+          <Route path="/campaign/:id" element={
+            <UserLayout>
+              <PageTransition><Campaign /></PageTransition>
+            </UserLayout>
+          } />
           <Route path="/track-order/:id" element={
             <UserLayout>
               <PageTransition><TrackOrder /></PageTransition>
@@ -204,6 +212,7 @@ const App = () => {
             <Route path="wishlist" element={<PageTransition><Wishlist /></PageTransition>} />
             <Route path="addresses" element={<PageTransition><Addresses /></PageTransition>} />
             <Route path="coupons" element={<PageTransition><Coupons /></PageTransition>} />
+            <Route path="campaign-rewards" element={<PageTransition><CampaignRewards /></PageTransition>} />
             <Route path="notifications" element={<PageTransition><Notifications /></PageTransition>} />
             <Route path="settings" element={<PageTransition><Settings /></PageTransition>} />
             <Route path="security" element={<PageTransition><Security /></PageTransition>} />
@@ -216,6 +225,7 @@ const App = () => {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="coupons" element={<AdminCoupons />} />
+            <Route path="campaigns" element={<AdminCampaigns />} />
             <Route path="rewards" element={<AdminRewards />} />
             <Route path="custom-orders" element={<AdminCustomOrders />} />
             <Route path="support" element={<AdminSupport />} />
