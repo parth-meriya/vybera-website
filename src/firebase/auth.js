@@ -140,6 +140,10 @@ export const signInWithGoogle = async () => {
       lastLoginAt: serverTimestamp(),
     }, { merge: true });
 
+    if (!data.phoneNumber) {
+      return { user, needsOnboarding: true };
+    }
+
     return { user, needsOnboarding: false };
   } else {
     // New Google user (needs onboarding)

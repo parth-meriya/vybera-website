@@ -13,9 +13,9 @@ const Onboarding = () => {
   const location = useLocation();
   const from = location.state?.from || '/dashboard';
 
-  // If user profile is already created, skip onboarding
+  // If user profile is already fully created with phone number, skip onboarding
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile?.phoneNumber) {
       navigate(from, { replace: true });
     }
   }, [userProfile, navigate, from]);
