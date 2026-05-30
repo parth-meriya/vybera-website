@@ -27,14 +27,14 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
-  // If user is logged in via Firebase but has no Firestore profile,
+  // If user is logged in via Firebase but has no Firestore profile or missing phone number,
   // force them to complete onboarding (unless they are already on the onboarding page).
-  if (!userProfile && location.pathname !== '/onboarding') {
+  if ((!userProfile || !userProfile.phoneNumber) && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" state={{ from: location.pathname }} replace />;
   }
 
-  // If user has a profile but tries to visit the onboarding page, redirect away
-  if (userProfile && location.pathname === '/onboarding') {
+  // If user has a completed profile but tries to visit the onboarding page, redirect away
+  if (userProfile?.phoneNumber && location.pathname === '/onboarding') {
     return <Navigate to="/dashboard" replace />;
   }
 
