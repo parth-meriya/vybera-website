@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Save, Search, Plus, Minus, Info } from 'lucide-react';
+import { Settings, Save, Search, Plus, Minus, Info, Award } from 'lucide-react';
 import { getRewardSettings, updateRewardSettings, manualPointAdjustment } from '../../firebase/rewards';
 import { getAllUsers } from '../../firebase/users';
 import toast from 'react-hot-toast';
