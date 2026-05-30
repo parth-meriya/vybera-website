@@ -1,6 +1,6 @@
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { getFirebaseAdmin } from '../_lib/firebase-admin'; // Assume this exists from previous APIs
+import { getFirebaseAdmin } from '../_lib/firebase-admin.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
