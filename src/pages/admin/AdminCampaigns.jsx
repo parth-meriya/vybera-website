@@ -155,7 +155,7 @@ const AdminCampaigns = () => {
           <div className="mb-6 flex justify-end">
             <button 
               onClick={() => {
-                setCurrentCampaign({ id: '', active: false, bannerUrl: '', token: '' });
+                setCurrentCampaign({ id: '', active: false, bannerUrl: '', token: '', isNew: true });
                 setIsEditing(true);
               }}
               className="btn-primary flex items-center gap-2 text-sm"
@@ -306,7 +306,7 @@ const AdminCampaigns = () => {
                   <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Campaign ID (URL Slug)</label>
                   <input
                     required
-                    disabled={!!currentCampaign.id}
+                    disabled={!currentCampaign.isNew}
                     value={currentCampaign.id || ''}
                     onChange={e => setCurrentCampaign({ ...currentCampaign, id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
                     className="vy-input disabled:opacity-50"
