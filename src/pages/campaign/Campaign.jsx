@@ -55,10 +55,15 @@ const Campaign = () => {
         const docRef = doc(db, 'campaigns', id);
         const docSnap = await getDoc(docRef);
         
-        if (docSnap.exists() && docSnap.data().active) {
-          setCampaign(docSnap.data());
+        if (docSnap.exists()) {
+          if (docSnap.data().active) {
+            setCampaign(docSnap.data());
+          } else {
+            setCampaign({ _inactive: true });
+            toast.error('This campaign is currently paused.', { className: 'toast-vybera' });
+          }
         } else {
-          toast.error('This campaign is inactive or does not exist.', { className: 'toast-vybera' });
+          toast.error('This campaign does not exist.', { className: 'toast-vybera' });
         }
 
         if (user) {
@@ -152,6 +157,16 @@ const Campaign = () => {
       <div className="min-h-screen bg-vy-black pt-24 flex items-center justify-center text-center">
         <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
         <p className="text-vy-grey">Campaign not found.</p>
+      </div>
+    );
+  }
+
+  if (campaign._inactive) {
+    return (
+      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center text-center">
+        <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
+        <p className="text-vy-yellow font-display text-xl tracking-widest uppercase">Campaign Paused</p>
+        <p className="text-vy-grey mt-2 text-sm">This campaign is temporarily inactive. Please check back later.</p>
       </div>
     );
   }

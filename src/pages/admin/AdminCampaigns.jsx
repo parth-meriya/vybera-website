@@ -155,7 +155,7 @@ const AdminCampaigns = () => {
           <div className="mb-6 flex justify-end">
             <button 
               onClick={() => {
-                setCurrentCampaign({ id: '', active: false, bannerUrl: '', token: '', isNew: true });
+                setCurrentCampaign({ id: '', active: true, bannerUrl: '', token: '', isNew: true });
                 setIsEditing(true);
               }}
               className="btn-primary flex items-center gap-2 text-sm"
