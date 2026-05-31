@@ -15,9 +15,23 @@ const Navbar = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
+  const [dynamicLinks, setDynamicLinks] = useState([]);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', onScroll);
+    
+    // Fetch dynamic sections for navbar
+    import('../../firebase/sections').then(({ getSections }) => {
+      getSections().then(sections => {
+        const visible = sections.filter(s => s.visible).map(s => ({
+          label: s.label,
+          to: s.path
+        }));
+        setDynamicLinks(visible);
+      });
+    });
+
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -28,16 +42,14 @@ const Navbar = () => {
     setUserMenuOpen(false);
   };
 
-  const navLinks = [
-    { label: 'Shop', to: '/shop' },
-    { label: 'Couple', to: '/couple' },
-    { label: 'Embroidery', to: '/embroidery' },
-    { label: 'Kids', to: '/kids' },
+  const staticLinks = [
     { label: 'Customize', to: '/customize' },
     { label: 'About', to: '/about' },
     { label: 'Contact', to: '/contact' },
     ...(isAdmin ? [{ label: 'Admin', to: '/admin' }] : []),
   ];
+
+  const navLinks = [...dynamicLinks, ...staticLinks];
 
   return (
     <>

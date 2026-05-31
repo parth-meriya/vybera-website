@@ -2,24 +2,15 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, X, Upload, Image } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct } from '../../firebase/products';
+import { getSections } from '../../firebase/sections';
 import toast from 'react-hot-toast';
 
 const SIZES_ALL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
-const CATEGORIES = [
-  { value: 'normal', label: 'Normal (All)' },
-  { value: 'male', label: 'Male' },
-  { value: 'female', label: 'Female' },
-  { value: 'unisex', label: 'Unisex' },
-  { value: 'couple', label: 'Couple' },
-  { value: 'embroidery', label: 'Embroidery' },
-  { value: 'kids', label: 'Kids' },
-];
-
 const emptyForm = {
   name: '', price: '', originalPrice: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
-  inStock: true, material: '', fit: 'Oversized', image: '', category: 'normal', colors: [],
+  inStock: true, material: '', fit: 'Oversized', image: '', category: 'shop', colors: [],
 };
 
 // Extremely aggressive native image compressor to convert generic photos to fast WebP formats
@@ -61,7 +52,7 @@ const compressImage = (file, maxWidth = 1200, quality = 0.7) => {
   });
 };
 
-const ProductModal = ({ product, onClose, onSaved }) => {
+const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => {
   const [form, setForm] = useState(product ? { ...emptyForm, ...product } : emptyForm);
   const [imageFiles, setImageFiles] = useState([]);
   const [localPreviews, setLocalPreviews] = useState([]);
@@ -247,12 +238,12 @@ const ProductModal = ({ product, onClose, onSaved }) => {
               <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Category</label>
               <select
                 name="category"
-                value={form.category || 'normal'}
+                value={form.category || 'shop'}
                 onChange={onChange}
                 className="vy-input"
               >
-                {CATEGORIES.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                {dynamicCategories.map(c => (
+                  <option key={c.slug} value={c.slug}>{c.label}</option>
                 ))}
               </select>
             </div>
@@ -442,15 +433,24 @@ const ProductModal = ({ product, onClose, onSaved }) => {
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | {} | product
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const fetchProducts = () => {
+  const fetchProducts = async () => {
     setLoading(true);
-    getProducts().then(p => { setProducts(p); setLoading(false); });
+    try {
+      const [p, s] = await Promise.all([getProducts(), getSections()]);
+      setProducts(p);
+      setSections(s);
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchProducts(); }, []);
@@ -616,6 +616,7 @@ const AdminProducts = () => {
             product={modal?.id ? modal : null}
             onClose={() => setModal(null)}
             onSaved={() => { setModal(null); fetchProducts(); }}
+            dynamicCategories={sections}
           />
         )}
       </AnimatePresence>

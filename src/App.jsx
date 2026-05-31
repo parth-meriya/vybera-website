@@ -63,6 +63,10 @@ import AdminReviews from './pages/admin/AdminReviews';
 import AdminPopupBanner from './pages/admin/AdminPopupBanner';
 import AdminMainBanner from './pages/admin/AdminMainBanner';
 import AdminCampaigns from './pages/admin/AdminCampaigns';
+import AdminSections from './pages/admin/AdminSections';
+
+// Dynamic Category
+import CategoryPage from './pages/CategoryPage';
 
 const UserLayout = ({ children }) => (
   <>
@@ -147,6 +151,11 @@ const App = () => {
               <PageTransition><Campaign /></PageTransition>
             </UserLayout>
           } />
+          <Route path="/collections/:slug" element={
+            <UserLayout>
+              <PageTransition><CategoryPage /></PageTransition>
+            </UserLayout>
+          } />
           <Route path="/track-order/:id" element={
             <UserLayout>
               <PageTransition><TrackOrder /></PageTransition>
@@ -226,6 +235,7 @@ const App = () => {
             <Route path="users" element={<AdminUsers />} />
             <Route path="coupons" element={<AdminCoupons />} />
             <Route path="campaigns" element={<AdminCampaigns />} />
+            <Route path="sections" element={<AdminSections />} />
             <Route path="rewards" element={<AdminRewards />} />
             <Route path="custom-orders" element={<AdminCustomOrders />} />
             <Route path="support" element={<AdminSupport />} />
