@@ -88,13 +88,7 @@ const SVGSpinWheel = ({ isSpinning, winningIndex, onSpinComplete }) => {
 
   useEffect(() => {
     if (isSpinning && winningIndex !== null) {
-      const spins = 5;
-      
-      // We want the WINNING segment to end up at the top (270 degrees in SVG math, or 0 degrees if pointer is at top).
-      // Assuming pointer is at Top (0 degrees / 12 o'clock).
-      // The segment `i` spans from `i * segmentAngle` to `(i + 1) * segmentAngle`.
-      // The center of segment `i` is `(i + 0.5) * segmentAngle`.
-      // To bring segment `i`'s center to the top (0 degrees), we need to rotate by `360 - centerAngle`.
+      const spins = 8; // Increased from 5 to 8 for a more dramatic spin
       
       const centerAngle = (winningIndex + 0.5) * segmentAngle;
       const rotationToTop = 360 - centerAngle;
@@ -104,8 +98,8 @@ const SVGSpinWheel = ({ isSpinning, winningIndex, onSpinComplete }) => {
       controls.start({
         rotate: targetRotation,
         transition: {
-          duration: 5, // 5 seconds spin
-          ease: [0.1, 0.9, 0.2, 1], // Decelerate smoothly
+          duration: 6.5, // slightly longer
+          ease: [0.25, 1, 0.5, 1], // very smooth decelerating bezier curve
         },
       }).then(() => {
         setCurrentRotation(targetRotation);

@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, LogIn, Phone, Ticket } from 'lucide-react';
+import { Lock, LogIn, Phone, Ticket, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebase/config';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import { getUserProfile } from '../../firebase/users';
 import SVGSpinWheel from '../../components/campaign/SpinWheel';
 import BackButton from '../../components/ui/BackButton';
@@ -16,6 +17,7 @@ const Campaign = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { applyCoupon } = useCart();
   
   const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -123,6 +125,17 @@ const Campaign = () => {
       setReward(data.reward);
       setCouponCode(data.couponCode); // Could be null for FREE TEE
 
+      if (data.couponCode) {
+        applyCoupon({
+          code: data.couponCode,
+          type: data.reward.type,
+          value: data.reward.value,
+          singleUse: true,
+          minOrder: 0
+        });
+        toast.success(`Coupon automatically applied to your cart!`, { className: 'toast-vybera' });
+      }
+
     } catch (err) {
       console.error(err);
       toast.error('Network error while spinning.', { className: 'toast-vybera' });
@@ -134,6 +147,13 @@ const Campaign = () => {
     setIsSpinning(false);
     // Show confetti or modal
     // For now, the UI will just display the reward div below the wheel
+  };
+
+  const handleCopy = () => {
+    if (couponCode) {
+      navigator.clipboard.writeText(couponCode);
+      toast.success('Coupon code copied!', { className: 'toast-vybera' });
+    }
   };
 
   if (loading) {
@@ -218,14 +238,22 @@ const Campaign = () => {
                 YOU WON {reward.name}!
               </h2>
               {couponCode ? (
-                <div>
-                  <p className="text-vy-grey text-xs mb-4">Use this code at checkout (Single Use):</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-vy-black bg-vy-gold px-4 py-2 font-mono font-bold tracking-widest text-lg select-all">
+                <div className="bg-vy-black/40 p-6 rounded-md border border-vy-border shadow-lg">
+                  <p className="text-vy-white text-sm mb-2 font-bold tracking-wide">Coupon has been applied to your cart!</p>
+                  <p className="text-vy-grey text-xs mb-6">You can also copy it to use later (Single Use):</p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <span className="text-vy-black bg-vy-gold px-6 py-3 font-mono font-bold tracking-widest text-xl select-all rounded-sm shadow-md w-full sm:w-auto">
                       {couponCode}
                     </span>
+                    <button 
+                      onClick={handleCopy}
+                      className="bg-vy-white text-vy-black px-6 py-3 hover:bg-vy-accent transition-colors rounded-sm shadow-md font-bold text-sm tracking-widest flex items-center justify-center gap-2 w-full sm:w-auto"
+                      title="Copy Code"
+                    >
+                      <Copy size={16} /> COPY
+                    </button>
                   </div>
-                  <p className="text-vy-grey text-[10px] mt-4 uppercase tracking-widest">
+                  <p className="text-vy-grey text-[10px] mt-6 uppercase tracking-widest">
                     Code has been saved to your profile rewards.
                   </p>
                 </div>
@@ -267,7 +295,7 @@ const Campaign = () => {
               <button 
                 onClick={spin} 
                 disabled={isSpinning}
-                className="bg-vy-gold hover:bg-vy-white text-vy-black font-display font-bold text-xl uppercase tracking-widest px-12 py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(196,160,107,0.3)] hover:shadow-[0_0_40px_rgba(196,160,107,0.6)]"
+                className="bg-vy-gold hover:bg-vy-white text-vy-black font-display font-bold text-2xl uppercase tracking-widest px-12 py-5 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(196,160,107,0.4)] hover:shadow-[0_0_50px_rgba(196,160,107,0.8)] hover:-translate-y-1 rounded-sm w-full sm:w-auto"
               >
                 {isSpinning ? 'SPINNING...' : 'SPIN TO WIN'}
               </button>
