@@ -3,11 +3,19 @@ import admin from 'firebase-admin';
 // Lazy-initialize Firebase Admin SDK
 function initAdmin() {
   if (!admin.apps.length) {
+    const projectId = process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || process.env.VITE_FIREBASE_CLIENT_EMAIL;
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY || process.env.VITE_FIREBASE_PRIVATE_KEY;
+    
+    if (!rawKey || typeof rawKey !== 'string') {
+      throw new Error('CRITICAL CONFIG ERROR: Firebase Private Key is missing from your environment variables. Please add FIREBASE_PRIVATE_KEY to Vercel.');
+    }
+    
     admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL || process.env.VITE_FIREBASE_CLIENT_EMAIL,
-        privateKey: (process.env.FIREBASE_PRIVATE_KEY || process.env.VITE_FIREBASE_PRIVATE_KEY)?.trim().replace(/^["']|["']$/g, "").replace(/\\n/g, "\n"),
+        projectId,
+        clientEmail,
+        privateKey: rawKey.trim().replace(/^["']|["']$/g, "").replace(/\\n/g, "\n"),
       }),
     });
   }
