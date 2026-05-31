@@ -88,7 +88,7 @@ const SVGSpinWheel = ({ isSpinning, winningIndex, onSpinComplete }) => {
 
   useEffect(() => {
     if (isSpinning && winningIndex !== null) {
-      const spins = 8; // Increased from 5 to 8 for a more dramatic spin
+      const spins = 5; // Reduced spins so it resolves faster
       
       const centerAngle = (winningIndex + 0.5) * segmentAngle;
       const rotationToTop = 360 - centerAngle;
@@ -98,8 +98,8 @@ const SVGSpinWheel = ({ isSpinning, winningIndex, onSpinComplete }) => {
       controls.start({
         rotate: targetRotation,
         transition: {
-          duration: 6.5, // slightly longer
-          ease: [0.25, 1, 0.5, 1], // very smooth decelerating bezier curve
+          duration: 3.5, // Much faster spin
+          ease: [0.25, 1, 0.5, 1], // Smooth curve
         },
       }).then(() => {
         setCurrentRotation(targetRotation);

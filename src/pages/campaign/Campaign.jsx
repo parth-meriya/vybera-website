@@ -295,7 +295,7 @@ const Campaign = () => {
               <button 
                 onClick={spin} 
                 disabled={isSpinning}
-                className="bg-vy-gold hover:bg-vy-white text-vy-black font-display font-bold text-2xl uppercase tracking-widest px-12 py-5 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(196,160,107,0.4)] hover:shadow-[0_0_50px_rgba(196,160,107,0.8)] hover:-translate-y-1 rounded-sm w-full sm:w-auto"
+                className="bg-vy-gold hover:bg-vy-white text-vy-black font-display font-bold text-xl uppercase tracking-widest px-12 py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(196,160,107,0.3)] hover:shadow-[0_0_40px_rgba(196,160,107,0.6)]"
               >
                 {isSpinning ? 'SPINNING...' : 'SPIN TO WIN'}
               </button>
