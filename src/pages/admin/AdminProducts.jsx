@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, X, Upload, Image } from 'lucide-react';
-import { getProducts, addProduct, updateProduct, deleteProduct } from '../../firebase/products';
+import { Plus, Edit2, Trash2, X, Upload, Image, Sliders } from 'lucide-react';
+import { getProducts, addProduct, updateProduct, deleteProduct, bulkUpdateProducts } from '../../firebase/products';
 import { getSections } from '../../firebase/sections';
 import toast from 'react-hot-toast';
 
@@ -431,6 +431,161 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
   );
 };
 
+const BulkEditModal = ({ onClose, onSaved, selectedCount, productsCount, defaultTargetScope }) => {
+  const [targetScope, setTargetScope] = useState(defaultTargetScope || 'all');
+  const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
+  const [stockStatus, setStockStatus] = useState('no_change');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!price && !originalPrice && stockStatus === 'no_change') {
+      toast.error('Please specify at least one field to update.', { className: 'toast-vybera' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = {};
+      if (price) data.price = Number(price);
+      if (originalPrice) {
+        data.originalPrice = Number(originalPrice) === 0 ? null : Number(originalPrice);
+      }
+      if (stockStatus !== 'no_change') {
+        data.inStock = stockStatus === 'in_stock';
+      }
+      await onSaved(targetScope, data);
+    } catch (err) {
+      console.error(err);
+      toast.error('Bulk update failed: ' + err.message, { className: 'toast-vybera' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const countAffected = targetScope === 'selected' ? selectedCount : productsCount;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, y: 20 }}
+        onClick={e => e.stopPropagation()}
+        className="bg-vy-dark border border-vy-border w-full max-w-md overflow-hidden"
+      >
+        <div className="flex items-center justify-between p-6 border-b border-vy-border">
+          <h2 className="text-vy-white font-semibold tracking-wider">
+            Bulk Edit Products
+          </h2>
+          <button onClick={onClose} className="text-vy-grey hover:text-vy-white transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {selectedCount > 0 && (
+            <div>
+              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Target Range</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTargetScope('selected')}
+                  className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border transition-all ${
+                    targetScope === 'selected'
+                      ? 'border-vy-white bg-vy-white/10 text-vy-white'
+                      : 'border-vy-border bg-transparent text-vy-grey hover:text-vy-white hover:border-vy-grey'
+                  }`}
+                >
+                  Selected ({selectedCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTargetScope('all')}
+                  className={`px-4 py-2 text-xs font-bold uppercase tracking-wider border transition-all ${
+                    targetScope === 'all'
+                      ? 'border-vy-white bg-vy-white/10 text-vy-white'
+                      : 'border-vy-border bg-transparent text-vy-grey hover:text-vy-white hover:border-vy-grey'
+                  }`}
+                >
+                  All ({productsCount})
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">
+              New Selling Price (₹)
+            </label>
+            <input
+              type="number"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              className="vy-input"
+              placeholder="Keep current price"
+            />
+            <p className="text-[10px] text-vy-grey mt-1">Leave empty to keep existing pricing.</p>
+          </div>
+
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">
+              New Original/Discount Price (₹)
+            </label>
+            <input
+              type="number"
+              value={originalPrice}
+              onChange={e => setOriginalPrice(e.target.value)}
+              className="vy-input"
+              placeholder="Keep current original price"
+            />
+            <p className="text-[10px] text-vy-grey mt-1">Leave empty to keep existing original price. Set to 0 to clear discount.</p>
+          </div>
+
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">
+              Global Stock Status
+            </label>
+            <select
+              value={stockStatus}
+              onChange={e => setStockStatus(e.target.value)}
+              className="vy-input"
+            >
+              <option value="no_change">Keep Current Stock Status</option>
+              <option value="in_stock">Set to: In Stock</option>
+              <option value="out_stock">Set to: Out of Stock</option>
+            </select>
+          </div>
+
+          <div className="bg-vy-white/[0.02] border border-vy-border/50 p-4 text-center">
+            <p className="text-vy-grey text-xs">
+              This action will update <span className="text-vy-white font-semibold">{countAffected}</span> product(s) at once.
+            </p>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+            <button type="submit" disabled={loading} className="btn-primary flex-1 disabled:opacity-60 transition-all">
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="spinner w-3 h-3" /> Updating...
+                </span>
+              ) : 'Apply Changes'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
@@ -439,6 +594,26 @@ const AdminProducts = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+
+  const handleBulkUpdate = async (scope, data) => {
+    const targetIds = scope === 'selected' ? selectedIds : products.map(p => p.id);
+    if (targetIds.length === 0) {
+      toast.error('No products to update.', { className: 'toast-vybera' });
+      return;
+    }
+
+    try {
+      await bulkUpdateProducts(targetIds, data);
+      toast.success(`Bulk updated ${targetIds.length} product(s) successfully!`, { className: 'toast-vybera' });
+      setShowBulkModal(false);
+      setSelectedIds([]);
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      toast.error('Bulk update failed: ' + err.message, { className: 'toast-vybera' });
+    }
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -516,6 +691,14 @@ const AdminProducts = () => {
               </motion.button>
             )}
           </AnimatePresence>
+          {products.length > 0 && (
+            <button
+              onClick={() => setShowBulkModal(true)}
+              className="btn-outline border-vy-border text-vy-white hover:bg-vy-white/[0.05] flex items-center gap-2 text-xs"
+            >
+              <Sliders size={13} /> Bulk Edit
+            </button>
+          )}
           <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs">
             <Plus size={13} /> Add Product
           </button>
@@ -617,6 +800,19 @@ const AdminProducts = () => {
             onClose={() => setModal(null)}
             onSaved={() => { setModal(null); fetchProducts(); }}
             dynamicCategories={sections}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Bulk Edit Modal */}
+      <AnimatePresence>
+        {showBulkModal && (
+          <BulkEditModal
+            onClose={() => setShowBulkModal(false)}
+            onSaved={handleBulkUpdate}
+            selectedCount={selectedIds.length}
+            productsCount={products.length}
+            defaultTargetScope={selectedIds.length > 0 ? 'selected' : 'all'}
           />
         )}
       </AnimatePresence>

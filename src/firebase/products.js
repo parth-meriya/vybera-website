@@ -10,6 +10,7 @@ import {
   orderBy,
   serverTimestamp,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
@@ -133,4 +134,19 @@ export const deleteProduct = async (id) => {
   }
   
   await deleteDoc(doc(db, 'products', id));
+};
+
+export const bulkUpdateProducts = async (ids, updateData) => {
+  const chunks = [];
+  for (let i = 0; i < ids.length; i += 500) {
+    chunks.push(ids.slice(i, i + 500));
+  }
+  for (const chunk of chunks) {
+    const batch = writeBatch(db);
+    chunk.forEach(id => {
+      const productRef = doc(db, 'products', id);
+      batch.update(productRef, updateData);
+    });
+    await batch.commit();
+  }
 };
