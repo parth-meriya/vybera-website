@@ -152,9 +152,22 @@ export default async function handler(req, res) {
         totalSpins: admin.firestore.FieldValue.increment(1)
       });
 
-      // If it's a discount, create a single-use coupon
+      // If it's a discount, create a single-use coupon with collision check
       if (selectedReward.type === 'percentage' || selectedReward.type === 'flat') {
-        generatedCode = generateCouponCode(6);
+        // Generate unique code with collision check (retry up to 5 times)
+        let codeIsUnique = false;
+        let attempts = 0;
+        while (!codeIsUnique && attempts < 5) {
+          generatedCode = generateCouponCode(6);
+          const existingCoupon = await db.collection('coupons').where('code', '==', generatedCode).get();
+          if (existingCoupon.empty) {
+            codeIsUnique = true;
+          }
+          attempts++;
+        }
+        if (!codeIsUnique) {
+          throw new Error('Failed to generate a unique coupon code. Please try again.');
+        }
         
         // Expiry date (e.g. 7 days from now, or campaign specific)
         const expiryDays = campaignData.expiryDays || 7;
@@ -189,6 +202,22 @@ export default async function handler(req, res) {
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
+
+      // Add notification to user profile about the reward won
+      const userRef = db.collection('users').doc(uid);
+      const isFreeTee = selectedReward.type === 'free_tee';
+      transaction.update(userRef, {
+        notifications: admin.firestore.FieldValue.arrayUnion({
+          id: `notif_${Date.now()}_coupon_won`,
+          type: 'promo',
+          title: isFreeTee ? 'Free Tee Won!' : 'New Reward Won!',
+          message: isFreeTee 
+            ? `Congratulations! You won a FREE TEE in the ${campaignId} campaign.`
+            : `Congratulations! You won a ${selectedReward.name} coupon (${generatedCode}) in the ${campaignId} campaign.`,
+          createdAt: new Date().toISOString(),
+          read: false,
+        })
+      });
     });
 
     return res.status(200).json({ 

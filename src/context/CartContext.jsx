@@ -13,11 +13,26 @@ export const CartProvider = ({ children }) => {
       return [];
     }
   });
-  const [coupon, setCoupon] = useState(null);
+  const [coupon, setCoupon] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vybera_coupon');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    if (coupon) {
+      localStorage.setItem('vybera_coupon', JSON.stringify(coupon));
+    } else {
+      localStorage.removeItem('vybera_coupon');
+    }
+  }, [coupon]);
 
   const playAddSound = () => {
     try {
@@ -95,8 +110,8 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => {
     setItems([]);
     setCoupon(null);
-    setDiscount(0);
     localStorage.removeItem(CART_KEY);
+    localStorage.removeItem('vybera_coupon');
   };
 
   const applyCoupon = (couponData) => {

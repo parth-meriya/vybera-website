@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Link as LinkIcon, Download, RefreshCw, X, Save, Gift, Copy, Check, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Link as LinkIcon, Download, RefreshCw, X, Save, Gift, Copy, Check, Eye, BarChart3, TrendingUp, Users, QrCode } from 'lucide-react';
 import { collection, doc, getDocs, setDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import toast from 'react-hot-toast';
@@ -13,7 +13,9 @@ const AdminCampaigns = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentCampaign, setCurrentCampaign] = useState(null);
   
-  const [activeTab, setActiveTab] = useState('campaigns'); // 'campaigns' | 'free_tees'
+  const [activeTab, setActiveTab] = useState('campaigns'); // 'campaigns' | 'free_tees' | 'analytics'
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   useEffect(() => {
     fetchCampaigns();
@@ -29,6 +31,91 @@ const AdminCampaigns = () => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'analytics' && !analyticsData) {
+      fetchAnalytics();
+    }
+  }, [activeTab]);
+
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+
+      const [spinSnap, couponSnap, orderSnap] = await Promise.all([
+        getDocs(collection(db, 'spinResults')),
+        getDocs(collection(db, 'coupons')),
+        getDocs(collection(db, 'orders')),
+      ]);
+
+      const spins = spinSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const coupons = couponSnap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(c => c.campaignId);
+      const orders = orderSnap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(o => o.couponCode);
+
+      // Build a set of coupon codes per campaign for fast lookup
+      const couponCodeToCampaign = {};
+      coupons.forEach(c => {
+        couponCodeToCampaign[c.code || c.id] = c.campaignId;
+      });
+
+      // Per-campaign stats
+      const campaignMap = {};
+
+      spins.forEach(s => {
+        const cid = s.campaignId || 'unknown';
+        if (!campaignMap[cid]) campaignMap[cid] = { spins: 0, users: new Set(), rewards: {}, couponsGenerated: 0, couponsUsed: 0, orders: 0, revenue: 0 };
+        campaignMap[cid].spins++;
+        if (s.uid) campaignMap[cid].users.add(s.uid);
+        const rtype = s.rewardType || 'none';
+        campaignMap[cid].rewards[rtype] = (campaignMap[cid].rewards[rtype] || 0) + 1;
+      });
+
+      coupons.forEach(c => {
+        const cid = c.campaignId;
+        if (!campaignMap[cid]) campaignMap[cid] = { spins: 0, users: new Set(), rewards: {}, couponsGenerated: 0, couponsUsed: 0, orders: 0, revenue: 0 };
+        campaignMap[cid].couponsGenerated++;
+        if (c.used) campaignMap[cid].couponsUsed++;
+      });
+
+      orders.forEach(o => {
+        const cid = couponCodeToCampaign[o.couponCode];
+        if (cid && campaignMap[cid]) {
+          campaignMap[cid].orders++;
+          campaignMap[cid].revenue += (o.total || o.amount || 0);
+        }
+      });
+
+      // Convert Sets to counts and build final data
+      const perCampaign = Object.entries(campaignMap).map(([cid, data]) => ({
+        campaignId: cid,
+        totalSpins: data.spins,
+        uniqueUsers: data.users.size,
+        rewardDistribution: data.rewards,
+        couponsGenerated: data.couponsGenerated,
+        couponsUsed: data.couponsUsed,
+        orders: data.orders,
+        revenue: data.revenue,
+      }));
+
+      const totals = perCampaign.reduce((acc, c) => ({
+        totalSpins: acc.totalSpins + c.totalSpins,
+        uniqueUsers: acc.uniqueUsers + c.uniqueUsers,
+        couponsUsed: acc.couponsUsed + c.couponsUsed,
+        revenue: acc.revenue + c.revenue,
+      }), { totalSpins: 0, uniqueUsers: 0, couponsUsed: 0, revenue: 0 });
+
+      setAnalyticsData({ perCampaign, totals });
+    } catch (err) {
+      console.error('Analytics fetch error:', err);
+      toast.error('Failed to load analytics');
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   const fetchCampaigns = async () => {
     try {
@@ -137,6 +224,12 @@ const AdminCampaigns = () => {
             Campaigns
           </button>
           <button 
+            onClick={() => setActiveTab('analytics')}
+            className={`btn-primary px-4 py-2 text-xs flex items-center gap-2 ${activeTab === 'analytics' ? '' : 'bg-vy-card text-vy-grey'}`}
+          >
+            <BarChart3 size={14} /> Analytics
+          </button>
+          <button 
             onClick={() => setActiveTab('free_tees')}
             className={`btn-primary px-4 py-2 text-xs flex items-center gap-2 ${activeTab === 'free_tees' ? '' : 'bg-vy-card text-vy-grey'}`}
           >
@@ -150,7 +243,7 @@ const AdminCampaigns = () => {
         </div>
       </div>
 
-      {activeTab === 'campaigns' ? (
+      {activeTab === 'campaigns' && (
         <>
           <div className="mb-6 flex justify-end">
             <button 
@@ -227,7 +320,97 @@ const AdminCampaigns = () => {
             ))}
           </div>
         </>
-      ) : (
+      )}
+
+      {activeTab === 'analytics' && (
+        <div>
+          {analyticsLoading ? (
+            <div className="p-12 text-vy-grey flex items-center justify-center gap-2">
+              <RefreshCw className="animate-spin" size={20} /> Loading analytics...
+            </div>
+          ) : analyticsData ? (
+            <>
+              {/* Refresh button */}
+              <div className="mb-6 flex justify-end">
+                <button
+                  onClick={fetchAnalytics}
+                  className="btn-primary flex items-center gap-2 text-xs px-4 py-2"
+                >
+                  <RefreshCw size={14} /> Refresh Data
+                </button>
+              </div>
+
+              {/* Summary Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
+                  <QrCode size={48} className="absolute top-3 right-3 text-vy-border/30" />
+                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Total Spins</p>
+                  <p className="text-3xl font-bold text-vy-white font-display">{analyticsData.totals.totalSpins.toLocaleString()}</p>
+                </div>
+                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
+                  <Users size={48} className="absolute top-3 right-3 text-vy-border/30" />
+                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Unique Users</p>
+                  <p className="text-3xl font-bold text-vy-white font-display">{analyticsData.totals.uniqueUsers.toLocaleString()}</p>
+                </div>
+                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
+                  <Check size={48} className="absolute top-3 right-3 text-vy-border/30" />
+                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Coupons Used</p>
+                  <p className="text-3xl font-bold text-vy-gold font-display">{analyticsData.totals.couponsUsed.toLocaleString()}</p>
+                </div>
+                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
+                  <TrendingUp size={48} className="absolute top-3 right-3 text-vy-border/30" />
+                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Campaign Revenue</p>
+                  <p className="text-3xl font-bold text-vy-gold font-display">₹{analyticsData.totals.revenue.toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Per-Campaign Breakdown Table */}
+              <div className="bg-vy-card border border-vy-border overflow-hidden">
+                <div className="p-4 border-b border-vy-border">
+                  <h3 className="font-display font-bold text-sm text-vy-white tracking-widest uppercase">Per-Campaign Breakdown</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-vy-black border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">
+                      <tr>
+                        <th className="p-4 font-normal">Campaign</th>
+                        <th className="p-4 font-normal text-right">Spins</th>
+                        <th className="p-4 font-normal text-right">Users</th>
+                        <th className="p-4 font-normal text-right">Coupons Generated</th>
+                        <th className="p-4 font-normal text-right">Coupons Used</th>
+                        <th className="p-4 font-normal text-right">Orders</th>
+                        <th className="p-4 font-normal text-right">Revenue</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {analyticsData.perCampaign.map(row => (
+                        <tr key={row.campaignId} className="border-b border-vy-border/50 hover:bg-vy-black/50">
+                          <td className="p-4 text-vy-white font-bold uppercase tracking-wider text-xs">{row.campaignId}</td>
+                          <td className="p-4 text-vy-white text-right">{row.totalSpins.toLocaleString()}</td>
+                          <td className="p-4 text-vy-white text-right">{row.uniqueUsers.toLocaleString()}</td>
+                          <td className="p-4 text-vy-white text-right">{row.couponsGenerated.toLocaleString()}</td>
+                          <td className="p-4 text-vy-gold text-right">{row.couponsUsed.toLocaleString()}</td>
+                          <td className="p-4 text-vy-white text-right">{row.orders.toLocaleString()}</td>
+                          <td className="p-4 text-vy-gold text-right font-bold">₹{row.revenue.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                      {analyticsData.perCampaign.length === 0 && (
+                        <tr>
+                          <td colSpan="7" className="p-8 text-center text-vy-grey">No campaign data found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="p-12 text-vy-grey text-center">No analytics data loaded.</div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'free_tees' && (
         <div className="bg-vy-card border border-vy-border overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-vy-black border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">

@@ -8,6 +8,17 @@ import { getBannerConfig } from '../firebase/content';
 import SEO from '../components/SEO';
 
 
+const DEFAULT_BANNER = {
+  headline: 'THE ERA OF\nVIBES',
+  subtitle: 'Premium heavyweight cotton. Engineered for the bold. Designed to stand out.',
+  imageUrl: '/hero_banner.png',
+  isActive: true,
+  expiryDate: '',
+  musicUrl: '',
+  musicEnabled: false,
+  isDefault: true
+};
+
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,14 +32,23 @@ const Home = () => {
   useEffect(() => {
     // 1. Fetch Banner first for fast Hero render
     getBannerConfig().then(b => {
-      if (b && b.isActive && b.expiryDate) {
-        const now = new Date();
-        const expiry = new Date(b.expiryDate);
-        if (now > expiry) setBanner(null);
-        else setBanner(b);
+      if (b && b.isActive) {
+        if (b.expiryDate) {
+          const now = new Date();
+          const expiry = new Date(b.expiryDate);
+          if (now > expiry) {
+            setBanner(DEFAULT_BANNER);
+          } else {
+            setBanner(b);
+          }
+        } else {
+          setBanner(b);
+        }
       } else {
-        setBanner(b?.isActive ? b : null);
+        setBanner(DEFAULT_BANNER);
       }
+    }).catch(() => {
+      setBanner(DEFAULT_BANNER);
     });
 
     // 2. Fetch Products separately
@@ -70,12 +90,12 @@ const Home = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-r from-[#1C2A21]/95 via-[#1C2A21]/60 to-transparent z-10" />
             <img
-              src={(banner && banner.isActive && banner.imageUrl) ? banner.imageUrl : "/anniversary_manual.png"}
+              src={banner ? banner.imageUrl : "/hero_banner.png"}
               alt="VYBERA Collection"
               className="w-full h-full object-cover object-center md:object-[70%_center]"
               onError={(e) => {
-                if (e.target.src.includes('anniversary_manual.png')) return;
-                e.target.src = "/anniversary_manual.png";
+                if (e.target.src.includes('hero_banner.png')) return;
+                e.target.src = "/hero_banner.png";
               }}
             />
           </motion.div>
@@ -98,7 +118,7 @@ const Home = () => {
             className="flex items-center gap-4 mb-6"
           >
             <span className="text-vy-light text-[11px] tracking-[0.5em] uppercase font-medium">
-              {banner?.subtitle || "BUY 1 GET 1 — APPLY COUPON AT CHECKOUT"}
+              {banner && !banner.isDefault ? banner.subtitle : "VYBERA DROPS — LIMITED EDITION"}
             </span>
             <span className="w-12 h-px bg-vy-accent" />
             <span className="text-vy-accent text-sm">✦</span>
@@ -111,12 +131,12 @@ const Home = () => {
             transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="font-display font-bold text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] tracking-[0.05em] text-vy-white leading-[0.95] mb-6 uppercase"
           >
-            {banner?.headline ? (
+            {banner?.headline && !banner.isDefault ? (
               <span className="text-vy-accent">{banner.headline}</span>
             ) : (
               <>
-                ANNIVERSARY<br />
-                <span className="text-vy-accent">SALE LIVE</span>
+                THE ERA OF<br />
+                <span className="text-vy-accent">VIBES</span>
               </>
             )}
           </motion.h1>
@@ -128,7 +148,7 @@ const Home = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-vy-light text-sm md:text-base leading-relaxed mb-10 max-w-md uppercase tracking-[0.2em]"
           >
-            {banner?.subtitle || "Premium comfort. Timeless style. Made for the next generation."}
+            {banner ? banner.subtitle : "Premium heavyweight cotton. Engineered for the bold. Designed to stand out."}
           </motion.p>
 
           {/* CTA Button */}

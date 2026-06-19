@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from 'react';
 import { getAllUsers } from '../../firebase/users';
 import { getOrdersByUser, createOrder, deleteOrder, updateOrderFull } from '../../firebase/orders';
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, Ticket, ShoppingBag, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import toast from 'react-hot-toast';
 
 const AdminUsers = () => {
@@ -11,6 +15,11 @@ const AdminUsers = () => {
   const [userOrders, setUserOrders] = useState({});
   const [loadingOrders, setLoadingOrders] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // User Detail Panel State
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [userDetail, setUserDetail] = useState({ spinHistory: [], coupons: [], orders: [] });
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // Manual Order State
   const [addingOrderFor, setAddingOrderFor] = useState(null);
@@ -39,12 +48,57 @@ const AdminUsers = () => {
     }
   };
 
-  // WhatsApp direct message
+  const fetchUserDetail = async (uid) => {
+    if (selectedUserId === uid) {
+      setSelectedUserId(null);
+      return;
+    }
+    setSelectedUserId(uid);
+    setDetailLoading(true);
+    try {
+      const [spinSnap, couponSnap, orderSnap] = await Promise.all([
+        getDocs(query(collection(db, 'spinResults'), where('uid', '==', uid))),
+        getDocs(query(collection(db, 'coupons'), where('uid', '==', uid))),
+        getDocs(query(collection(db, 'orders'), where('userId', '==', uid)))
+      ]);
+
+      const spinHistory = spinSnap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (b.timestamp?.toMillis?.() ?? 0) - (a.timestamp?.toMillis?.() ?? 0));
+
+      const coupons = couponSnap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+
+      const orders = orderSnap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+
+      setUserDetail({ spinHistory, coupons, orders });
+    } catch (err) {
+      console.error('Error fetching user detail:', err);
+      toast.error('Failed to load user details', { className: 'toast-vybera' });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const handleWhatsApp = (phone, name) => {
     const cleanPhone = (phone || '').replace(/\D/g, '');
     if (!cleanPhone || cleanPhone.length !== 10) return;
     const finalPhone = '91' + cleanPhone;
     const msg = `Hello from VYBERA regarding your order.`;
+    window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  const handleWhatsAppVerification = (phone, name) => {
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      toast.error('Invalid phone number format. Must be 10 digits.');
+      return;
+    }
+    const finalPhone = '91' + cleanPhone;
+    const msg = `Hello ${name || 'there'}, this is VYBERA support. We are verifying your account for the QR Spin Wheel Campaign. Please reply to this message to verify your mobile number. Thank you!`;
     window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
@@ -170,15 +224,19 @@ const AdminUsers = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map(user => (
-                <>
-                  <tr key={user.id} className="border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors">
+              {filteredUsers.map(user => {
+                const uid = user.uid || user.id;
+                const isDetailOpen = selectedUserId === uid;
+                return (
+                <React.Fragment key={user.id}>
+                  <tr className={`border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors cursor-pointer ${isDetailOpen ? 'bg-vy-border/10' : ''}`} onClick={() => fetchUserDetail(uid)}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-vy-border/30 flex items-center justify-center shrink-0">
                           <User size={12} className="text-vy-grey" />
                         </div>
                         <span className="text-vy-white text-xs font-medium">{user.name || '—'}</span>
+                        {isDetailOpen ? <ChevronUp size={12} className="text-vy-accent" /> : <ChevronDown size={12} className="text-vy-grey" />}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -206,7 +264,7 @@ const AdminUsers = () => {
                       {user.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                         {/* WhatsApp Button */}
                         {user.phoneNumber && (
                           <button
@@ -234,20 +292,186 @@ const AdminUsers = () => {
                         </button>
                         {/* Order History Toggle */}
                         <button
-                          onClick={() => toggleUser(user.uid || user.id)}
+                          onClick={() => toggleUser(uid)}
                           className="flex items-center gap-1 text-vy-grey text-xs hover:text-vy-white transition-colors"
                         >
-                          Orders {expanded === (user.uid || user.id) ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                          Orders {expanded === uid ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
                       </div>
                     </td>
                   </tr>
-                  {expanded === (user.uid || user.id) && (
+
+                  {/* Expandable User Detail Panel */}
+                  <AnimatePresence>
+                    {isDetailOpen && (
+                      <tr key={`${user.id}-detail`}>
+                        <td colSpan={6} className="p-0">
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="overflow-hidden border-b border-vy-accent/20 bg-vy-black/40"
+                          >
+                            <div className="px-8 py-6">
+                              {detailLoading ? (
+                                <div className="flex items-center justify-center py-8 gap-3">
+                                  <div className="spinner" />
+                                  <span className="text-vy-grey text-xs tracking-widest uppercase">Loading user details...</span>
+                                </div>
+                              ) : (
+                                <div className="space-y-6">
+                                  {/* Profile Summary */}
+                                  <div className="grid grid-cols-5 gap-4 bg-vy-card border border-vy-border p-4">
+                                    <div>
+                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Name</p>
+                                      <p className="text-vy-white text-xs font-medium">{user.name || '—'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Email</p>
+                                      <p className="text-vy-white text-xs">{user.email || '—'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Phone</p>
+                                      <div className="flex items-center gap-2">
+                                        <p className="text-vy-white text-xs font-mono">{user.phoneNumber ? `+91 ${user.phoneNumber}` : '—'}</p>
+                                        {user.phoneNumber && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleWhatsAppVerification(user.phoneNumber, user.name);
+                                            }}
+                                            className="text-[9px] text-green-400 hover:text-green-300 transition-colors uppercase tracking-widest underline ml-2"
+                                            title="Send WhatsApp Verification Msg"
+                                          >
+                                            Verify Mobile
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Join Date</p>
+                                      <p className="text-vy-white text-xs">{user.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Role</p>
+                                      <span className={`text-xs px-2 py-0.5 border ${user.role === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-500/10' : 'text-vy-grey border-vy-border'}`}>
+                                        {user.role || 'user'}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Spin History */}
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <RotateCw size={13} className="text-vy-accent" />
+                                      <h4 className="text-vy-accent text-[10px] tracking-widest uppercase font-semibold">Spin History</h4>
+                                      <span className="text-vy-grey text-[10px]">({userDetail.spinHistory.length})</span>
+                                    </div>
+                                    {userDetail.spinHistory.length === 0 ? (
+                                      <p className="text-vy-grey text-xs pl-5">No spin history found</p>
+                                    ) : (
+                                      <div className="bg-vy-card border border-vy-border">
+                                        <div className="grid grid-cols-4 gap-4 px-4 py-2 border-b border-vy-border">
+                                          {['Campaign', 'Reward Won', 'Type', 'Date'].map(h => (
+                                            <span key={h} className="text-vy-grey text-[9px] tracking-widest uppercase font-medium">{h}</span>
+                                          ))}
+                                        </div>
+                                        {userDetail.spinHistory.map(spin => (
+                                          <div key={spin.id} className="grid grid-cols-4 gap-4 px-4 py-2 border-b border-vy-border/30 last:border-0 hover:bg-vy-border/10">
+                                            <span className="text-vy-white text-xs">{spin.campaignId || '—'}</span>
+                                            <span className="text-vy-gold text-xs font-medium">{spin.rewardWon || '—'}</span>
+                                            <span className="text-vy-grey text-xs">{spin.rewardType || '—'}</span>
+                                            <span className="text-vy-grey text-xs">{spin.timestamp?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Coupons */}
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <Ticket size={13} className="text-vy-gold" />
+                                      <h4 className="text-vy-gold text-[10px] tracking-widest uppercase font-semibold">Coupons</h4>
+                                      <span className="text-vy-grey text-[10px]">({userDetail.coupons.length})</span>
+                                    </div>
+                                    {userDetail.coupons.length === 0 ? (
+                                      <p className="text-vy-grey text-xs pl-5">No coupons found</p>
+                                    ) : (
+                                      <div className="bg-vy-card border border-vy-border">
+                                        <div className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border">
+                                          {['Code', 'Value', 'Status', 'Campaign', 'Created'].map(h => (
+                                            <span key={h} className="text-vy-grey text-[9px] tracking-widest uppercase font-medium">{h}</span>
+                                          ))}
+                                        </div>
+                                        {userDetail.coupons.map(coupon => {
+                                          const isExpired = coupon.expiry && new Date(coupon.expiry) < new Date();
+                                          const status = coupon.used ? 'Used' : isExpired ? 'Expired' : 'Active';
+                                          const statusColor = coupon.used ? 'text-vy-grey' : isExpired ? 'text-red-400' : 'text-green-400';
+                                          return (
+                                            <div key={coupon.id} className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border/30 last:border-0 hover:bg-vy-border/10">
+                                              <span className="text-vy-white text-xs font-mono font-semibold">{coupon.code}</span>
+                                              <span className="text-vy-white text-xs">
+                                                {coupon.type === 'percentage' ? `${coupon.value}%` : `₹${coupon.value}`}
+                                              </span>
+                                              <span className={`text-xs font-medium ${statusColor}`}>{status}</span>
+                                              <span className="text-vy-grey text-xs">{coupon.campaignId || 'Manual'}</span>
+                                              <span className="text-vy-grey text-xs">{coupon.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Order History */}
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                      <ShoppingBag size={13} className="text-blue-400" />
+                                      <h4 className="text-blue-400 text-[10px] tracking-widest uppercase font-semibold">Orders</h4>
+                                      <span className="text-vy-grey text-[10px]">({userDetail.orders.length})</span>
+                                    </div>
+                                    {userDetail.orders.length === 0 ? (
+                                      <p className="text-vy-grey text-xs pl-5">No orders found</p>
+                                    ) : (
+                                      <div className="bg-vy-card border border-vy-border">
+                                        <div className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border">
+                                          {['Order ID', 'Amount', 'Status', 'Coupon', 'Date'].map(h => (
+                                            <span key={h} className="text-vy-grey text-[9px] tracking-widest uppercase font-medium">{h}</span>
+                                          ))}
+                                        </div>
+                                        {userDetail.orders.map(order => (
+                                          <div key={order.id} className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border/30 last:border-0 hover:bg-vy-border/10">
+                                            <span className="text-vy-white text-xs font-mono">{order.id.slice(0, 8)}...</span>
+                                            <span className="text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</span>
+                                            <span className={`text-xs font-medium ${
+                                              order.status === 'delivered' ? 'text-green-400' :
+                                              order.status === 'shipped' ? 'text-blue-400' :
+                                              order.status === 'cancelled' ? 'text-red-400' : 'text-yellow-400'
+                                            }`}>{order.status}</span>
+                                            <span className="text-vy-grey text-xs font-mono">{order.couponCode || '—'}</span>
+                                            <span className="text-vy-grey text-xs">{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        </td>
+                      </tr>
+                    )}
+                  </AnimatePresence>
+
+                  {expanded === uid && (
                     <tr key={`${user.id}-orders`} className="border-b border-vy-border/50 bg-vy-black/20">
                       <td colSpan={6} className="px-8 py-5">
-                        {loadingOrders === (user.uid || user.id) ? (
+                        {loadingOrders === uid ? (
                           <div className="flex justify-center py-4"><div className="spinner" /></div>
-                        ) : (userOrders[user.uid || user.id] || []).length === 0 ? (
+                        ) : (userOrders[uid] || []).length === 0 ? (
                           <p className="text-vy-grey text-xs tracking-widest uppercase">No orders found</p>
                         ) : (
                           <div className="space-y-2">
@@ -256,7 +480,7 @@ const AdminUsers = () => {
                                 <span key={h} className="text-vy-grey text-[10px] tracking-widest uppercase font-medium">{h}</span>
                               ))}
                             </div>
-                            {userOrders[user.uid || user.id].map(order => (
+                            {userOrders[uid].map(order => (
                               <div key={order.id} className="grid grid-cols-6 gap-4 items-center bg-vy-border/20 px-4 py-2">
                                 <span className="text-vy-grey text-xs font-mono">{order.id.slice(0, 12)}...</span>
                                 <span className="text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</span>
@@ -296,7 +520,7 @@ const AdminUsers = () => {
                                         <Edit2 size={13} />
                                       </button>
                                       <button 
-                                        onClick={() => handleDeleteOrder(user.uid || user.id, order.id)}
+                                        onClick={() => handleDeleteOrder(uid, order.id)}
                                         className="text-red-400 hover:text-red-300 transition-colors p-1" title="Delete Manual Order"
                                       >
                                         <Trash2 size={13} />
@@ -313,8 +537,9 @@ const AdminUsers = () => {
                       </td>
                     </tr>
                   )}
-                </>
-              ))}
+                </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
           {filteredUsers.length === 0 && (

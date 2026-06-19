@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag, Ticket } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { validateCoupon, getAllCoupons } from '../firebase/coupons';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
 import BackButton from '../components/ui/BackButton';
 
@@ -16,6 +18,7 @@ const Cart = () => {
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [myCampaignCoupons, setMyCampaignCoupons] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +26,20 @@ const Cart = () => {
       setAvailableCoupons(coupons.filter(c => c.active && c.showToUser));
     });
   }, []);
+
+  useEffect(() => {
+    const fetchCampaignCoupons = async () => {
+      if (user) {
+        const couponsQuery = query(collection(db, 'coupons'), where('uid', '==', user.uid));
+        const snap = await getDocs(couponsQuery);
+        const campaignCoupons = snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(c => c.campaignId && c.active && !c.used && (!c.expiry || new Date(c.expiry) > new Date()));
+        setMyCampaignCoupons(campaignCoupons);
+      }
+    };
+    fetchCampaignCoupons();
+  }, [user]);
 
   const handleApplyCoupon = async (codeToApply = couponCode) => {
     const code = codeToApply.trim();
@@ -216,6 +233,39 @@ const Cart = () => {
                   </div>
                 )}
               </div>
+
+              {/* Your Campaign Rewards */}
+              {!coupon && myCampaignCoupons.length > 0 && (
+                <div className="mb-6 border-b border-vy-border pb-6">
+                  <h3 className="text-vy-gold text-xs tracking-widest uppercase mb-4 flex items-center gap-2">
+                    <Ticket size={12} /> Your Rewards
+                  </h3>
+                  <div className="space-y-3">
+                    {myCampaignCoupons.map(c => (
+                      <div key={c.id} className="border border-vy-gold/30 bg-vy-gold/5 p-3 flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-sm font-bold text-vy-gold tracking-widest">{c.code}</span>
+                          <button
+                            onClick={() => handleApplyCoupon(c.code)}
+                            disabled={couponLoading}
+                            className="text-vy-gold text-xs font-semibold uppercase tracking-widest hover:text-vy-white transition-colors"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                        <p className="text-vy-grey text-xs">
+                          {c.type === 'percentage' ? `${c.value}% OFF` : `₹${c.value} OFF`} • Campaign: {c.campaignId}
+                        </p>
+                        {c.expiry && (
+                          <p className="text-vy-grey text-[10px]">
+                            Expires: {new Date(c.expiry).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Available Coupons */}
               {!coupon && availableCoupons.length > 0 && (

@@ -119,12 +119,25 @@ export default async function handler(req, res) {
         }
       }
 
-      // If coupon used, fetch the coupon document
+      // If coupon used, fetch and VALIDATE the coupon document server-side
       let couponDocRef;
       if (couponCode) {
         const couponsQuery = await db.collection('coupons').where('code', '==', couponCode).get();
         if (!couponsQuery.empty) {
           couponDocRef = couponsQuery.docs[0].ref;
+          const couponData = (await transaction.get(couponDocRef)).data();
+          
+          // Security: Re-validate coupon server-side
+          if (couponData.used) {
+            throw new Error('This coupon has already been used.');
+          }
+          if (couponData.expiry && new Date(couponData.expiry) < new Date()) {
+            throw new Error('This coupon has expired.');
+          }
+          // Prevent sharing: if coupon has a UID, it must match the order user
+          if (couponData.uid && couponData.uid !== userId) {
+            throw new Error('This coupon belongs to a different account and cannot be used.');
+          }
         }
       }
 
@@ -138,16 +151,29 @@ export default async function handler(req, res) {
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Mark single-use coupon as used, or increment usage
+      // Mark single-use coupon as used, or increment usage + add notification
       if (couponDocRef) {
         const couponData = (await transaction.get(couponDocRef)).data();
         if (couponData.singleUse && !couponData.used) {
-          transaction.update(couponDocRef, { used: true });
+          transaction.update(couponDocRef, { used: true, usedAt: admin.firestore.FieldValue.serverTimestamp() });
         } else if (!couponData.singleUse) {
           transaction.update(couponDocRef, { 
             timesUsed: admin.firestore.FieldValue.increment(1) 
           });
         }
+
+        // Add notification to user about coupon usage
+        const userNotifRef = db.collection('users').doc(userId);
+        transaction.update(userNotifRef, {
+          notifications: admin.firestore.FieldValue.arrayUnion({
+            id: `notif_${Date.now()}_coupon_used`,
+            type: 'coupon',
+            title: 'Coupon Used Successfully',
+            message: `Your coupon ${couponCode} (${couponData.type === 'percentage' ? couponData.value + '% OFF' : '₹' + couponData.value + ' OFF'}) was applied to order #${firebase_order_id.slice(0, 8)}.`,
+            createdAt: new Date().toISOString(),
+            read: false,
+          })
+        });
       }
 
       // Deduct Points & Log Transaction

@@ -1,10 +1,11 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, LogIn, Phone, Ticket, Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db, auth } from '../../firebase/config';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -36,15 +37,29 @@ const Campaign = () => {
     
     if (token) {
       sessionStorage.setItem(sessionKey, token);
-      setHasAccess(true);
+      setTimeout(() => setHasAccess(true), 0);
+      
+      // Increment scan count on the campaign document
+      const recordScan = async () => {
+        try {
+          const campRef = doc(db, 'campaigns', id);
+          await updateDoc(campRef, {
+            scanCount: increment(1)
+          });
+        } catch (err) {
+          console.error('Failed to increment scanCount:', err);
+        }
+      };
+      recordScan();
+      
       // Clean up URL so it's clean and doesn't get shared with token easily
       window.history.replaceState({}, '', `/campaign/${id}`);
     } else {
       const storedToken = sessionStorage.getItem(sessionKey);
       if (storedToken) {
-        setHasAccess(true);
+        setTimeout(() => setHasAccess(true), 0);
       } else {
-        setLoading(false);
+        setTimeout(() => setLoading(false), 0);
       }
     }
   }, [id, searchParams]);

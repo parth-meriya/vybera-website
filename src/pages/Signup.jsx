@@ -41,6 +41,12 @@ const Signup = () => {
     let error = '';
     if (name === 'name') error = validateName(value);
     if (name === 'phone') error = validatePhone(value);
+    if (name === 'email') {
+      const emailStr = (value || '').trim().toLowerCase();
+      if (emailStr && !emailStr.endsWith('@gmail.com')) {
+        error = 'Only Gmail addresses (@gmail.com) are allowed';
+      }
+    }
     if (name === 'password') {
       const emailCheck = validatePasswordNotEmail(value, form.email);
       if (emailCheck) error = emailCheck;
@@ -58,7 +64,15 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate all fields
+    // Validate email is a Gmail address
+    const emailStr = form.email.trim().toLowerCase();
+    if (!emailStr.endsWith('@gmail.com')) {
+      setFieldErrors(prev => ({ ...prev, email: 'Only Gmail addresses (@gmail.com) are allowed' }));
+      toast.error('Only Gmail addresses (@gmail.com) are allowed.', { className: 'toast-vybera' });
+      return;
+    }
+
+    // Validate all other fields
     const nameErr = validateName(form.name);
     const phoneErr = validatePhone(form.phone);
     const emailCheck = validatePasswordNotEmail(form.password, form.email);
