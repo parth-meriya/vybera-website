@@ -5,11 +5,7 @@ const BackButton = ({ className = '', label = 'Back' }) => {
   const navigate = useNavigate();
   
   const handleBack = () => {
-    if (window.history.length > 2) {
-      navigate(-1);
-    } else {
-      navigate('/');
-    }
+    navigate(-1);
   };
 
   return (
