@@ -217,6 +217,11 @@ const Customize = () => {
   const safeRegular  = settings?.regularPrices  || { Front: 600, Back: 600, Both: 800 };
   const safeSizes    = settings?.sizes          || sizes || ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
+  const getMinPrice = (pricesObj, fallback) => {
+    const vals = Object.values(pricesObj || {}).filter(v => typeof v === 'number' && v > 0);
+    return vals.length > 0 ? Math.min(...vals) : fallback;
+  };
+
   const basePrice     = fit === 'Oversize' ? (safeOversize[position] || 700) : (safeRegular[position] || 600);
   const finalPrice    = Math.max(0, basePrice - discount);
 
@@ -435,13 +440,13 @@ const Customize = () => {
                     id: 'Oversize', 
                     title: 'Oversized Fit', 
                     desc: 'Drop shoulder, loose boxy fit, premium heavy-weight fabric.',
-                    price: 'Starting ₹700'
+                    price: `Starting ₹${getMinPrice(safeOversize, 700)}`
                   },
                   { 
                     id: 'Regular', 
                     title: 'Regular Fit', 
                     desc: 'Standard comfort fit, classic silhouette, mid-weight cotton.',
-                    price: 'Starting ₹600'
+                    price: `Starting ₹${getMinPrice(safeRegular, 600)}`
                   },
                 ].map(item => (
                   <button
