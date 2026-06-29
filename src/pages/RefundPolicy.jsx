@@ -6,8 +6,8 @@ const RefundPolicy = () => {
   return (
     <div className="min-h-screen bg-vy-black pt-24 pb-16">
       <SEO
-        title="Cancellation & Exchange Policy"
-        description="VYBERA's cancellation and exchange policy. We do not offer COD, returns, or refunds. Exchanges are available only for defective or damaged items."
+        title="Cancellation Policy"
+        description="VYBERA's cancellation policy. We do not offer COD, returns, refunds, or exchanges. Free replacement is available only for defective or damaged items."
         path="/refund-policy"
       />
       <div className="max-w-3xl mx-auto px-6 md:px-12">
@@ -20,7 +20,7 @@ const RefundPolicy = () => {
           className="bg-vy-card border border-vy-border p-8 md:p-12"
         >
           <h1 className="font-display font-bold text-3xl md:text-4xl tracking-wider text-vy-white mb-8 border-b border-vy-border pb-6">
-            Cancellation & Exchange Policy
+            Cancellation Policy
           </h1>
 
           <div className="space-y-8 text-vy-light text-sm leading-relaxed">
@@ -32,9 +32,9 @@ const RefundPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-vy-white font-semibold text-lg mb-3">2. No Returns or Refunds</h2>
+              <h2 className="text-vy-white font-semibold text-lg mb-3">2. No Returns, Refunds, or Exchanges</h2>
               <p>
-                All sales are <strong>final</strong>. We do not accept returns or issue refunds for any reason, including change of mind, incorrect size selection, or buyer's remorse. Please refer to our size guide carefully before placing your order.
+                All sales are <strong>final</strong>. We do not accept returns, issue refunds, or offer exchanges for any reason, including change of mind, incorrect size selection, or buyer's remorse. Please refer to our size guide carefully before placing your order.
               </p>
             </section>
 
@@ -48,7 +48,7 @@ const RefundPolicy = () => {
             <section>
               <h2 className="text-vy-white font-semibold text-lg mb-3">4. Defective or Damaged Items Only</h2>
               <p>
-                If you receive a defective or damaged item, please contact us within <strong>48 hours</strong> of delivery with clear photographic evidence. Upon verification, we will arrange a <strong>free replacement</strong> (subject to stock availability). No monetary refunds will be issued — only exchanges or replacements.
+                If you receive a defective or damaged item, please contact us within <strong>48 hours</strong> of delivery with clear photographic evidence. Upon verification, we will arrange a <strong>free replacement</strong> (subject to stock availability). No monetary refunds or exchanges will be issued — only replacements of the same product.
               </p>
               <ul className="list-disc pl-5 mt-2 space-y-2 text-vy-grey">
                 <li>Contact us via our Contact page or email at vybera@gmail.com with your order ID and photos.</li>
