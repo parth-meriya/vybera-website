@@ -161,6 +161,7 @@ service cloud.firestore {
     match /campaigns/{campaignId} {
       allow read: if true;
       allow write: if hasAdminClaim();
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scanCount']);
     }
 
     match /spinResults/{resultId} {
