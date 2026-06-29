@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllUsers } from '../../firebase/users';
 import { getOrdersByUser, createOrder, deleteOrder, updateOrderFull } from '../../firebase/orders';
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, Ticket, ShoppingBag, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, Ticket, ShoppingBag, Calendar, Wallet, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -20,6 +20,12 @@ const AdminUsers = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [userDetail, setUserDetail] = useState({ spinHistory: [], coupons: [], orders: [] });
   const [detailLoading, setDetailLoading] = useState(false);
+  const [drawerTab, setDrawerTab] = useState('overview'); // overview | orders | rewards | audit
+
+  // Filter States
+  const [filterRole, setFilterRole] = useState('all'); // all | user | admin
+  const [filterJoined, setFilterJoined] = useState('all'); // all | today | week | month
+  const [filterReferral, setFilterReferral] = useState('all'); // all | has_referrals | no_referrals
 
   // Manual Order State
   const [addingOrderFor, setAddingOrderFor] = useState(null);
@@ -102,15 +108,43 @@ const AdminUsers = () => {
     window.open(`https://wa.me/${finalPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  // Filter users by search
+  // Filter users by search & filter states
   const filteredUsers = users.filter(user => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      (user.name || '').toLowerCase().includes(q) ||
-      (user.email || '').toLowerCase().includes(q) ||
-      (user.phoneNumber || '').includes(q)
-    );
+    // 1. Search Query
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchSearch = (
+        (user.name || '').toLowerCase().includes(q) ||
+        (user.email || '').toLowerCase().includes(q) ||
+        (user.phoneNumber || '').includes(q)
+      );
+      if (!matchSearch) return false;
+    }
+    
+    // 2. Filter Role
+    if (filterRole !== 'all') {
+      const role = user.role || 'user';
+      if (role !== filterRole) return false;
+    }
+    
+    // 3. Filter Joined Date
+    if (filterJoined !== 'all') {
+      const date = user.createdAt?.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
+      const diffTime = Math.abs(new Date() - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (filterJoined === 'today' && diffDays > 1) return false;
+      if (filterJoined === 'week' && diffDays > 7) return false;
+      if (filterJoined === 'month' && diffDays > 30) return false;
+    }
+    
+    // 4. Filter Referrals
+    if (filterReferral !== 'all') {
+      const count = users.filter(u => u.referredBy === (user.uid || user.id)).length;
+      if (filterReferral === 'has_referrals' && count === 0) return false;
+      if (filterReferral === 'no_referrals' && count > 0) return false;
+    }
+    
+    return true;
   });
 
   const handleCreateManualOrder = async () => {
@@ -198,9 +232,9 @@ const AdminUsers = () => {
         </h1>
       </div>
 
-      {/* Search */}
-      <div className="mb-6 max-w-md">
-        <div className="relative">
+      {/* Search & Filters */}
+      <div className="mb-6 flex flex-wrap gap-4 items-center">
+        <div className="relative flex-1 min-w-[280px] max-w-md">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-vy-grey" />
           <input
             value={searchQuery}
@@ -209,6 +243,37 @@ const AdminUsers = () => {
             className="vy-input pl-9 w-full text-xs"
           />
         </div>
+
+        <select 
+          value={filterRole} 
+          onChange={e => setFilterRole(e.target.value)} 
+          className="vy-input text-xs w-36 cursor-pointer"
+        >
+          <option value="all">All Roles</option>
+          <option value="user">Users</option>
+          <option value="admin">Admins</option>
+        </select>
+
+        <select 
+          value={filterJoined} 
+          onChange={e => setFilterJoined(e.target.value)} 
+          className="vy-input text-xs w-36 cursor-pointer"
+        >
+          <option value="all">Joined: All Time</option>
+          <option value="today">Joined: Today</option>
+          <option value="week">Joined: This Week</option>
+          <option value="month">Joined: This Month</option>
+        </select>
+
+        <select 
+          value={filterReferral} 
+          onChange={e => setFilterReferral(e.target.value)} 
+          className="vy-input text-xs w-36 cursor-pointer"
+        >
+          <option value="all">All Referrals</option>
+          <option value="has_referrals">Has Referrals</option>
+          <option value="no_referrals">No Referrals</option>
+        </select>
       </div>
 
       {loading ? (
@@ -228,15 +293,20 @@ const AdminUsers = () => {
                 const uid = user.uid || user.id;
                 const isDetailOpen = selectedUserId === uid;
                 return (
-                <React.Fragment key={user.id}>
-                  <tr className={`border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors cursor-pointer ${isDetailOpen ? 'bg-vy-border/10' : ''}`} onClick={() => fetchUserDetail(uid)}>
+                  <tr 
+                    key={user.id} 
+                    className={`border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors cursor-pointer ${isDetailOpen ? 'bg-vy-border/10' : ''}`} 
+                    onClick={() => {
+                      fetchUserDetail(uid);
+                      setDrawerTab('overview');
+                    }}
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-vy-border/30 flex items-center justify-center shrink-0">
                           <User size={12} className="text-vy-grey" />
                         </div>
                         <span className="text-vy-white text-xs font-medium">{user.name || '—'}</span>
-                        {isDetailOpen ? <ChevronUp size={12} className="text-vy-accent" /> : <ChevronDown size={12} className="text-vy-grey" />}
                       </div>
                     </td>
                     <td className="px-4 py-3">
@@ -290,254 +360,9 @@ const AdminUsers = () => {
                         >
                           <Plus size={12} /> Add Order
                         </button>
-                        {/* Order History Toggle */}
-                        <button
-                          onClick={() => toggleUser(uid)}
-                          className="flex items-center gap-1 text-vy-grey text-xs hover:text-vy-white transition-colors"
-                        >
-                          Orders {expanded === uid ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </button>
                       </div>
                     </td>
                   </tr>
-
-                  {/* Expandable User Detail Panel */}
-                  <AnimatePresence>
-                    {isDetailOpen && (
-                      <tr key={`${user.id}-detail`}>
-                        <td colSpan={6} className="p-0">
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="overflow-hidden border-b border-vy-accent/20 bg-vy-black/40"
-                          >
-                            <div className="px-8 py-6">
-                              {detailLoading ? (
-                                <div className="flex items-center justify-center py-8 gap-3">
-                                  <div className="spinner" />
-                                  <span className="text-vy-grey text-xs tracking-widest uppercase">Loading user details...</span>
-                                </div>
-                              ) : (
-                                <div className="space-y-6">
-                                  {/* Profile Summary */}
-                                  <div className="grid grid-cols-5 gap-4 bg-vy-card border border-vy-border p-4">
-                                    <div>
-                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Name</p>
-                                      <p className="text-vy-white text-xs font-medium">{user.name || '—'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Email</p>
-                                      <p className="text-vy-white text-xs">{user.email || '—'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Phone</p>
-                                      <div className="flex items-center gap-2">
-                                        <p className="text-vy-white text-xs font-mono">{user.phoneNumber ? `+91 ${user.phoneNumber}` : '—'}</p>
-                                        {user.phoneNumber && (
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleWhatsAppVerification(user.phoneNumber, user.name);
-                                            }}
-                                            className="text-[9px] text-green-400 hover:text-green-300 transition-colors uppercase tracking-widest underline ml-2"
-                                            title="Send WhatsApp Verification Msg"
-                                          >
-                                            Verify Mobile
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Join Date</p>
-                                      <p className="text-vy-white text-xs">{user.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Role</p>
-                                      <span className={`text-xs px-2 py-0.5 border ${user.role === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-500/10' : 'text-vy-grey border-vy-border'}`}>
-                                        {user.role || 'user'}
-                                      </span>
-                                    </div>
-                                  </div>
-
-                                  {/* Spin History */}
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                      <RotateCw size={13} className="text-vy-accent" />
-                                      <h4 className="text-vy-accent text-[10px] tracking-widest uppercase font-semibold">Spin History</h4>
-                                      <span className="text-vy-grey text-[10px]">({userDetail.spinHistory.length})</span>
-                                    </div>
-                                    {userDetail.spinHistory.length === 0 ? (
-                                      <p className="text-vy-grey text-xs pl-5">No spin history found</p>
-                                    ) : (
-                                      <div className="bg-vy-card border border-vy-border">
-                                        <div className="grid grid-cols-4 gap-4 px-4 py-2 border-b border-vy-border">
-                                          {['Campaign', 'Reward Won', 'Type', 'Date'].map(h => (
-                                            <span key={h} className="text-vy-grey text-[9px] tracking-widest uppercase font-medium">{h}</span>
-                                          ))}
-                                        </div>
-                                        {userDetail.spinHistory.map(spin => (
-                                          <div key={spin.id} className="grid grid-cols-4 gap-4 px-4 py-2 border-b border-vy-border/30 last:border-0 hover:bg-vy-border/10">
-                                            <span className="text-vy-white text-xs">{spin.campaignId || '—'}</span>
-                                            <span className="text-vy-gold text-xs font-medium">{spin.rewardWon || '—'}</span>
-                                            <span className="text-vy-grey text-xs">{spin.rewardType || '—'}</span>
-                                            <span className="text-vy-grey text-xs">{spin.timestamp?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Coupons */}
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                      <Ticket size={13} className="text-vy-gold" />
-                                      <h4 className="text-vy-gold text-[10px] tracking-widest uppercase font-semibold">Coupons</h4>
-                                      <span className="text-vy-grey text-[10px]">({userDetail.coupons.length})</span>
-                                    </div>
-                                    {userDetail.coupons.length === 0 ? (
-                                      <p className="text-vy-grey text-xs pl-5">No coupons found</p>
-                                    ) : (
-                                      <div className="bg-vy-card border border-vy-border">
-                                        <div className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border">
-                                          {['Code', 'Value', 'Status', 'Campaign', 'Created'].map(h => (
-                                            <span key={h} className="text-vy-grey text-[9px] tracking-widest uppercase font-medium">{h}</span>
-                                          ))}
-                                        </div>
-                                        {userDetail.coupons.map(coupon => {
-                                          const isExpired = coupon.expiry && new Date(coupon.expiry) < new Date();
-                                          const status = coupon.used ? 'Used' : isExpired ? 'Expired' : 'Active';
-                                          const statusColor = coupon.used ? 'text-vy-grey' : isExpired ? 'text-red-400' : 'text-green-400';
-                                          return (
-                                            <div key={coupon.id} className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border/30 last:border-0 hover:bg-vy-border/10">
-                                              <span className="text-vy-white text-xs font-mono font-semibold">{coupon.code}</span>
-                                              <span className="text-vy-white text-xs">
-                                                {coupon.type === 'percentage' ? `${coupon.value}%` : `₹${coupon.value}`}
-                                              </span>
-                                              <span className={`text-xs font-medium ${statusColor}`}>{status}</span>
-                                              <span className="text-vy-grey text-xs">{coupon.campaignId || 'Manual'}</span>
-                                              <span className="text-vy-grey text-xs">{coupon.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Order History */}
-                                  <div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                      <ShoppingBag size={13} className="text-blue-400" />
-                                      <h4 className="text-blue-400 text-[10px] tracking-widest uppercase font-semibold">Orders</h4>
-                                      <span className="text-vy-grey text-[10px]">({userDetail.orders.length})</span>
-                                    </div>
-                                    {userDetail.orders.length === 0 ? (
-                                      <p className="text-vy-grey text-xs pl-5">No orders found</p>
-                                    ) : (
-                                      <div className="bg-vy-card border border-vy-border">
-                                        <div className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border">
-                                          {['Order ID', 'Amount', 'Status', 'Coupon', 'Date'].map(h => (
-                                            <span key={h} className="text-vy-grey text-[9px] tracking-widest uppercase font-medium">{h}</span>
-                                          ))}
-                                        </div>
-                                        {userDetail.orders.map(order => (
-                                          <div key={order.id} className="grid grid-cols-5 gap-4 px-4 py-2 border-b border-vy-border/30 last:border-0 hover:bg-vy-border/10">
-                                            <span className="text-vy-white text-xs font-mono">{order.id.slice(0, 8)}...</span>
-                                            <span className="text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</span>
-                                            <span className={`text-xs font-medium ${
-                                              order.status === 'delivered' ? 'text-green-400' :
-                                              order.status === 'shipped' ? 'text-blue-400' :
-                                              order.status === 'cancelled' ? 'text-red-400' : 'text-yellow-400'
-                                            }`}>{order.status}</span>
-                                            <span className="text-vy-grey text-xs font-mono">{order.couponCode || '—'}</span>
-                                            <span className="text-vy-grey text-xs">{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </motion.div>
-                        </td>
-                      </tr>
-                    )}
-                  </AnimatePresence>
-
-                  {expanded === uid && (
-                    <tr key={`${user.id}-orders`} className="border-b border-vy-border/50 bg-vy-black/20">
-                      <td colSpan={6} className="px-8 py-5">
-                        {loadingOrders === uid ? (
-                          <div className="flex justify-center py-4"><div className="spinner" /></div>
-                        ) : (userOrders[uid] || []).length === 0 ? (
-                          <p className="text-vy-grey text-xs tracking-widest uppercase">No orders found</p>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-6 gap-4 mb-2">
-                              {['Order ID', 'Amount', 'Status', 'Phone', 'Date', 'Actions'].map(h => (
-                                <span key={h} className="text-vy-grey text-[10px] tracking-widest uppercase font-medium">{h}</span>
-                              ))}
-                            </div>
-                            {userOrders[uid].map(order => (
-                              <div key={order.id} className="grid grid-cols-6 gap-4 items-center bg-vy-border/20 px-4 py-2">
-                                <span className="text-vy-grey text-xs font-mono">{order.id.slice(0, 12)}...</span>
-                                <span className="text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</span>
-                                <span className={`text-xs ${
-                                  order.status === 'delivered' ? 'text-green-400' :
-                                  order.status === 'shipped' ? 'text-blue-400' :
-                                  order.status === 'cancelled' ? 'text-red-400' : 'text-yellow-400'
-                                }`}>{order.status}</span>
-                                <span className="text-vy-light text-xs font-mono">
-                                  {order.customerPhone || order.address?.phone || '—'}
-                                </span>
-                                <span className="text-vy-grey text-xs">{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN')}</span>
-                                <div className="flex gap-2">
-                                  {order.paymentMethod === 'Manual/Offline' ? (
-                                    <>
-                                      <button 
-                                        onClick={() => {
-                                          setAddingOrderFor(user);
-                                          setEditingOrderId(order.id);
-                                          setManualForm({
-                                            productName: order.products?.[0]?.name || 'VYBERA Offline Order',
-                                            amount: order.total || '',
-                                            size: order.products?.[0]?.size || 'Free',
-                                            color: order.products?.[0]?.color || 'Black',
-                                            qty: order.products?.[0]?.quantity || 1,
-                                            status: order.status || 'confirmed',
-                                            customerName: order.customerName || order.address?.fullName || '',
-                                            customerPhone: order.customerPhone || order.address?.phone || '',
-                                            street: order.address?.street || '',
-                                            city: order.address?.city || '',
-                                            state: order.address?.state || '',
-                                            pincode: order.address?.pincode || ''
-                                          });
-                                        }}
-                                        className="text-blue-400 hover:text-blue-300 transition-colors p-1" title="Edit Manual Order"
-                                      >
-                                        <Edit2 size={13} />
-                                      </button>
-                                      <button 
-                                        onClick={() => handleDeleteOrder(uid, order.id)}
-                                        className="text-red-400 hover:text-red-300 transition-colors p-1" title="Delete Manual Order"
-                                      >
-                                        <Trash2 size={13} />
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <span className="text-vy-border text-[9px] uppercase tracking-widest">Web Order</span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
                 );
               })}
             </tbody>
@@ -551,6 +376,391 @@ const AdminUsers = () => {
           )}
         </div>
       )}
+
+      {/* Slide-over Drawer for Selected User Details */}
+      <AnimatePresence>
+        {selectedUserId && (() => {
+          const selectedUser = users.find(u => (u.uid || u.id) === selectedUserId);
+          if (!selectedUser) return null;
+          
+          const referralCount = users.filter(u => u.referredBy === selectedUserId).length;
+          
+          // Construct chronological events for the user audit timeline
+          const auditTimeline = [
+            {
+              id: 'signup',
+              date: selectedUser.createdAt?.toDate?.() || new Date(selectedUser.createdAt || Date.now()),
+              title: 'Account Registered',
+              desc: `Joined VYBERA via ${selectedUser.provider || 'email'} auth.`
+            },
+            ...userDetail.orders.map(o => ({
+              id: o.id,
+              date: o.createdAt?.toDate?.() || new Date(o.createdAt),
+              title: 'Order Placed',
+              desc: `Order #${o.id.slice(0, 8)} worth ₹${o.total.toLocaleString()} confirmed (${o.status}).`
+            })),
+            ...userDetail.spinHistory.map(s => ({
+              id: s.id,
+              date: s.timestamp?.toDate?.() || new Date(s.timestamp),
+              title: 'Spin Wheel Participated',
+              desc: `Spun the wheel and won ${s.rewardWon || 'No Reward'}.`
+            }))
+          ].sort((a, b) => b.date - a.date);
+
+          return (
+            <div className="fixed inset-0 z-50 flex justify-end">
+              {/* Backdrop blur */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedUserId(null)}
+                className="absolute inset-0 bg-vy-black/80 backdrop-blur-sm"
+              />
+
+              {/* Drawer Container */}
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
+                className="relative w-full max-w-2xl bg-vy-card border-l border-vy-border h-full flex flex-col z-10 shadow-2xl"
+              >
+                {/* Header */}
+                <div className="p-6 border-b border-vy-border flex items-center justify-between sticky top-0 bg-vy-card z-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-vy-border/20 flex items-center justify-center">
+                      <User size={18} className="text-vy-accent" />
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-lg text-vy-white tracking-wider uppercase truncate max-w-xs">{selectedUser.name || 'Customer'}</h3>
+                      <p className="text-vy-grey text-[10px] tracking-widest uppercase">ID: {selectedUserId.slice(0, 8)}...</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setSelectedUserId(null)} className="text-vy-grey hover:text-vy-white transition-colors">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Tab select bar */}
+                <div className="flex border-b border-vy-border bg-vy-black/40">
+                  {[
+                    { id: 'overview', label: 'Overview', icon: User },
+                    { id: 'orders', label: 'Orders', icon: ShoppingBag },
+                    { id: 'rewards', label: 'Rewards & Coupons', icon: Ticket },
+                    { id: 'audit', label: 'Audit Log', icon: Activity }
+                  ].map(tab => {
+                    const Icon = tab.icon;
+                    const isActive = drawerTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setDrawerTab(tab.id)}
+                        className={`flex-1 py-3.5 text-center text-[10px] uppercase tracking-widest font-bold border-b-2 flex items-center justify-center gap-1.5 transition-all ${
+                          isActive 
+                            ? 'border-vy-accent text-vy-accent bg-vy-accent/5' 
+                            : 'border-transparent text-vy-grey hover:text-vy-white hover:bg-vy-border/5'
+                        }`}
+                      >
+                        <Icon size={12} />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Drawer Body - Scrollable content */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {detailLoading ? (
+                    <div className="h-64 flex flex-col justify-center items-center gap-3">
+                      <div className="spinner" />
+                      <span className="text-vy-grey text-xs uppercase tracking-widest">Loading Customer History...</span>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Tab 1: Overview */}
+                      {drawerTab === 'overview' && (
+                        <div className="space-y-6">
+                          {/* Metadata Grid */}
+                          <div className="grid grid-cols-2 gap-4 bg-vy-black/40 border border-vy-border p-4">
+                            <div>
+                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Email</p>
+                              <p className="text-vy-white text-xs font-semibold">{selectedUser.email || '—'}</p>
+                            </div>
+                            <div>
+                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Mobile Phone</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-vy-white text-xs font-semibold font-mono">{selectedUser.phoneNumber ? `+91 ${selectedUser.phoneNumber}` : '—'}</p>
+                                {selectedUser.phoneNumber && (
+                                  <button
+                                    onClick={() => handleWhatsAppVerification(selectedUser.phoneNumber, selectedUser.name)}
+                                    className="text-[9px] text-green-400 hover:text-green-300 transition-colors uppercase tracking-widest underline ml-1"
+                                    title="Send WhatsApp Verification Link"
+                                  >
+                                    Verify
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Date Joined</p>
+                              <p className="text-vy-white text-xs">{selectedUser.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</p>
+                            </div>
+                            <div>
+                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Role Privileges</p>
+                              <span className={`text-[10px] px-2 py-0.5 border ${selectedUser.role === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-500/10' : 'text-vy-grey border-vy-border'}`}>
+                                {selectedUser.role || 'user'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-vy-card border border-vy-border p-4 text-center">
+                              <Wallet size={20} className="text-vy-accent mx-auto mb-1" />
+                              <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Wallet Balance</span>
+                              <span className="text-xl font-bold text-vy-white font-display mt-1 block">{selectedUser.rewardPoints || 0} pts</span>
+                            </div>
+                            <div className="bg-vy-card border border-vy-border p-4 text-center">
+                              <Users size={20} className="text-vy-gold mx-auto mb-1" />
+                              <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Referrals Invited</span>
+                              <span className="text-xl font-bold text-vy-white font-display mt-1 block">{referralCount} Users</span>
+                            </div>
+                            <div className="bg-vy-card border border-vy-border p-4 text-center">
+                              <ShoppingBag size={20} className="text-blue-400 mx-auto mb-1" />
+                              <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Total Purchases</span>
+                              <span className="text-xl font-bold text-vy-white font-display mt-1 block">{userDetail.orders.length} Orders</span>
+                            </div>
+                          </div>
+
+                          {/* Actions Panel */}
+                          <div className="bg-vy-black/20 border border-vy-border p-4 space-y-3">
+                            <h4 className="text-vy-white text-[10px] tracking-widest uppercase font-bold">Contact & Quick Actions</h4>
+                            <div className="flex flex-wrap gap-2.5">
+                              {selectedUser.phoneNumber && (
+                                <button
+                                  onClick={() => handleWhatsApp(selectedUser.phoneNumber, selectedUser.name)}
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-wider uppercase hover:bg-green-500/20 transition-all"
+                                >
+                                  <MessageCircle size={13} /> WhatsApp Chat
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setAddingOrderFor(selectedUser);
+                                  setManualForm(prev => ({
+                                    ...prev,
+                                    customerName: selectedUser.name || '',
+                                    customerPhone: selectedUser.phoneNumber || ''
+                                  }));
+                                }}
+                                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-vy-accent/10 border border-vy-accent/30 text-vy-accent text-[10px] font-bold tracking-wider uppercase hover:bg-vy-accent/20 transition-all"
+                              >
+                                <Plus size={13} /> Add Manual Order
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Tab 2: Orders */}
+                      {drawerTab === 'orders' && (
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-vy-grey text-[10px] tracking-widest uppercase font-bold">Order History</h4>
+                            <button
+                              onClick={() => {
+                                setAddingOrderFor(selectedUser);
+                                setManualForm(prev => ({
+                                  ...prev,
+                                  customerName: selectedUser.name || '',
+                                  customerPhone: selectedUser.phoneNumber || ''
+                                }));
+                              }}
+                              className="btn-primary text-[10px] px-3 py-1.5 flex items-center gap-1"
+                            >
+                              <Plus size={12} /> New Manual Order
+                            </button>
+                          </div>
+
+                          {userDetail.orders.length === 0 ? (
+                            <p className="text-vy-grey text-xs py-12 text-center border border-vy-border bg-vy-black/10">No orders found for this customer.</p>
+                          ) : (
+                            <div className="space-y-3">
+                              {userDetail.orders.map(order => (
+                                <div key={order.id} className="bg-vy-black/35 border border-vy-border p-4 flex flex-col justify-between hover:bg-vy-black/50 transition-all">
+                                  <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                      <p className="text-[10px] font-mono text-vy-light font-bold">Order: {order.id.slice(0, 16)}...</p>
+                                      <span className="text-[9px] text-vy-grey mt-0.5 block">{order.createdAt?.toDate?.()?.toLocaleString('en-IN') || '—'}</span>
+                                    </div>
+                                    <span className={`text-[10px] px-2 py-0.5 border uppercase tracking-wider font-semibold ${
+                                      order.status === 'delivered' ? 'text-green-400 border-green-500/20 bg-green-500/5' :
+                                      order.status === 'shipped' ? 'text-blue-400 border-blue-500/20 bg-blue-500/5' :
+                                      order.status === 'cancelled' ? 'text-red-400 border-red-500/20 bg-red-500/5' : 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5'
+                                    }`}>{order.status}</span>
+                                  </div>
+
+                                  {/* Product items display */}
+                                  <div className="space-y-1 mb-3 bg-vy-black/20 p-2">
+                                    {(order.products || []).map((p, idx) => (
+                                      <div key={idx} className="flex justify-between text-xs">
+                                        <span className="text-vy-light truncate max-w-sm">{p.name} ({p.size || 'Free'}) x{p.quantity || 1}</span>
+                                        <span className="text-vy-grey">₹{p.price || 0}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  <div className="flex justify-between items-center border-t border-vy-border/40 pt-3">
+                                    <div>
+                                      <span className="text-vy-grey text-[9px] uppercase tracking-widest block">Total Amount</span>
+                                      <span className="text-vy-white font-bold text-sm font-display">₹{order.total?.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      {order.paymentMethod === 'Manual/Offline' ? (
+                                        <>
+                                          <button 
+                                            onClick={() => {
+                                              setAddingOrderFor(selectedUser);
+                                              setEditingOrderId(order.id);
+                                              setManualForm({
+                                                productName: order.products?.[0]?.name || 'VYBERA Offline Order',
+                                                amount: order.total || '',
+                                                size: order.products?.[0]?.size || 'Free',
+                                                color: order.products?.[0]?.color || 'Black',
+                                                qty: order.products?.[0]?.quantity || 1,
+                                                status: order.status || 'confirmed',
+                                                customerName: order.customerName || order.address?.fullName || '',
+                                                customerPhone: order.customerPhone || order.address?.phone || '',
+                                                street: order.address?.street || '',
+                                                city: order.address?.city || '',
+                                                state: order.address?.state || '',
+                                                pincode: order.address?.pincode || ''
+                                              });
+                                            }}
+                                            className="p-1.5 border border-vy-border text-blue-400 hover:text-blue-300"
+                                            title="Edit Manual Order"
+                                          >
+                                            <Edit2 size={12} />
+                                          </button>
+                                          <button 
+                                            onClick={() => handleDeleteOrder(selectedUserId, order.id)}
+                                            className="p-1.5 border border-vy-border text-red-500 hover:text-red-400"
+                                            title="Delete Manual Order"
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <span className="text-vy-border text-[9px] uppercase tracking-widest font-bold">Web Order</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Tab 3: Rewards & Coupons */}
+                      {drawerTab === 'rewards' && (
+                        <div className="space-y-6">
+                          {/* Coupons Section */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <Ticket size={13} className="text-vy-gold" />
+                              <h4 className="text-vy-gold text-[10px] tracking-widest uppercase font-bold">Reward Coupons</h4>
+                              <span className="text-vy-grey text-[10px]">({userDetail.coupons.length})</span>
+                            </div>
+
+                            {userDetail.coupons.length === 0 ? (
+                              <p className="text-vy-grey text-xs py-8 text-center border border-vy-border bg-vy-black/10">No coupons generated for this user.</p>
+                            ) : (
+                              <div className="border border-vy-border bg-vy-black/20 overflow-hidden">
+                                <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-vy-black text-[9px] text-vy-grey uppercase tracking-widest font-bold">
+                                  <span>Code</span>
+                                  <span>Value</span>
+                                  <span>Status</span>
+                                  <span>Expiry</span>
+                                </div>
+                                {userDetail.coupons.map(coupon => {
+                                  const isExpired = coupon.expiry && new Date(coupon.expiry) < new Date();
+                                  const status = coupon.used ? 'Used' : isExpired ? 'Expired' : 'Active';
+                                  return (
+                                    <div key={coupon.id} className="grid grid-cols-4 gap-4 px-4 py-2.5 border-t border-vy-border/40 hover:bg-vy-border/10 text-xs">
+                                      <span className="font-mono text-vy-white font-bold">{coupon.code}</span>
+                                      <span className="text-vy-light">{coupon.type === 'percentage' ? `${coupon.value}%` : `₹${coupon.value}`}</span>
+                                      <span className={`font-semibold ${coupon.used ? 'text-vy-grey' : isExpired ? 'text-red-400' : 'text-green-400'}`}>{status}</span>
+                                      <span className="text-vy-grey">{coupon.expiry ? new Date(coupon.expiry).toLocaleDateString() : '—'}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Spin Wheel History */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-3">
+                              <RotateCw size={13} className="text-vy-accent" />
+                              <h4 className="text-vy-accent text-[10px] tracking-widest uppercase font-bold">Spin History</h4>
+                              <span className="text-vy-grey text-[10px]">({userDetail.spinHistory.length})</span>
+                            </div>
+
+                            {userDetail.spinHistory.length === 0 ? (
+                              <p className="text-vy-grey text-xs py-8 text-center border border-vy-border bg-vy-black/10">No spin history found for this user.</p>
+                            ) : (
+                              <div className="border border-vy-border bg-vy-black/20 overflow-hidden">
+                                <div className="grid grid-cols-3 gap-4 px-4 py-2 bg-vy-black text-[9px] text-vy-grey uppercase tracking-widest font-bold">
+                                  <span>Campaign</span>
+                                  <span>Reward Won</span>
+                                  <span>Date</span>
+                                </div>
+                                {userDetail.spinHistory.map(spin => (
+                                  <div key={spin.id} className="grid grid-cols-3 gap-4 px-4 py-2.5 border-t border-vy-border/40 hover:bg-vy-border/10 text-xs">
+                                    <span className="text-vy-white font-medium uppercase tracking-wider text-[10px]">{spin.campaignId}</span>
+                                    <span className="text-vy-gold font-semibold">{spin.rewardWon}</span>
+                                    <span className="text-vy-grey">{spin.timestamp?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Tab 4: Audit Logs */}
+                      {drawerTab === 'audit' && (
+                        <div className="space-y-4">
+                          <h4 className="text-vy-grey text-[10px] tracking-widest uppercase font-bold mb-4">Customer Action Audit Log</h4>
+                          <div className="relative border-l border-vy-border pl-6 space-y-6">
+                            {auditTimeline.map((evt, idx) => (
+                              <div key={idx} className="relative">
+                                {/* Dot icon */}
+                                <span className="absolute -left-[30px] top-0.5 rounded-full border border-vy-border bg-vy-card p-1 text-vy-grey">
+                                  <Calendar size={8} />
+                                </span>
+                                <div>
+                                  <span className="text-[9px] text-vy-grey font-bold uppercase tracking-widest">
+                                    {evt.date.toLocaleString('en-IN')}
+                                  </span>
+                                  <h4 className="text-xs font-bold text-vy-white uppercase tracking-wider mt-0.5">{evt.title}</h4>
+                                  <p className="text-xs text-vy-grey mt-0.5 leading-relaxed">{evt.desc}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
+      </AnimatePresence>
 
       {/* Manual Order Modal */}
       {addingOrderFor && (
