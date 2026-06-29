@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, Star, ShoppingBag, Plus, Minus, ArrowRight, Share2, Copy, 
   MessageCircle, X, AtSign, Camera, ImageIcon, Trash2,
@@ -17,6 +17,7 @@ import BackButton from '../components/ui/BackButton';
 import { trackViewProduct, trackAddToCart } from '../utils/analytics';
 import { getProductPricing } from '../utils/pricing';
 import CountdownTimer from '../components/ui/CountdownTimer';
+import { getSizeGuideById } from '../firebase/sizeGuides';
 
 const IconMap = {
   Truck,
@@ -58,6 +59,21 @@ const ProductDetail = () => {
   const { addItem, campaign } = useCart();
   const pricing = product ? getProductPricing(product, campaign) : null;
 
+  const [sizeGuide, setSizeGuide] = useState({
+    name: 'Standard Size Chart',
+    description: 'Chest and length measurements in inches for standard streetwear fits.',
+    headers: ['Size', 'Chest (in)', 'Length (in)'],
+    rows: [
+      ['XS', '36', '26'],
+      ['S', '38', '27'],
+      ['M', '40', '28'],
+      ['L', '42', '29'],
+      ['XL', '44', '30'],
+      ['XXL', '46', '31']
+    ]
+  });
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+
   useEffect(() => {
     setLoading(true);
     
@@ -69,6 +85,11 @@ const ProductDetail = () => {
       setProduct(p);
       setReviews(rcvs);
       setTrustBadges(badges);
+      if (p?.sizeGuideId) {
+        getSizeGuideById(p.sizeGuideId).then(g => {
+          if (g) setSizeGuide(g);
+        });
+      }
       if (p?.sizes?.length) {
         const firstAvailable = p.sizes.find(s => !(p.outOfStockSizes || []).includes(s));
         setSelectedSize(firstAvailable || null);
@@ -351,7 +372,10 @@ const ProductDetail = () => {
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-vy-white text-xs font-semibold tracking-widest uppercase">Size</p>
-                  <button className="text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors">
+                  <button 
+                    onClick={() => setSizeGuideOpen(true)}
+                    className="text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors"
+                  >
                     Size Guide
                   </button>
                 </div>
@@ -727,6 +751,73 @@ const ProductDetail = () => {
             </motion.div>
           </div>
         )}
+        {/* Size Guide Modal */}
+        <AnimatePresence>
+          {sizeGuideOpen && sizeGuide && (
+            <div className="fixed inset-0 z-50 overflow-y-auto bg-vy-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-vy-card border border-vy-border w-full max-w-lg p-6 relative"
+              >
+                <button 
+                  onClick={() => setSizeGuideOpen(false)} 
+                  className="absolute top-4 right-4 text-vy-grey hover:text-vy-white transition-colors"
+                >
+                  <X size={18} />
+                </button>
+
+                <h2 className="font-display font-bold text-xl tracking-wider text-vy-white uppercase mb-2">
+                  {sizeGuide.name}
+                </h2>
+                {sizeGuide.description && (
+                  <p className="text-vy-grey text-xs mb-6 leading-relaxed">
+                    {sizeGuide.description}
+                  </p>
+                )}
+
+                {/* Table */}
+                <div className="overflow-x-auto border border-vy-border bg-vy-dark/50 mb-6">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-vy-border text-vy-grey uppercase font-bold tracking-widest bg-vy-white/5">
+                        {sizeGuide.headers?.map((h, i) => (
+                          <th key={i} className="p-3 border-r border-vy-border/40 last:border-r-0 text-center">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sizeGuide.rows?.map((row, rIdx) => (
+                        <tr key={rIdx} className="border-b border-vy-border/20 text-vy-light last:border-0 hover:bg-vy-white/[0.02]">
+                          {row.map((cell, cIdx) => (
+                            <td key={cIdx} className="p-3 border-r border-vy-border/20 last:border-r-0 text-center">{cell}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Measurement tips */}
+                <div className="p-4 border border-vy-white/10 bg-vy-white/5 text-vy-grey text-xs space-y-2 leading-relaxed">
+                  <h4 className="text-vy-white font-semibold uppercase tracking-wider text-[10px] mb-1">How to Measure:</h4>
+                  <p><strong>Chest:</strong> Measure around the fullest part of your chest, keeping the tape horizontal.</p>
+                  <p><strong>Length:</strong> Measure from the highest point of the shoulder down to the hem.</p>
+                </div>
+
+                <div className="mt-6 text-right">
+                  <button 
+                    onClick={() => setSizeGuideOpen(false)}
+                    className="px-6 py-2.5 bg-vy-white text-vy-black text-xs uppercase tracking-widest font-bold hover:bg-vy-white/90"
+                  >
+                    Got It
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

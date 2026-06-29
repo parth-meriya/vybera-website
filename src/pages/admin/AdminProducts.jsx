@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, X, Upload, Image, Sliders } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, bulkUpdateProducts } from '../../firebase/products';
 import { getSections } from '../../firebase/sections';
+import { getSizeGuides } from '../../firebase/sizeGuides';
 import toast from 'react-hot-toast';
 
 const SIZES_ALL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -62,6 +63,11 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
   const [loading, setLoading] = useState(false);
   const [newColor, setNewColor] = useState('');
   const fileRef = useRef();
+  const [sizeGuides, setSizeGuides] = useState([]);
+
+  useEffect(() => {
+    getSizeGuides().then(setSizeGuides);
+  }, []);
 
   const onChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   const toggleSize = s => setForm(f => ({
@@ -370,6 +376,20 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
           <div>
             <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Description</label>
             <textarea name="description" value={form.description} onChange={onChange} rows={3} className="vy-input resize-none" placeholder="Product description..." />
+          </div>
+
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Size Guide</label>
+            <select
+              value={form.sizeGuideId || ''}
+              onChange={e => setForm(f => ({ ...f, sizeGuideId: e.target.value }))}
+              className="vy-input text-xs"
+            >
+              <option value="">No Size Guide</option>
+              {sizeGuides.map(g => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>

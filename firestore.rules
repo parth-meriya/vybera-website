@@ -172,6 +172,12 @@ service cloud.firestore {
       allow read, write: if hasAdminClaim();
     }
 
+    // ── Size Guides Collection ──────────────────────────────────
+    match /sizeGuides/{guideId} {
+      allow read: if true;
+      allow write: if hasAdminClaim();
+    }
+
     // ── Default: Deny All ───────────────────────────────────────
     // Any collection not explicitly listed above is denied.
     match /{document=**} {

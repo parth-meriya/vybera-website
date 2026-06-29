@@ -36,6 +36,7 @@ const navItems = [
   { to: '/admin/support', label: 'Support', icon: MessageSquare },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/content', label: 'Content', icon: FileText },
+  { to: '/admin/size-guides', label: 'Size Guides', icon: FileText },
 ];
 
 const AdminSidebar = () => {
