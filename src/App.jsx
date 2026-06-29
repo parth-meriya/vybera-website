@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -13,60 +14,60 @@ import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/ui/ProtectedRoute';
 import PopupBanner from './components/ui/PopupBanner';
 
-// User Pages
-import Home from './pages/Home';
-import Shop from './pages/Shop';
-import ProductDetail from './pages/ProductDetail';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ForgotPassword from './pages/ForgotPassword';
-import Onboarding from './pages/Onboarding';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import OrderSuccess from './pages/OrderSuccess';
-import Customize from './pages/Customize';
-import Campaign from './pages/campaign/Campaign';
-import DashboardLayout from './components/dashboard/DashboardLayout';
-import Overview from './pages/dashboard/Overview';
-import Orders from './pages/dashboard/Orders';
-import Rewards from './pages/dashboard/Rewards';
-import CustomDesigns from './pages/dashboard/CustomDesigns';
-import Wishlist from './pages/dashboard/Wishlist';
-import Addresses from './pages/dashboard/Addresses';
-import Coupons from './pages/dashboard/Coupons';
-import CampaignRewards from './pages/dashboard/CampaignRewards';
-import Notifications from './pages/dashboard/Notifications';
-import Settings from './pages/dashboard/Settings';
-import Security from './pages/dashboard/Security';
-import TrackOrder from './pages/TrackOrder';
-import Couple from './pages/Couple';
-import Embroidery from './pages/Embroidery';
-import Kids from './pages/Kids';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import Terms from './pages/Terms';
-import RefundPolicy from './pages/RefundPolicy';
-import ShippingPolicy from './pages/ShippingPolicy';
+// User Pages (Lazy Loaded)
+const Home = lazy(() => import('./pages/Home'));
+const Shop = lazy(() => import('./pages/Shop'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const Customize = lazy(() => import('./pages/Customize'));
+const Campaign = lazy(() => import('./pages/campaign/Campaign'));
+const DashboardLayout = lazy(() => import('./components/dashboard/DashboardLayout'));
+const Overview = lazy(() => import('./pages/dashboard/Overview'));
+const Orders = lazy(() => import('./pages/dashboard/Orders'));
+const Rewards = lazy(() => import('./pages/dashboard/Rewards'));
+const CustomDesigns = lazy(() => import('./pages/dashboard/CustomDesigns'));
+const Wishlist = lazy(() => import('./pages/dashboard/Wishlist'));
+const Addresses = lazy(() => import('./pages/dashboard/Addresses'));
+const Coupons = lazy(() => import('./pages/dashboard/Coupons'));
+const CampaignRewards = lazy(() => import('./pages/dashboard/CampaignRewards'));
+const Notifications = lazy(() => import('./pages/dashboard/Notifications'));
+const Settings = lazy(() => import('./pages/dashboard/Settings'));
+const Security = lazy(() => import('./pages/dashboard/Security'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const Couple = lazy(() => import('./pages/Couple'));
+const Embroidery = lazy(() => import('./pages/Embroidery'));
+const Kids = lazy(() => import('./pages/Kids'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
+const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminProducts from './pages/admin/AdminProducts';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminCoupons from './pages/admin/AdminCoupons';
-import AdminRewards from './pages/admin/AdminRewards';
-import AdminContent from './pages/admin/AdminContent';
-import AdminCustomOrders from './pages/admin/AdminCustomOrders';
-import AdminSupport from './pages/admin/AdminSupport';
-import AdminReviews from './pages/admin/AdminReviews';
-import AdminPopupBanner from './pages/admin/AdminPopupBanner';
-import AdminMainBanner from './pages/admin/AdminMainBanner';
-import AdminCampaigns from './pages/admin/AdminCampaigns';
-import AdminSections from './pages/admin/AdminSections';
+// Admin Pages (Lazy Loaded)
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'));
+const AdminRewards = lazy(() => import('./pages/admin/AdminRewards'));
+const AdminContent = lazy(() => import('./pages/admin/AdminContent'));
+const AdminCustomOrders = lazy(() => import('./pages/admin/AdminCustomOrders'));
+const AdminSupport = lazy(() => import('./pages/admin/AdminSupport'));
+const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
+const AdminPopupBanner = lazy(() => import('./pages/admin/AdminPopupBanner'));
+const AdminMainBanner = lazy(() => import('./pages/admin/AdminMainBanner'));
+const AdminCampaigns = lazy(() => import('./pages/admin/AdminCampaigns'));
+const AdminSections = lazy(() => import('./pages/admin/AdminSections'));
 
-// Dynamic Category
-import CategoryPage from './pages/CategoryPage';
+// Dynamic Category (Lazy Loaded)
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 
 const UserLayout = ({ children }) => (
   <>
@@ -94,7 +95,13 @@ const App = () => {
       />
 
       <AnimatePresence mode="wait" initial={false}>
-        <Routes location={location} key={location.pathname}>
+        <Suspense fallback={
+          <div className="min-h-screen bg-vy-black flex items-center justify-center flex-col gap-4">
+            <div className="w-8 h-8 border-2 border-vy-white/20 border-t-vy-white rounded-full animate-spin" />
+            <p className="text-[10px] text-vy-grey tracking-[0.3em] uppercase">Loading Vybera...</p>
+          </div>
+        }>
+          <Routes location={location} key={location.pathname}>
           {/* ── Public Routes ─────────────────────────────────────── */}
           <Route path="/" element={
             <UserLayout>
@@ -245,6 +252,7 @@ const App = () => {
             <Route path="main-banner" element={<AdminMainBanner />} />
           </Route>
         </Routes>
+        </Suspense>
       </AnimatePresence>
     </>
   );

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getProducts } from '../firebase/products';
+import { getFeaturedProducts, getDropProducts } from '../firebase/products';
 import { getBannerConfig } from '../firebase/content';
 import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
@@ -22,7 +22,8 @@ const DEFAULT_BANNER = {
 };
 
 const Home = () => {
-  const [products, setProducts] = useState([]);
+  const [featured, setFeatured] = useState([]);
+  const [drops, setDrops] = useState([]);
   const [loading, setLoading] = useState(true);
   const { campaign } = useCart();
   const heroRef = useRef(null);
@@ -54,18 +55,19 @@ const Home = () => {
       setBanner(DEFAULT_BANNER);
     });
 
-    // 2. Fetch Products separately
-    getProducts().then(p => {
-      setProducts(p);
+    // 2. Fetch Products separately in parallel
+    Promise.all([
+      getFeaturedProducts(),
+      getDropProducts()
+    ]).then(([fRes, dRes]) => {
+      setFeatured(fRes.slice(0, 4));
+      setDrops(dRes.slice(0, 4));
       setLoading(false);
     }).catch(err => {
       console.error('Home products load error:', err);
       setLoading(false);
     });
   }, []);
-
-  const featured = products.filter(p => p.featured).slice(0, 4);
-  const drops = products.filter(p => p.isDrop).slice(0, 4);
 
   // Marquee text
   const marqueeText = '— REDEFINING LUXURY STREETWEAR — UNCOMPROMISED FIT — ENGINEERED FOR THE BOLD — PREMIUM HEAVYWEIGHT COTTON — MINIMALIST AESTHETIC — DESIGNED TO STAND OUT — ';
