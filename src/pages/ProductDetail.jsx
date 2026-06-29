@@ -245,6 +245,26 @@ const ProductDetail = () => {
 
   const PLACEHOLDER = 'https://placehold.co/800x1000/111111/D9C7A6?text=VYBERA';
 
+  const productSchema = product ? {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.images || [product.image || PLACEHOLDER],
+    "description": product.description || `Buy ${product.name} from VYBERA. Premium oversized streetwear.`,
+    "sku": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "VYBERA"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": typeof window !== 'undefined' ? window.location.href : '',
+      "priceCurrency": "INR",
+      "price": product.price,
+      "availability": product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+    }
+  } : null;
+
   return (
     <div className="min-h-screen bg-vy-black pt-16">
       <SEO
@@ -254,6 +274,7 @@ const ProductDetail = () => {
         path={`/product/${product.id}`}
         image={product.images?.[0] || product.image || PLACEHOLDER}
         type="product"
+        schema={productSchema}
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
         {/* Back */}

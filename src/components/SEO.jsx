@@ -23,9 +23,13 @@ const SEO = ({
   path = '',
   image = DEFAULT_OG_IMAGE,
   type = 'website',
+  schema = null,
 }) => {
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — The Era of Vibes`;
-  const canonicalUrl = `${SITE_URL}${path}`;
+  
+  // Automatically fallback to current browser path if not specified
+  const currentPath = path || (typeof window !== 'undefined' ? window.location.pathname : '');
+  const canonicalUrl = `${SITE_URL}${currentPath}`;
 
   return (
     <Helmet>
@@ -56,6 +60,13 @@ const SEO = ({
       {/* Extras */}
       <meta name="robots" content="index, follow" />
       <meta name="author" content="VYBERA" />
+
+      {/* Injected Structured Data Schema */}
+      {schema && (
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      )}
     </Helmet>
   );
 };

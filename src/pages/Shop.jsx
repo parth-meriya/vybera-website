@@ -74,6 +74,25 @@ const Shop = () => {
 
   const hasFilters = selectedSizes.length > 0 || selectedPrice !== 0 || selectedCategory !== 'all';
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://vybera.shop"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Shop",
+        "item": "https://vybera.shop/shop"
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-vy-black pt-24">
       <SEO
@@ -81,6 +100,7 @@ const Shop = () => {
         description="Browse the full VYBERA collection — premium oversized tees, limited drops, and exclusive streetwear. Free shipping across India."
         keywords="buy oversized tees, streetwear shop India, VYBERA collection, premium tees online, limited edition clothing"
         path="/shop"
+        schema={breadcrumbSchema}
       />
       <div className="max-w-screen-xl mx-auto px-6 md:px-12">
         <div className="mb-6">

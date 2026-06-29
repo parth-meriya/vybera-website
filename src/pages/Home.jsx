@@ -72,6 +72,18 @@ const Home = () => {
   // Marquee text
   const marqueeText = '— REDEFINING LUXURY STREETWEAR — UNCOMPROMISED FIT — ENGINEERED FOR THE BOLD — PREMIUM HEAVYWEIGHT COTTON — MINIMALIST AESTHETIC — DESIGNED TO STAND OUT — ';
 
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "VYBERA",
+    "url": "https://vybera.shop",
+    "logo": "https://vybera.shop/vybera-og.png",
+    "description": "Premium oversized streetwear for those who define the next. Shop limited drops, couple tees, custom designs, and embroidery. Made in India.",
+    "sameAs": [
+      "https://www.instagram.com/vybera.shop"
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-vy-dark">
       <SEO
@@ -79,6 +91,7 @@ const Home = () => {
         description="VYBERA — Premium oversized streetwear for those who define the next. Shop limited drops, couple tees, custom designs, and embroidery. Made in India."
         keywords="VYBERA, streetwear, oversized tees, premium clothing, Indian streetwear, couple tees, custom tees, embroidery, limited drops, fashion brand India, buy streetwear online"
         path="/"
+        schema={orgSchema}
       />
 
 
