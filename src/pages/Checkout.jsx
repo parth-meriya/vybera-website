@@ -11,6 +11,7 @@ import { openRazorpay } from '../utils/razorpay';
 import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
 import { validateName, validatePhone, sanitizeName, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
+import { getUserCoupons } from '../firebase/coupons';
 import BackButton from '../components/ui/BackButton';
 import { getProductPricing } from '../utils/pricing';
 
@@ -54,7 +55,18 @@ const Field = ({ label, name, value, onChange, type = 'text', placeholder, maxLe
 );
 
 // ─── Order Summary Panel ─────────────────────────────────────────
-const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, campaign, compact = false }) => (
+const OrderSummaryPanel = ({ 
+  items, 
+  coupon, 
+  discount, 
+  subtotal, 
+  total, 
+  campaign, 
+  compact = false, 
+  userCoupons = [], 
+  applyCoupon, 
+  removeCoupon 
+}) => (
   <div className={`bg-vy-card border border-vy-border ${compact ? 'p-4' : 'p-6'}`}>
     {!compact && (
       <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-6">Order Summary</h2>
@@ -110,17 +122,53 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, campaign,
       <span className="text-vy-white font-semibold text-sm">Total</span>
       <span className="text-vy-white font-bold text-xl">₹{total.toLocaleString()}</span>
     </div>
+
+    {/* Available Coupons list */}
+    {!compact && userCoupons.length > 0 && (
+      <div className="mt-6 pt-4 border-t border-vy-border">
+        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-2 font-bold">Your Unused Reward Coupons</label>
+        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          {userCoupons.map(cp => {
+            const isApplied = coupon?.code === cp.code;
+            return (
+              <div 
+                key={cp.id}
+                onClick={() => isApplied ? removeCoupon() : applyCoupon(cp)}
+                className={`p-3 border cursor-pointer flex items-center justify-between transition-colors ${
+                  isApplied ? 'border-vy-gold bg-vy-gold/5' : 'border-vy-border hover:border-vy-grey bg-vy-black/40'
+                }`}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-vy-white text-[11px] font-bold">{cp.code}</span>
+                    <span className="text-[9px] px-1 bg-vy-gold/20 text-vy-gold uppercase tracking-wider">{cp.value}{cp.type === 'percentage' ? '%' : ' OFF'}</span>
+                  </div>
+                  {cp.minOrder && <p className="text-[9px] text-vy-grey mt-0.5">Min. order ₹{cp.minOrder}</p>}
+                </div>
+                <button
+                  type="button"
+                  className={`text-[9px] uppercase tracking-widest font-bold ${isApplied ? 'text-red-400' : 'text-vy-gold'}`}
+                >
+                  {isApplied ? 'Remove' : 'Apply'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    )}
   </div>
 );
 
 // ─── Main Checkout Page ──────────────────────────────────────────
 const Checkout = () => {
-  const { items, coupon, discount, subtotal, total, clearCart, campaign } = useCart();
+  const { items, coupon, discount, subtotal, total, clearCart, campaign, applyCoupon, removeCoupon } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
   const from = state?.from || '/';
   const [apiHealth, setApiHealth] = useState('checking'); // checking | ok | error
+  const [userCoupons, setUserCoupons] = useState([]);
 
   const [step, setStep] = useState(1); // 1: Details, 2: Review, 3: Processing
   const [paymentState, setPaymentState] = useState('idle'); // idle | loading | success | failed
@@ -161,6 +209,39 @@ const Checkout = () => {
       getRewardSettings().then(setRewardsSettings).catch(console.error);
     }
   }, [user]);
+
+  // Fetch user unused reward coupons and auto-apply the highest value one
+  useEffect(() => {
+    if (user) {
+      getUserCoupons(user.uid).then(cps => {
+        setUserCoupons(cps);
+        if (!coupon && cps.length > 0) {
+          let bestCoupon = null;
+          let maxDiscount = 0;
+          cps.forEach(cp => {
+            let discountVal = 0;
+            if (!cp.minOrder || subtotal >= cp.minOrder) {
+              if (cp.type === 'percentage') {
+                discountVal = (subtotal * cp.value) / 100;
+                if (cp.maxDiscount) discountVal = Math.min(discountVal, cp.maxDiscount);
+              } else {
+                discountVal = cp.value;
+              }
+            }
+            if (discountVal > maxDiscount) {
+              maxDiscount = discountVal;
+              bestCoupon = cp;
+            }
+          });
+          
+          if (bestCoupon) {
+            applyCoupon(bestCoupon);
+            toast.success(`Best reward coupon '${bestCoupon.code}' auto-applied! Saving ₹${Math.round(maxDiscount)}.`, { className: 'toast-vybera' });
+          }
+        }
+      }).catch(console.error);
+    }
+  }, [user, subtotal]);
 
   useEffect(() => {
     fetch('/api/health')
@@ -298,11 +379,39 @@ const Checkout = () => {
 
       // ── 0-Rupee Bypass (100% Free via Coupon) ──
       if (total === 0) {
-        // ... (existing coupon validation logic)
-        const orderId = await createOrder({ ...orderData, status: 'confirmed', paymentStatus: 'paid', paymentId: 'free_coupon_bypass' });
-        clearCart();
-        setPaymentState('success');
-        setTimeout(() => navigate('/order-success'), 800);
+        setPaymentState('loading');
+        try {
+          const orderId = await createOrder({ ...orderData, status: 'pending', paymentStatus: 'unpaid' });
+          
+          const response = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              razorpay_order_id: 'free_coupon_bypass',
+              razorpay_payment_id: 'free_coupon_bypass',
+              razorpay_signature: 'free_coupon_bypass',
+              firebase_order_id: orderId
+            })
+          });
+
+          const resData = await response.json();
+
+          if (!response.ok) {
+            toast.error(resData.error || 'Failed to verify free order.');
+            setPaymentState('failed');
+            return;
+          }
+
+          clearCart();
+          setPaymentState('success');
+          setTimeout(() => navigate('/order-success'), 800);
+        } catch (err) {
+          console.error(err);
+          toast.error('Error confirming free order.');
+          setPaymentState('failed');
+        }
         return;
       }
 
@@ -555,6 +664,9 @@ const Checkout = () => {
                   subtotal={subtotal}
                   total={total}
                   campaign={campaign}
+                  userCoupons={userCoupons}
+                  applyCoupon={applyCoupon}
+                  removeCoupon={removeCoupon}
                 />
               </div>
             </motion.div>
@@ -602,6 +714,9 @@ const Checkout = () => {
                     total={total}
                     campaign={campaign}
                     compact
+                    userCoupons={userCoupons}
+                    applyCoupon={applyCoupon}
+                    removeCoupon={removeCoupon}
                   />
                 </div>
               </div>
@@ -616,6 +731,9 @@ const Checkout = () => {
                     subtotal={subtotal}
                     total={total}
                     campaign={campaign}
+                    userCoupons={userCoupons}
+                    applyCoupon={applyCoupon}
+                    removeCoupon={removeCoupon}
                   />
                 </div>
 

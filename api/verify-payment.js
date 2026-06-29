@@ -56,28 +56,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing payment verification parameters' });
     }
 
-    // ── 1. Verify Razorpay Signature ────────────────────────────
-    const secret = process.env.RAZORPAY_KEY_SECRET;
-    if (!secret) {
-      throw new Error('Server misconfiguration: RAZORPAY_KEY_SECRET is missing');
-    }
-
-    const generatedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(razorpay_order_id + '|' + razorpay_payment_id)
-      .digest('hex');
-
-    if (generatedSignature !== razorpay_signature) {
-      console.error(`[Security] Payment signature mismatch for order ${firebase_order_id}`);
-      return res.status(400).json({ error: 'Invalid payment signature. Payment rejected.' });
-    }
-
-    // ── 2. Update Firestore Order securely ──────────────────────
+    // ── 1. Fetch Order from Firestore ─────────────────────────
     initAdmin();
     const db = admin.firestore();
     const orderRef = db.collection('orders').doc(firebase_order_id);
     
-    // Verify order exists
     const orderSnap = await orderRef.get();
     if (!orderSnap.exists) {
       console.error(`[Payment] Order ${firebase_order_id} not found in Firestore`);
@@ -85,19 +68,43 @@ export default async function handler(req, res) {
     }
     
     const orderData = orderSnap.data();
+    const isFreeOrder = (orderData.total || 0) === 0;
 
-    // ── 3. Verify Amount Paid with Razorpay ─────────────────────
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: secret,
-    });
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      throw new Error('Server misconfiguration: RAZORPAY_KEY_SECRET is missing');
+    }
 
-    const rzpOrder = await razorpay.orders.fetch(razorpay_order_id);
-    const expectedAmountPaise = Math.round((orderData.total || 0) * 100);
+    // ── 2. Verify Razorpay Signature (only for paid orders) ─────
+    if (!isFreeOrder) {
+      const generatedSignature = crypto
+        .createHmac('sha256', secret)
+        .update(razorpay_order_id + '|' + razorpay_payment_id)
+        .digest('hex');
 
-    if (rzpOrder.amount !== expectedAmountPaise) {
-      console.error(`[Security] Amount mismatch for order ${firebase_order_id}. Expected: ${expectedAmountPaise}, Paid: ${rzpOrder.amount}`);
-      return res.status(400).json({ error: 'Payment amount mismatch. Payment rejected.' });
+      if (generatedSignature !== razorpay_signature) {
+        console.error(`[Security] Payment signature mismatch for order ${firebase_order_id}`);
+        return res.status(400).json({ error: 'Invalid payment signature. Payment rejected.' });
+      }
+
+      // ── 3. Verify Amount Paid with Razorpay ───────────────────
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: secret,
+      });
+
+      const rzpOrder = await razorpay.orders.fetch(razorpay_order_id);
+      const expectedAmountPaise = Math.round((orderData.total || 0) * 100);
+
+      if (rzpOrder.amount !== expectedAmountPaise) {
+        console.error(`[Security] Amount mismatch for order ${firebase_order_id}. Expected: ${expectedAmountPaise}, Paid: ${rzpOrder.amount}`);
+        return res.status(400).json({ error: 'Payment amount mismatch. Payment rejected.' });
+      }
+    } else {
+      // For free orders, verify that the bypass params are correct
+      if (razorpay_order_id !== 'free_coupon_bypass' || razorpay_payment_id !== 'free_coupon_bypass') {
+        return res.status(400).json({ error: 'Invalid parameters for free order bypass' });
+      }
     }
 
     // ── 4. Process Rewards & Update Order (Atomic Transaction) ──

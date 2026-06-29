@@ -97,3 +97,22 @@ export const deleteCoupon = async (id) => {
 export const toggleCoupon = async (id, active) => {
   await updateDoc(doc(db, 'coupons', id), { active });
 };
+
+export const getUserCoupons = async (uid) => {
+  if (!uid) return [];
+  try {
+    const q = query(
+      collection(db, 'coupons'),
+      where('uid', '==', uid),
+      where('used', '==', false),
+      where('active', '==', true)
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(c => !c.expiry || new Date(c.expiry) > new Date());
+  } catch (error) {
+    console.error('Error fetching user coupons:', error);
+    return [];
+  }
+};
