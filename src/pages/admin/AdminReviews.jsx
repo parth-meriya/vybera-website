@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star, Trash2 } from 'lucide-react';
-import { getAllReviews, deleteReview } from '../../firebase/reviews';
+import { getAllReviews, deleteReview, approveReview, rejectReview } from '../../firebase/reviews';
 import toast from 'react-hot-toast';
 
 const AdminReviews = () => {
@@ -30,6 +30,26 @@ const AdminReviews = () => {
     }
   };
 
+  const handleApprove = async (id) => {
+    try {
+      await approveReview(id);
+      setReviews(prev => prev.map(r => r.id === id ? { ...r, status: 'approved' } : r));
+      toast.success('Review approved.', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error('Failed to approve review.', { className: 'toast-vybera' });
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await rejectReview(id);
+      setReviews(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected' } : r));
+      toast.success('Review rejected.', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error('Failed to reject review.', { className: 'toast-vybera' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -54,13 +74,14 @@ const AdminReviews = () => {
               <th className="px-6 py-4 font-semibold">Rating</th>
               <th className="px-6 py-4 font-semibold w-1/3">Review</th>
               <th className="px-6 py-4 font-semibold">Images</th>
+              <th className="px-6 py-4 font-semibold">Status</th>
               <th className="px-6 py-4 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-vy-border">
             {reviews.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-6 py-12 text-center text-vy-grey text-xs tracking-widest uppercase">
+                <td colSpan="7" className="px-6 py-12 text-center text-vy-grey text-xs tracking-widest uppercase">
                   No reviews found
                 </td>
               </tr>
@@ -69,7 +90,7 @@ const AdminReviews = () => {
                 <tr key={review.id} className="hover:bg-vy-border/20 transition-colors">
                   <td className="px-6 py-4">
                     <p className="font-semibold text-vy-white">{review.userName}</p>
-                    <p className="text-[10px] text-vy-grey uppercase">{review.createdAt?.toDate?.().toLocaleDateString()}</p>
+                    <p className="text-[10px] text-vy-grey uppercase">{review.createdAt?.toDate?.().toLocaleDateString() || 'Just now'}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className="font-mono text-xs text-vy-grey bg-vy-dark px-2 border border-vy-border">...{review.productId.slice(-6)}</span>
@@ -99,13 +120,44 @@ const AdminReviews = () => {
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleDelete(review.id)}
-                      className="text-vy-grey hover:text-red-400 transition-colors bg-vy-dark p-2 border border-vy-border hover:border-red-500/30"
-                      title="Delete Review"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border ${
+                      review.status === 'approved' 
+                        ? 'border-green-500/30 bg-green-500/10 text-green-400'
+                        : review.status === 'rejected'
+                        ? 'border-red-500/30 bg-red-500/10 text-red-400'
+                        : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                    }`}>
+                      {review.status || 'pending'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      {review.status !== 'approved' && (
+                        <button
+                          onClick={() => handleApprove(review.id)}
+                          className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] tracking-widest font-bold uppercase hover:bg-green-500/30 transition-colors"
+                          title="Approve Review"
+                        >
+                          Approve
+                        </button>
+                      )}
+                      {review.status !== 'rejected' && (
+                        <button
+                          onClick={() => handleReject(review.id)}
+                          className="px-2 py-1 bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] tracking-widest font-bold uppercase hover:bg-red-500/30 transition-colors"
+                          title="Reject Review"
+                        >
+                          Reject
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(review.id)}
+                        className="text-vy-grey hover:text-red-400 transition-colors bg-vy-dark p-2 border border-vy-border hover:border-red-500/30"
+                        title="Delete Review"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

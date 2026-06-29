@@ -59,6 +59,7 @@ export const addReview = async (data, imageFiles = []) => {
   const docRef = await addDoc(collection(db, 'reviews'), {
     ...data,
     imageUrls,
+    status: 'pending', // Default is pending for admin moderation
     createdAt: serverTimestamp(),
   });
   
@@ -107,4 +108,41 @@ export const getAllReviews = async () => {
  */
 export const deleteReview = async (reviewId) => {
   return deleteDoc(doc(db, 'reviews', reviewId));
+};
+
+/**
+ * Approve a review
+ */
+export const approveReview = async (reviewId) => {
+  return updateDoc(doc(db, 'reviews', reviewId), { status: 'approved' });
+};
+
+/**
+ * Reject a review
+ */
+export const rejectReview = async (reviewId) => {
+  return updateDoc(doc(db, 'reviews', reviewId), { status: 'rejected' });
+};
+
+/**
+ * Check if user is a verified buyer of a specific product
+ */
+export const isVerifiedBuyer = async (userId, productId) => {
+  if (!userId || !productId) return false;
+  try {
+    const q = query(
+      collection(db, 'orders'),
+      where('userId', '==', userId)
+    );
+    const snap = await getDocs(q);
+    return snap.docs.some(doc => {
+      const order = doc.data();
+      const isPaid = order.paymentStatus === 'paid' || order.status === 'delivered' || order.status === 'completed' || order.status === 'processing';
+      if (!isPaid) return false;
+      return order.items?.some(item => item.id === productId);
+    });
+  } catch (err) {
+    console.error('Failed to check verified buyer status:', err);
+    return false;
+  }
 };

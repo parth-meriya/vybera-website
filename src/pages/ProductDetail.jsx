@@ -5,7 +5,7 @@ import { ShoppingBag, ArrowLeft, Star, ImageIcon, X, Trash2, Share2, Copy, Messa
 import { getProductById } from '../firebase/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { getReviewsByProduct, addReview, deleteReview } from '../firebase/reviews';
+import { getReviewsByProduct, addReview, deleteReview, isVerifiedBuyer } from '../firebase/reviews';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
@@ -26,6 +26,15 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [verifiedBuyer, setVerifiedBuyer] = useState(false);
+
+  useEffect(() => {
+    if (user && id) {
+      isVerifiedBuyer(user.uid, id).then(setVerifiedBuyer);
+    } else {
+      setVerifiedBuyer(false);
+    }
+  }, [user, id]);
   const [currentImage, setCurrentImage] = useState(null);
   const [zoomed, setZoomed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -127,9 +136,15 @@ const ProductDetail = () => {
     }
   };
 
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((acc, obj) => acc + obj.rating, 0) / reviews.length).toFixed(1)
+  const approvedReviews = reviews.filter(r => r.status === 'approved');
+  const userReviews = user ? reviews.filter(r => r.userId === user.uid && r.status !== 'approved') : [];
+  const displayedReviews = [...userReviews, ...approvedReviews];
+
+  const avgRating = approvedReviews.length > 0
+    ? (approvedReviews.reduce((acc, obj) => acc + obj.rating, 0) / approvedReviews.length).toFixed(1)
     : 0;
+
+  const showReviewsSection = approvedReviews.length > 0 || verifiedBuyer;
 
   const handleAddToCart = () => {
     if (product?.sizes?.length > 0 && !selectedSize) {
@@ -280,7 +295,7 @@ const ProductDetail = () => {
               <span className="text-yellow-400 flex items-center gap-1">
                 <Star size={14} className="fill-current" /> {avgRating || 'No rating'}
               </span>
-              <span className="text-vy-grey">({reviews.length} Review{reviews.length !== 1 ? 's' : ''})</span>
+              <span className="text-vy-grey">({approvedReviews.length} Review{approvedReviews.length !== 1 ? 's' : ''})</span>
             </div>
 
             {/* Price */}
@@ -425,145 +440,194 @@ const ProductDetail = () => {
         </div>
 
         {/* --- REVIEWS SECTION --- */}
-        <div className="mt-24 border-t border-vy-border pt-16">
-          <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white mb-10">
-            Customer Reviews
-          </h2>
+        {showReviewsSection && (
+          <div className="mt-24 border-t border-vy-border pt-16">
+            <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white mb-10">
+              Customer Reviews
+            </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Left: Write a review form */}
-            <div className="lg:col-span-1">
-              <div className="bg-vy-card border border-vy-border p-6">
-                <h3 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-6">
-                  Write a Review
-                </h3>
-                {!user ? (
-                  <p className="text-vy-grey text-xs">
-                    Please <Link to="/login" className="text-vy-white underline">log in</Link> to share your thoughts.
-                  </p>
-                ) : (
-                  <form onSubmit={handleReviewSubmit} className="space-y-4">
-                    {/* Rating */}
-                    <div>
-                      <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Rating</label>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <button
-                            key={star}
-                            type="button"
-                            onClick={() => setReviewRating(star)}
-                            className={`transition-colors ${star <= reviewRating ? 'text-yellow-400' : 'text-vy-border'} hover:text-yellow-500`}
-                          >
-                            <Star size={24} className={star <= reviewRating ? 'fill-current' : ''} />
-                          </button>
-                        ))}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              {/* Left Column: Analytics & Form */}
+              <div className="lg:col-span-1 space-y-8">
+                {/* Rating summary */}
+                <div className="bg-vy-card border border-vy-border p-6">
+                  <h3 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-4">
+                    Rating Summary
+                  </h3>
+                  <div className="flex items-baseline gap-2 mb-6">
+                    <span className="text-4xl font-bold text-vy-white">{avgRating}</span>
+                    <span className="text-vy-grey text-sm">/ 5.0</span>
+                    <div className="flex gap-0.5 text-yellow-400 ml-3">
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} size={14} className={s <= Math.round(Number(avgRating)) ? 'fill-current' : ''} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-vy-grey text-xs tracking-wider uppercase mb-6">Based on {approvedReviews.length} verified review{approvedReviews.length !== 1 ? 's' : ''}</p>
+                  
+                  <div className="space-y-3">
+                    {[5,4,3,2,1].map(stars => {
+                      const count = approvedReviews.filter(r => r.rating === stars).length;
+                      const pct = approvedReviews.length > 0 ? (count / approvedReviews.length) * 100 : 0;
+                      return (
+                        <div key={stars} className="flex items-center gap-3 text-xs">
+                          <span className="text-vy-white w-3 font-semibold">{stars}★</span>
+                          <div className="flex-1 h-2 bg-vy-dark border border-vy-white/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-vy-accent" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="text-vy-grey w-8 text-right">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Write a review form */}
+                <div className="bg-vy-card border border-vy-border p-6">
+                  <h3 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-6">
+                    Write a Review
+                  </h3>
+                  {!user ? (
+                    <p className="text-vy-grey text-xs">
+                      Please <Link to="/login" className="text-vy-white underline">log in</Link> to share your thoughts.
+                    </p>
+                  ) : !verifiedBuyer ? (
+                    <p className="text-vy-grey text-xs leading-relaxed">
+                      Only verified buyers who purchased this product can leave a review.
+                    </p>
+                  ) : (
+                    <form onSubmit={handleReviewSubmit} className="space-y-4">
+                      {/* Rating */}
+                      <div>
+                        <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Rating</label>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map(star => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewRating(star)}
+                              className={`transition-colors ${star <= reviewRating ? 'text-yellow-400' : 'text-vy-border'} hover:text-yellow-500`}
+                            >
+                              <Star size={24} className={star <= reviewRating ? 'fill-current' : ''} />
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    {/* Text */}
-                    <div>
-                      <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Review</label>
-                      <textarea
-                        value={reviewText}
-                        onChange={e => setReviewText(e.target.value)}
-                        placeholder="What do you think about this piece?"
-                        className="vy-input resize-none"
-                        rows={4}
-                      />
-                    </div>
-                    {/* Images */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-vy-grey text-xs tracking-widest uppercase block">Images</label>
-                        <span className="text-vy-grey text-[10px]">{reviewImages.length}/3 max</span>
+                      {/* Text */}
+                      <div>
+                        <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Review</label>
+                        <textarea
+                          value={reviewText}
+                          onChange={e => setReviewText(e.target.value)}
+                          placeholder="What do you think about this piece?"
+                          className="vy-input resize-none"
+                          rows={4}
+                        />
+                      </div>
+                      {/* Images */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-vy-grey text-xs tracking-widest uppercase block">Images</label>
+                          <span className="text-vy-grey text-[10px]">{reviewImages.length}/3 max</span>
+                        </div>
+                        
+                        {reviewImages.length < 3 && (
+                          <label className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-vy-border text-vy-grey text-xs uppercase tracking-widest hover:border-vy-grey cursor-pointer transition-colors">
+                            <ImageIcon size={14} /> Upload Image
+                            <input type="file" multiple accept="image/jpeg, image/png" className="hidden" onChange={handleImagePick} />
+                          </label>
+                        )}
+
+                        {/* Preview array */}
+                        {reviewImages.length > 0 && (
+                          <div className="grid grid-cols-3 gap-2 mt-3">
+                            {reviewImages.map((file, idx) => (
+                              <div key={idx} className="relative aspect-square border border-vy-border group bg-vy-dark">
+                                <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover opacity-80" />
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewImages(prev => prev.filter((_, i) => i !== idx))}
+                                  className="absolute -top-2 -right-2 w-5 h-5 bg-vy-white text-vy-black rounded-full flex items-center justify-center scale-0 group-hover:scale-100 transition-transform"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       
-                      {reviewImages.length < 3 && (
-                        <label className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-vy-border text-vy-grey text-xs uppercase tracking-widest hover:border-vy-grey cursor-pointer transition-colors">
-                          <ImageIcon size={14} /> Upload Image
-                          <input type="file" multiple accept="image/jpeg, image/png" className="hidden" onChange={handleImagePick} />
-                        </label>
-                      )}
+                      <button
+                        type="submit"
+                        disabled={submittingReview}
+                        className="btn-primary w-full text-xs py-3 mt-4"
+                      >
+                        {submittingReview ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
 
-                      {/* Preview array */}
-                      {reviewImages.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2 mt-3">
-                          {reviewImages.map((file, idx) => (
-                            <div key={idx} className="relative aspect-square border border-vy-border group bg-vy-dark">
-                              <img src={URL.createObjectURL(file)} alt="preview" className="w-full h-full object-cover opacity-80" />
-                              <button
-                                type="button"
-                                onClick={() => setReviewImages(prev => prev.filter((_, i) => i !== idx))}
-                                className="absolute -top-2 -right-2 w-5 h-5 bg-vy-white text-vy-black rounded-full flex items-center justify-center scale-0 group-hover:scale-100 transition-transform"
-                              >
-                                <X size={10} />
-                              </button>
+              {/* Right: List of Reviews */}
+              <div className="lg:col-span-2 space-y-6">
+                {displayedReviews.length === 0 ? (
+                  <div className="p-8 border border-vy-border text-center">
+                    <p className="text-vy-grey tracking-widest uppercase text-sm">No reviews yet.</p>
+                  </div>
+                ) : (
+                  displayedReviews.map(review => (
+                    <div key={review.id} className="p-6 border border-vy-border bg-vy-black relative">
+                      {review.status !== 'approved' && (
+                        <span className={`absolute top-6 right-6 px-2 py-0.5 text-[8px] uppercase tracking-widest font-bold border ${
+                          review.status === 'rejected' 
+                            ? 'border-red-500/30 bg-red-500/10 text-red-400' 
+                            : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                        }`}>
+                          {review.status === 'rejected' ? 'Rejected' : 'Pending Approval'}
+                        </span>
+                      )}
+                      {/* Header */}
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <p className="text-vy-white font-semibold text-sm tracking-wider mb-1">{review.userName}</p>
+                          <div className="flex gap-1 mb-1">
+                            {[1,2,3,4,5].map(s => (
+                              <Star key={s} size={12} className={s <= review.rating ? "text-yellow-400 fill-current" : "text-vy-border"} />
+                            ))}
+                          </div>
+                          <p className="text-vy-grey text-[10px] uppercase tracking-widest">{review.createdAt?.toDate?.().toLocaleDateString() || 'Just now'}</p>
+                        </div>
+                        {(user && user.uid === review.userId) && (
+                          <button
+                            onClick={() => handleDeleteReview(review.id)}
+                            className="text-vy-border hover:text-red-400 transition-colors"
+                            title="Delete Review"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                      {/* Text */}
+                      <p className="text-vy-light text-sm leading-relaxed mb-4">{review.reviewText}</p>
+                      
+                      {/* Images */}
+                      {review.imageUrls?.length > 0 && (
+                        <div className="flex gap-3">
+                          {review.imageUrls.map((url, i) => (
+                            <div key={i} className="w-16 h-20 border border-vy-border bg-vy-card flex-shrink-0 cursor-zoom-in" onClick={() => window.open(url, '_blank')}>
+                              <img src={url} alt={`Review by ${review.userName}`} className="w-full h-full object-cover" />
                             </div>
                           ))}
                         </div>
                       )}
                     </div>
-                    
-                    <button
-                      type="submit"
-                      disabled={submittingReview}
-                      className="btn-primary w-full text-xs py-3 mt-4"
-                    >
-                      {submittingReview ? 'Submitting...' : 'Submit Review'}
-                    </button>
-                  </form>
+                  ))
                 )}
               </div>
             </div>
-
-            {/* Right: List of Reviews */}
-            <div className="lg:col-span-2 space-y-6">
-              {reviews.length === 0 ? (
-                <div className="p-8 border border-vy-border text-center">
-                  <p className="text-vy-grey tracking-widest uppercase text-sm">No reviews yet.</p>
-                </div>
-              ) : (
-                reviews.map(review => (
-                  <div key={review.id} className="p-6 border border-vy-border bg-vy-black relative">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <p className="text-vy-white font-semibold text-sm tracking-wider mb-1">{review.userName}</p>
-                        <div className="flex gap-1 mb-1">
-                          {[1,2,3,4,5].map(s => (
-                            <Star key={s} size={12} className={s <= review.rating ? "text-yellow-400 fill-current" : "text-vy-border"} />
-                          ))}
-                        </div>
-                        <p className="text-vy-grey text-[10px] uppercase tracking-widest">{review.createdAt?.toDate?.().toLocaleDateString() || 'Just now'}</p>
-                      </div>
-                      {(user && user.uid === review.userId) && (
-                        <button
-                          onClick={() => handleDeleteReview(review.id)}
-                          className="text-vy-border hover:text-red-400 transition-colors"
-                          title="Delete Review"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                    {/* Text */}
-                    <p className="text-vy-light text-sm leading-relaxed mb-4">{review.reviewText}</p>
-                    
-                    {/* Images */}
-                    {review.imageUrls?.length > 0 && (
-                      <div className="flex gap-3">
-                        {review.imageUrls.map((url, i) => (
-                          <div key={i} className="w-16 h-20 border border-vy-border bg-vy-card flex-shrink-0 cursor-zoom-in" onClick={() => window.open(url, '_blank')}>
-                            <img src={url} alt={`Review by ${review.userName}`} className="w-full h-full object-cover" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
           </div>
-        </div>
+        )}
 
         {/* Share Modal (Fallback for Desktop) */}
         {showShareModal && (
