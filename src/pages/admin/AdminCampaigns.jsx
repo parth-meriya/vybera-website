@@ -209,6 +209,50 @@ const AdminCampaigns = () => {
     img.src = "data:image/svg+xml;base64," + btoa(svgData);
   };
 
+  const handleExportCSV = () => {
+    if (!analyticsData || !analyticsData.perCampaign.length) {
+      toast.error('No analytics data to export.');
+      return;
+    }
+    let csvContent = 'Campaign,Spins,Unique Users,Coupons Generated,Coupons Used,Orders,Revenue\n';
+    analyticsData.perCampaign.forEach(row => {
+      csvContent += `"${row.campaignId}",${row.totalSpins},${row.uniqueUsers},${row.couponsGenerated},${row.couponsUsed},${row.orders},${row.revenue}\n`;
+    });
+    csvContent += `"TOTAL",${analyticsData.totals.totalSpins},${analyticsData.totals.uniqueUsers},0,${analyticsData.totals.couponsUsed},0,${analyticsData.totals.revenue}\n`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `vybera_campaign_analytics_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Campaign report downloaded!');
+  };
+
+  const handleExportFreeTeesCSV = () => {
+    if (!rewardTxs.length) {
+      toast.error('No free tee transactions to export.');
+      return;
+    }
+    let csvContent = 'Date,User Email,Phone,Campaign,Status\n';
+    rewardTxs.forEach(tx => {
+      const dateStr = tx.timestamp?.toDate ? tx.timestamp.toDate().toLocaleString() : new Date(tx.timestamp).toLocaleString();
+      csvContent += `"${dateStr}","${tx.email}","${tx.phone}","${tx.campaignId}","${tx.status}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `vybera_free_tees_winners_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Free tees list downloaded!');
+  };
+
   if (loading) return <div className="p-8 text-vy-grey flex items-center gap-2"><RefreshCw className="animate-spin" /> Loading...</div>;
 
   return (
@@ -330,8 +374,14 @@ const AdminCampaigns = () => {
             </div>
           ) : analyticsData ? (
             <>
-              {/* Refresh button */}
-              <div className="mb-6 flex justify-end">
+              {/* Refresh & Export buttons */}
+              <div className="mb-6 flex justify-end gap-3">
+                <button
+                  onClick={handleExportCSV}
+                  className="btn-primary bg-vy-card border border-vy-border text-vy-grey hover:text-vy-white flex items-center gap-2 text-xs px-4 py-2"
+                >
+                  <Download size={14} /> Export CSV
+                </button>
                 <button
                   onClick={fetchAnalytics}
                   className="btn-primary flex items-center gap-2 text-xs px-4 py-2"
@@ -411,7 +461,16 @@ const AdminCampaigns = () => {
       )}
 
       {activeTab === 'free_tees' && (
-        <div className="bg-vy-card border border-vy-border overflow-hidden">
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <button
+              onClick={handleExportFreeTeesCSV}
+              className="btn-primary flex items-center gap-2 text-xs px-4 py-2"
+            >
+              <Download size={14} /> Export Winners CSV
+            </button>
+          </div>
+          <div className="bg-vy-card border border-vy-border overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-vy-black border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">
               <tr>
@@ -463,6 +522,7 @@ const AdminCampaigns = () => {
             </tbody>
           </table>
         </div>
+      </div>
       )}
 
       {/* Editor Modal */}
