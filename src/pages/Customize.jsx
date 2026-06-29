@@ -17,6 +17,51 @@ import BackButton from '../components/ui/BackButton';
 
 const POSITIONS  = ['Front', 'Back', 'Both'];
 
+const ShirtOutline = ({ color = '#0A0A0A' }) => (
+  <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-2xl" style={{ transition: 'all 0.5s ease' }}>
+    <path
+      d="M 20,20 
+         L 32,15 
+         C 37,20 43,20 50,22 
+         C 57,20 63,20 68,15 
+         L 80,20 
+         L 76,38 
+         L 70,36 
+         L 70,85 
+         C 70,87 68,89 65,89
+         L 35,89 
+         C 32,89 30,87 30,85
+         L 30,36 
+         L 24,38 
+         Z"
+      fill={color}
+      stroke="#1f2937"
+      strokeWidth="1"
+    />
+    {/* Collar detail */}
+    <path
+      d="M 32,15 C 37,20 43,20 50,22 C 57,20 63,20 68,15"
+      fill="none"
+      stroke="#374151"
+      strokeWidth="1.5"
+    />
+    {/* Left sleeve seam */}
+    <path
+      d="M 30,32 L 20,20"
+      fill="none"
+      stroke="#111827"
+      strokeWidth="0.5"
+    />
+    {/* Right sleeve seam */}
+    <path
+      d="M 70,32 L 80,20"
+      fill="none"
+      stroke="#111827"
+      strokeWidth="0.5"
+    />
+  </svg>
+);
+
 // ── Image Compression Settings ──────────────────────────
 const compressionOptions = {
   maxSizeMB: 0.8,
@@ -168,6 +213,34 @@ const Customize = () => {
   const [viewMode, setViewMode]   = useState('Front');
   const [description, setDescription] = useState('');
   const [designStatus, setDesignStatus] = useState('Firebase'); // 'Firebase', 'WhatsApp', 'Pending'
+
+  // Live Custom Designer States
+  const [scale, setScale] = useState(1.0);
+  const [rotation, setRotation] = useState(0);
+  const [posX, setPosX] = useState(0);
+  const [posY, setPosY] = useState(0);
+  const [customText, setCustomText] = useState('');
+  const [textColor, setTextColor] = useState('#FFFFFF');
+  const [textSize, setTextSize] = useState(14);
+  const [textFont, setTextFont] = useState('sans-serif');
+  const [textRotation, setTextRotation] = useState(0);
+  const [mockupColor, setMockupColor] = useState('#0A0A0A'); // maps to selected color
+
+  const colorPresets = [
+    { name: 'Pure Black', hex: '#0A0A0A' },
+    { name: 'Vintage White', hex: '#F5F5F0' },
+    { name: 'Charcoal Grey', hex: '#252526' },
+    { name: 'Off-Cream', hex: '#F0EAD6' },
+    { name: 'Cocoa Brown', hex: '#3d2314' },
+    { name: 'Military Olive', hex: '#3b3f30' },
+    { name: 'Deep Navy', hex: '#1d2b3a' },
+    { name: 'Desert Sand', hex: '#C2B280' }
+  ];
+
+  const selectColorPreset = (preset) => {
+    setColor(preset.name);
+    setMockupColor(preset.hex);
+  };
 
   if (user) window.userEmail = user.email;
 
@@ -351,6 +424,19 @@ const Customize = () => {
       description: description.trim(),
       designStatus,
       image: imageUrls[0] || null, // First image as thumbnail
+      isCustom: true,
+      customizationParams: {
+        color,
+        scale,
+        rotation,
+        posX,
+        posY,
+        customText,
+        textColor,
+        textSize,
+        textFont,
+        textRotation
+      }
     };
 
     addItem(customItem, size, 1, true);
@@ -486,14 +572,82 @@ const Customize = () => {
           {step === 2 && (
             <motion.div
               key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-7xl mx-auto"
             >
-              <div className="space-y-8">
+              {/* Left Column: Visualizer (lg:col-span-5) */}
+              <div className="lg:col-span-5 bg-vy-card border border-vy-border p-6 flex flex-col items-center justify-center relative min-h-[450px] lg:sticky lg:top-24">
+                <span className="text-vy-grey text-[9px] tracking-widest uppercase font-bold absolute top-4 left-4">Live Preview</span>
+                <span className="text-vy-accent text-[9px] tracking-widest uppercase font-bold absolute top-4 right-4">{viewMode} View</span>
+                
+                {/* T-Shirt Canvas container */}
+                <div className="relative w-80 h-96 flex items-center justify-center overflow-hidden">
+                  <ShirtOutline color={mockupColor} />
+
+                  {/* Printable Area bounding box */}
+                  <div className="absolute top-[26%] left-[30%] w-[40%] h-[46%] border border-dashed border-vy-white/20 flex items-center justify-center overflow-hidden z-10">
+                    {/* Design image layer */}
+                    {previews.length > 0 && previews[0] !== 'LATER' && (
+                      <img
+                        src={previews[0]}
+                        alt="Design layer"
+                        className="pointer-events-none select-none max-w-full max-h-full object-contain"
+                        style={{
+                          transform: `translate(${posX}px, ${posY}px) scale(${scale}) rotate(${rotation}deg)`,
+                          transition: 'transform 0.1s ease-out'
+                        }}
+                      />
+                    )}
+
+                    {/* Custom text layer */}
+                    {customText && (
+                      <div
+                        className="absolute pointer-events-none select-none text-center font-bold"
+                        style={{
+                          color: textColor,
+                          fontSize: `${textSize}px`,
+                          fontFamily: textFont,
+                          transform: `rotate(${textRotation}deg)`,
+                          textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                        }}
+                      >
+                        {customText}
+                      </div>
+                    )}
+
+                    {previews.length === 0 && !customText && (
+                      <span className="text-vy-grey/30 text-[9px] uppercase tracking-widest font-bold">Print Area</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Print side selector (Front/Back) */}
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => setViewMode('Front')}
+                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-wider border ${
+                      viewMode === 'Front' ? 'border-vy-white bg-vy-white/10 text-vy-white' : 'border-vy-border text-vy-grey hover:text-vy-white'
+                    }`}
+                  >
+                    Front
+                  </button>
+                  <button
+                    onClick={() => setViewMode('Back')}
+                    className={`px-3 py-1 text-[9px] font-bold uppercase tracking-wider border ${
+                      viewMode === 'Back' ? 'border-vy-white bg-vy-white/10 text-vy-white' : 'border-vy-border text-vy-grey hover:text-vy-white'
+                    }`}
+                  >
+                    Back
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Customizer Controls (lg:col-span-7) */}
+              <div className="lg:col-span-7 space-y-8 bg-vy-card border border-vy-border p-6">
                 {/* Fit summary */}
-                <div className="flex items-center justify-between p-4 border border-vy-border bg-vy-card/50">
+                <div className="flex items-center justify-between p-4 border border-vy-border bg-vy-black/40">
                   <div className="flex items-center gap-3">
                     <Shirt size={18} className="text-vy-accent" />
                     <div>
@@ -505,11 +659,37 @@ const Customize = () => {
                     onClick={() => setStep(1)}
                     className="text-vy-grey text-[10px] tracking-widest uppercase hover:text-vy-white transition-colors"
                   >
-                    Change
+                    Change Fit
                   </button>
                 </div>
 
-                {/* Upload */}
+                {/* 1. Color Presets */}
+                <div>
+                  <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">T-Shirt Color</label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {colorPresets.map(preset => (
+                      <button
+                        key={preset.name}
+                        onClick={() => selectColorPreset(preset)}
+                        className={`w-6 h-6 rounded-full border transition-transform flex-shrink-0 ${
+                          color === preset.name ? 'border-vy-white scale-110 shadow-lg' : 'border-vy-border/40 hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: preset.hex }}
+                        title={preset.name}
+                      />
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={color}
+                    onChange={(e) => setColor(e.target.value)}
+                    className="vy-input w-full text-xs"
+                    placeholder="Or enter custom color (e.g. Acid Wash Grey)"
+                    maxLength={30}
+                  />
+                </div>
+
+                {/* 2. Upload Zone */}
                 <UploadZone
                   files={files}
                   previews={previews}
@@ -519,7 +699,183 @@ const Customize = () => {
                   progress={uploadPct}
                 />
 
-                {/* Size */}
+                {/* 3. Image Layout Parameters */}
+                {previews.length > 0 && previews[0] !== 'LATER' && (
+                  <div className="p-4 border border-vy-border bg-vy-black/40 space-y-4">
+                    <h4 className="text-vy-white text-[10px] uppercase tracking-widest font-bold border-l-2 border-vy-accent pl-2">Image Adjustments</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Scale */}
+                      <div>
+                        <div className="flex justify-between text-[9px] uppercase tracking-widest text-vy-grey mb-1">
+                          <span>Scale</span>
+                          <span>{Math.round(scale * 100)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0.2"
+                          max="2.0"
+                          step="0.05"
+                          value={scale}
+                          onChange={e => setScale(parseFloat(e.target.value))}
+                          className="w-full accent-vy-accent bg-vy-dark"
+                        />
+                      </div>
+
+                      {/* Rotation */}
+                      <div>
+                        <div className="flex justify-between text-[9px] uppercase tracking-widest text-vy-grey mb-1">
+                          <span>Rotation</span>
+                          <span>{rotation}°</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="-180"
+                          max="180"
+                          step="5"
+                          value={rotation}
+                          onChange={e => setRotation(parseInt(e.target.value))}
+                          className="w-full accent-vy-accent bg-vy-dark"
+                        />
+                      </div>
+
+                      {/* X Offset */}
+                      <div>
+                        <div className="flex justify-between text-[9px] uppercase tracking-widest text-vy-grey mb-1">
+                          <span>Horizontal</span>
+                          <span>{posX}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="-50"
+                          max="50"
+                          step="1"
+                          value={posX}
+                          onChange={e => setPosX(parseInt(e.target.value))}
+                          className="w-full accent-vy-accent bg-vy-dark"
+                        />
+                      </div>
+
+                      {/* Y Offset */}
+                      <div>
+                        <div className="flex justify-between text-[9px] uppercase tracking-widest text-vy-grey mb-1">
+                          <span>Vertical</span>
+                          <span>{posY}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="-50"
+                          max="50"
+                          step="1"
+                          value={posY}
+                          onChange={e => setPosY(parseInt(e.target.value))}
+                          className="w-full accent-vy-accent bg-vy-dark"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <button
+                        onClick={() => { setScale(1.0); setRotation(0); setPosX(0); setPosY(0); }}
+                        className="text-[9px] uppercase tracking-widest text-vy-grey hover:text-vy-white"
+                      >
+                        Reset Layout
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Text Customizer Layer */}
+                <div className="p-4 border border-vy-border bg-vy-black/40 space-y-4">
+                  <h4 className="text-vy-white text-[10px] uppercase tracking-widest font-bold border-l-2 border-vy-accent pl-2">Slogan / Text Layer</h4>
+                  
+                  <div>
+                    <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Custom Text</label>
+                    <input
+                      type="text"
+                      value={customText}
+                      onChange={e => setCustomText(e.target.value)}
+                      placeholder="Type custom text (e.g. OVERSIZED)"
+                      className="vy-input text-xs"
+                      maxLength={50}
+                    />
+                  </div>
+
+                  {customText && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Text Color */}
+                      <div>
+                        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1.5">Text Color</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={textColor}
+                            onChange={e => setTextColor(e.target.value)}
+                            className="w-8 h-8 bg-transparent border-0 cursor-pointer flex-shrink-0"
+                          />
+                          <input
+                            type="text"
+                            value={textColor}
+                            onChange={e => setTextColor(e.target.value)}
+                            className="vy-input text-[10px]"
+                            placeholder="#FFFFFF"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Font Family */}
+                      <div>
+                        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1.5">Font Style</label>
+                        <select
+                          value={textFont}
+                          onChange={e => setTextFont(e.target.value)}
+                          className="vy-input text-xs"
+                        >
+                          <option value="sans-serif">Modern Sans</option>
+                          <option value="serif">Classic Serif</option>
+                          <option value="monospace">Digital Mono</option>
+                          <option value="'Outfit', sans-serif">Outfit Display</option>
+                          <option value="cursive">Street Cursive</option>
+                        </select>
+                      </div>
+
+                      {/* Text Size */}
+                      <div>
+                        <div className="flex justify-between text-[9px] uppercase tracking-widest text-vy-grey mb-1">
+                          <span>Text Size</span>
+                          <span>{textSize}px</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="8"
+                          max="32"
+                          value={textSize}
+                          onChange={e => setTextSize(parseInt(e.target.value))}
+                          className="w-full accent-vy-accent bg-vy-dark"
+                        />
+                      </div>
+
+                      {/* Text Rotation */}
+                      <div>
+                        <div className="flex justify-between text-[9px] uppercase tracking-widest text-vy-grey mb-1">
+                          <span>Text Rotation</span>
+                          <span>{textRotation}°</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="-180"
+                          max="180"
+                          step="5"
+                          value={textRotation}
+                          onChange={e => setTextRotation(parseInt(e.target.value))}
+                          className="w-full accent-vy-accent bg-vy-dark"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Size Selection */}
                 <div>
                   <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">Size</label>
                   <div className="flex gap-2">
@@ -535,22 +891,7 @@ const Customize = () => {
                   </div>
                 </div>
 
-                {/* Color */}
-                <div>
-                  <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">
-                    T-Shirt Color
-                  </label>
-                  <input
-                    type="text"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className="vy-input w-full text-sm tracking-wide"
-                    placeholder="e.g. Black, White, Navy Blue..."
-                    maxLength={30}
-                  />
-                </div>
-
-                {/* Print Position */}
+                {/* 6. Print Position */}
                 <div>
                   <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">
                     Print Position
@@ -578,7 +919,7 @@ const Customize = () => {
                   </p>
                 </div>
 
-                {/* Description */}
+                {/* 7. Description */}
                 <div>
                   <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">
                     Add your design instructions
