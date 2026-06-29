@@ -28,6 +28,13 @@ const Overview = () => {
     const fetchData = async () => {
       if (!user) return;
       try {
+        // Sync expired points on mount
+        await fetch('/api/sync-rewards', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.uid })
+        }).catch(err => console.error('Rewards sync failed:', err));
+
         const [prof, orders, txs, cps] = await Promise.all([
           getUserProfile(user.uid),
           getOrdersByUser(user.uid),

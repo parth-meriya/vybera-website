@@ -113,16 +113,40 @@ export default async function handler(req, res) {
     const couponCode = orderData.couponCode || null;
 
     await db.runTransaction(async (transaction) => {
-      // If points were used, read the user doc first
+      // Load global rewards settings
+      const settingsSnap = await transaction.get(db.collection('settings').doc('rewards'));
+      const settingsData = settingsSnap.exists ? settingsSnap.data() : { enabled: true, earningRate: 100, redemptionRate: 1, minPayable: 99 };
+
+      // Calculate dynamically earned points
+      let pointsEarned = 0;
+      if (settingsData.enabled) {
+        const qty = (orderData.products || []).reduce((acc, p) => acc + (p.quantity || 1), 0);
+        pointsEarned = qty * (settingsData.earningRate || 100);
+      }
+
+      // If points were used or earned, fetch user document
       let userDocRef, userDocData;
-      if (pointsRedeemed > 0) {
+      if (pointsRedeemed > 0 || pointsEarned > 0) {
         userDocRef = db.collection('users').doc(userId);
         const userSnap = await transaction.get(userDocRef);
-        if (!userSnap.exists) throw new Error('User not found for point deduction');
+        if (!userSnap.exists) throw new Error('User not found for points processing');
         userDocData = userSnap.data();
+      }
 
+      // Validation check for point redemption rules (Redeem controls)
+      if (pointsRedeemed > 0) {
+        if (!settingsData.enabled) {
+          throw new Error('Reward points usage is currently disabled globally.');
+        }
         if ((userDocData.rewardPoints || 0) < pointsRedeemed) {
           throw new Error('Insufficient reward points during checkout completion');
+        }
+
+        // Validate that total payable doesn't fall below minPayable rule
+        const maxDiscountAllowed = Math.max(0, (orderData.total + (pointsRedeemed * settingsData.redemptionRate)) - settingsData.minPayable);
+        const maxPointsAllowed = maxDiscountAllowed / settingsData.redemptionRate;
+        if (pointsRedeemed > maxPointsAllowed) {
+          throw new Error('Redeemed points exceed the checkout limits under minPayable rules.');
         }
       }
 
@@ -183,15 +207,38 @@ export default async function handler(req, res) {
         });
       }
 
-      // Deduct Points & Log Transaction
-      if (pointsRedeemed > 0 && userDocRef) {
+      // Apply Net User Wallet Points updates
+      const netPointsChange = pointsEarned - pointsRedeemed;
+      if (netPointsChange !== 0 && userDocRef) {
         transaction.update(userDocRef, {
-          rewardPoints: admin.firestore.FieldValue.increment(-pointsRedeemed),
-          totalRedeemedPoints: admin.firestore.FieldValue.increment(pointsRedeemed),
+          rewardPoints: admin.firestore.FieldValue.increment(netPointsChange),
+          ...(pointsEarned > 0 ? { totalEarnedPoints: admin.firestore.FieldValue.increment(pointsEarned) } : {}),
+          ...(pointsRedeemed > 0 ? { totalRedeemedPoints: admin.firestore.FieldValue.increment(pointsRedeemed) } : {}),
         });
+      }
 
-        const txRef = db.collection('rewardTransactions').doc();
-        transaction.set(txRef, {
+      // Write points transaction log (Earn)
+      if (pointsEarned > 0) {
+        const earnTxRef = db.collection('rewardTransactions').doc();
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 365); // expires in 365 days
+        
+        transaction.set(earnTxRef, {
+          userId: userId,
+          orderId: firebase_order_id,
+          points: pointsEarned,
+          pointsRemaining: pointsEarned,
+          type: 'EARN',
+          description: `Earned points for purchase in order #${firebase_order_id.slice(0, 8)}`,
+          expiryDate: expiryDate.toISOString(),
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Write points transaction log (Redeem) & Run FIFO remaining deduct logic
+      if (pointsRedeemed > 0 && userDocRef) {
+        const redeemTxRef = db.collection('rewardTransactions').doc();
+        transaction.set(redeemTxRef, {
           userId: userId,
           orderId: firebase_order_id,
           points: pointsRedeemed,
@@ -199,6 +246,32 @@ export default async function handler(req, res) {
           description: `Redeemed points for order #${firebase_order_id.slice(0, 8)}`,
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
+
+        // FIFO Deduction from pointsRemaining
+        const earnSnaps = await db.collection('rewardTransactions')
+          .where('userId', '==', userId)
+          .where('pointsRemaining', '>', 0)
+          .get();
+
+        const activeEarnTxDocs = earnSnaps.docs.map(doc => ({ id: doc.id, ref: doc.ref, ...doc.data() }))
+          .sort((a, b) => {
+            const aTime = a.timestamp?.toMillis?.() || new Date(a.timestamp).getTime();
+            const bTime = b.timestamp?.toMillis?.() || new Date(b.timestamp).getTime();
+            return aTime - bTime;
+          });
+
+        let remainingDeduction = pointsRedeemed;
+        for (const doc of activeEarnTxDocs) {
+          if (remainingDeduction <= 0) break;
+          const avail = doc.pointsRemaining;
+          if (avail <= remainingDeduction) {
+            transaction.update(doc.ref, { pointsRemaining: 0 });
+            remainingDeduction -= avail;
+          } else {
+            transaction.update(doc.ref, { pointsRemaining: avail - remainingDeduction });
+            remainingDeduction = 0;
+          }
+        }
       }
     });
 

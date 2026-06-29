@@ -62,6 +62,13 @@ const AdminUsers = () => {
     setSelectedUserId(uid);
     setDetailLoading(true);
     try {
+      // Sync expired points prior to loading drawer data
+      await fetch('/api/sync-rewards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid })
+      }).catch(err => console.error('Admin rewards sync failed:', err));
+
       const [spinSnap, couponSnap, orderSnap] = await Promise.all([
         getDocs(query(collection(db, 'spinResults'), where('uid', '==', uid))),
         getDocs(query(collection(db, 'coupons'), where('uid', '==', uid))),

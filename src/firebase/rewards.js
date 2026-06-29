@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, setDoc, where, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from './config';
+import { db, auth } from './config';
 
 /**
  * Fetch global rewards settings
@@ -52,36 +52,28 @@ export const getUserRewardTransactions = async (userId) => {
  * Type: MANUAL_ADD or MANUAL_DEDUCT
  */
 export const manualPointAdjustment = async (userId, points, type, description) => {
-  // Since this updates the user document as well, it's safer to do via a Firebase Function or API,
-  // but if done from the frontend admin panel, we update both documents manually.
-  // Note: For absolute security against race conditions, this should ideally be moved to an API endpoint.
-  // We'll leave it here for basic admin panel usage.
-  
-  const userRef = doc(db, 'users', userId);
-  const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) throw new Error('User not found');
-  
-  const userData = userSnap.data();
-  const currentPoints = userData.rewardPoints || 0;
-  
-  let newPoints = currentPoints;
-  if (type === 'MANUAL_ADD') {
-    newPoints += points;
-  } else if (type === 'MANUAL_DEDUCT') {
-    newPoints -= points;
-    if (newPoints < 0) newPoints = 0;
-  }
-  
-  await setDoc(userRef, {
-    rewardPoints: newPoints,
-    ...(type === 'MANUAL_ADD' ? { totalEarnedPoints: (userData.totalEarnedPoints || 0) + points } : {})
-  }, { merge: true });
-  
-  await addDoc(collection(db, 'rewardTransactions'), {
-    userId,
-    points,
-    type,
-    description,
-    timestamp: serverTimestamp()
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('You must be signed in to perform this action.');
+
+  const token = await currentUser.getIdToken();
+  const res = await fetch('/api/admin/adjust-points', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      targetUid: userId,
+      points,
+      type,
+      description
+    })
   });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || 'Failed to adjust points via secure API');
+  }
+
+  return true;
 };
