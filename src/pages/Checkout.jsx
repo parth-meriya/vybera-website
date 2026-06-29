@@ -12,6 +12,7 @@ import { trackBeginCheckout, trackPurchase } from '../utils/analytics';
 import { validateName, validatePhone, sanitizeName, sanitizePhone } from '../utils/validation';
 import toast from 'react-hot-toast';
 import BackButton from '../components/ui/BackButton';
+import { getProductPricing } from '../utils/pricing';
 
 const PLACEHOLDER = 'https://placehold.co/80x100/141414/888888?text=NX';
 
@@ -53,7 +54,7 @@ const Field = ({ label, name, value, onChange, type = 'text', placeholder, maxLe
 );
 
 // ─── Order Summary Panel ─────────────────────────────────────────
-const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact = false }) => (
+const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, campaign, compact = false }) => (
   <div className={`bg-vy-card border border-vy-border ${compact ? 'p-4' : 'p-6'}`}>
     {!compact && (
       <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-6">Order Summary</h2>
@@ -78,7 +79,7 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact =
             </p>
           </div>
           <span className="text-vy-white text-xs font-semibold flex-shrink-0">
-            ₹{(item.price * item.quantity).toLocaleString()}
+            ₹{(getProductPricing(item, campaign).price * item.quantity).toLocaleString()}
           </span>
         </div>
       ))}
@@ -114,7 +115,7 @@ const OrderSummaryPanel = ({ items, coupon, discount, subtotal, total, compact =
 
 // ─── Main Checkout Page ──────────────────────────────────────────
 const Checkout = () => {
-  const { items, coupon, discount, subtotal, total, clearCart } = useCart();
+  const { items, coupon, discount, subtotal, total, clearCart, campaign } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -546,7 +547,6 @@ const Checkout = () => {
                 </motion.button>
               </div>
 
-              {/* Sidebar summary */}
               <div className="hidden lg:block h-fit lg:sticky lg:top-24">
                 <OrderSummaryPanel
                   items={items}
@@ -554,6 +554,7 @@ const Checkout = () => {
                   discount={discount}
                   subtotal={subtotal}
                   total={total}
+                  campaign={campaign}
                 />
               </div>
             </motion.div>
@@ -592,7 +593,6 @@ const Checkout = () => {
                   </div>
                 </div>
 
-                {/* Order summary (mobile visible here) */}
                 <div className="lg:hidden">
                   <OrderSummaryPanel
                     items={items}
@@ -600,6 +600,7 @@ const Checkout = () => {
                     discount={discount}
                     subtotal={subtotal}
                     total={total}
+                    campaign={campaign}
                     compact
                   />
                 </div>
@@ -607,7 +608,6 @@ const Checkout = () => {
 
               {/* Right: Pay panel */}
               <div className="h-fit lg:sticky lg:top-24 space-y-4">
-                {/* Summary */}
                 <div className="hidden lg:block">
                   <OrderSummaryPanel
                     items={items}
@@ -615,6 +615,7 @@ const Checkout = () => {
                     discount={discount}
                     subtotal={subtotal}
                     total={total}
+                    campaign={campaign}
                   />
                 </div>
 

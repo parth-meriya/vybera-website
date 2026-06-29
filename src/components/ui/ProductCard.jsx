@@ -2,17 +2,19 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { getProductPricing } from '../../utils/pricing';
 
 const PLACEHOLDER = 'https://placehold.co/600x750/111111/D9C7A6?text=VYBERA';
 
 const ProductCard = ({ product }) => {
-  const { addItem } = useCart();
+  const { addItem, campaign } = useCart();
+  const pricing = getProductPricing(product, campaign);
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
     const defaultSize = product?.sizes?.[0] || 'Standard';
-    addItem(product, defaultSize, 1);
+    addItem({ ...product, price: pricing.price, compareAtPrice: pricing.compareAtPrice }, defaultSize, 1);
   };
 
   return (
@@ -40,9 +42,9 @@ const ProductCard = ({ product }) => {
                 DROP
               </div>
             )}
-            {product.originalPrice && product.originalPrice > product.price && (
+            {pricing.discountPercent > 0 && (
               <div className="bg-green-500 text-white text-[10px] font-bold px-2 py-1 tracking-wider">
-                -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                -{pricing.discountPercent}%
               </div>
             )}
           </div>
@@ -69,11 +71,11 @@ const ProductCard = ({ product }) => {
           </h3>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-vy-accent text-sm font-semibold">
-              ₹{product.price.toLocaleString()}
+              ₹{pricing.price.toLocaleString()}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
+            {pricing.compareAtPrice && pricing.compareAtPrice > pricing.price && (
               <span className="text-vy-grey text-xs line-through">
-                ₹{product.originalPrice.toLocaleString()}
+                ₹{pricing.compareAtPrice.toLocaleString()}
               </span>
             )}
           </div>

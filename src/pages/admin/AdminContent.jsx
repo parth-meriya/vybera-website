@@ -21,13 +21,30 @@ const AdminContent = () => {
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
   });
 
+  const [campaign, setCampaign] = useState({
+    active: false,
+    name: '',
+    discountPercent: 0,
+    endDate: ''
+  });
+
   useEffect(() => {
     Promise.all([
       getDoc(doc(db, 'content', 'about')),
-      getDoc(doc(db, 'settings', 'customize'))
-    ]).then(([aboutSnap, customSnap]) => {
+      getDoc(doc(db, 'settings', 'customize')),
+      getDoc(doc(db, 'settings', 'campaign'))
+    ]).then(([aboutSnap, customSnap, campaignSnap]) => {
       if (aboutSnap.exists()) setText(aboutSnap.data().text || '');
       if (customSnap.exists()) setCustomize(customSnap.data());
+      if (campaignSnap.exists()) {
+        setCampaign({
+          active: false,
+          name: '',
+          discountPercent: 0,
+          endDate: '',
+          ...campaignSnap.data()
+        });
+      }
       setLoading(false);
     });
   }, []);
@@ -61,6 +78,23 @@ const AdminContent = () => {
     }
   };
 
+  const handleSaveCampaign = async () => {
+    setSaving(true);
+    try {
+      await setDoc(doc(db, 'settings', 'campaign'), {
+        ...campaign,
+        discountPercent: Number(campaign.discountPercent) || 0,
+        updatedAt: serverTimestamp()
+      });
+      toast.success('Campaign settings saved.', { className: 'toast-vybera' });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save campaign settings.', { className: 'toast-vybera' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="p-8">
       <div className="mb-8">
@@ -69,36 +103,109 @@ const AdminContent = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* About Page */}
-        <div className="bg-vy-card border border-vy-border p-6">
-          <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4">About Page</h2>
-          <p className="text-vy-grey text-xs mb-6 tracking-wide">
-            Edit the content that appears on the About page.
-          </p>
+        {/* Left Column: About & Campaign */}
+        <div className="space-y-8">
+          {/* About Page */}
+          <div className="bg-vy-card border border-vy-border p-6">
+            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4">About Page</h2>
+            <p className="text-vy-grey text-xs mb-6 tracking-wide">
+              Edit the content that appears on the About page.
+            </p>
 
-          {loading ? (
-            <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
-          ) : (
-            <>
-              <textarea
-                value={text}
-                onChange={e => setText(e.target.value)}
-                rows={10}
-                className="vy-input resize-none w-full text-sm leading-relaxed font-light mb-4"
-                placeholder="Write your brand story here..."
-              />
-              <div className="flex items-center justify-between">
-                <span className="text-vy-grey text-xs">{text.length} characters</span>
-                <button
-                  onClick={handleSaveAbout}
-                  disabled={saving || loading}
-                  className="btn-primary disabled:opacity-60"
-                >
-                  {saving ? 'Saving...' : 'Save About'}
-                </button>
+            {loading ? (
+              <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
+            ) : (
+              <>
+                <textarea
+                  value={text}
+                  onChange={e => setText(e.target.value)}
+                  rows={10}
+                  className="vy-input resize-none w-full text-sm leading-relaxed font-light mb-4"
+                  placeholder="Write your brand story here..."
+                />
+                <div className="flex items-center justify-between">
+                  <span className="text-vy-grey text-xs">{text.length} characters</span>
+                  <button
+                    onClick={handleSaveAbout}
+                    disabled={saving || loading}
+                    className="btn-primary disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save About'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Campaign & Sale Settings */}
+          <div className="bg-vy-card border border-vy-border p-6">
+            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Campaign & Sale Settings</h2>
+            <p className="text-vy-grey text-xs mb-6 tracking-wide">
+              Manage global store-wide sales, discounts, and countdown timers.
+            </p>
+
+            {loading ? (
+              <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
+            ) : (
+              <div className="space-y-5">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={campaign.active}
+                    onChange={e => setCampaign(c => ({ ...c, active: e.target.checked }))}
+                    className="w-4 h-4 accent-vy-accent"
+                  />
+                  <span className="text-vy-white text-xs tracking-widest uppercase font-bold">Enable Global Campaign</span>
+                </label>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Campaign Name</label>
+                  <input
+                    type="text"
+                    value={campaign.name}
+                    onChange={e => setCampaign(c => ({ ...c, name: e.target.value }))}
+                    placeholder="E.g. MIDSEASON SALE"
+                    className="vy-input text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Global Discount Percentage (%)</label>
+                  <input
+                    type="number"
+                    value={campaign.discountPercent}
+                    onChange={e => setCampaign(c => ({ ...c, discountPercent: e.target.value }))}
+                    placeholder="E.g. 10"
+                    min="0"
+                    max="100"
+                    className="vy-input text-sm"
+                  />
+                  <p className="text-[10px] text-vy-grey mt-1">Applies to products without custom campaign pricing overrides.</p>
+                </div>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Sale End Date & Time</label>
+                  <input
+                    type="datetime-local"
+                    value={campaign.endDate || ''}
+                    onChange={e => setCampaign(c => ({ ...c, endDate: e.target.value }))}
+                    className="vy-input text-sm"
+                  />
+                  <p className="text-[10px] text-vy-grey mt-1">Sets the countdown target shown to visitors.</p>
+                </div>
+
+                <div className="pt-4 border-t border-vy-border text-right">
+                  <button
+                    onClick={handleSaveCampaign}
+                    disabled={saving || loading}
+                    className="btn-primary disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save Campaign Settings'}
+                  </button>
+                </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
 
 

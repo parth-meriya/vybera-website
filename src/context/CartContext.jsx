@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { db } from '../firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { getProductPricing } from '../utils/pricing';
 
 const CartContext = createContext(null);
 
@@ -21,6 +24,21 @@ export const CartProvider = ({ children }) => {
       return null;
     }
   });
+  const [campaign, setCampaign] = useState(null);
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'campaign'));
+        if (snap.exists()) {
+          setCampaign(snap.data());
+        }
+      } catch (err) {
+        console.error('Failed to load campaign settings:', err);
+      }
+    };
+    fetchCampaign();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
@@ -122,7 +140,10 @@ export const CartProvider = ({ children }) => {
     setCoupon(null);
   };
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const subtotal = items.reduce((sum, i) => {
+    const pricing = getProductPricing(i, campaign);
+    return sum + pricing.price * i.quantity;
+  }, 0);
   
   // Recalculate discount dynamically
   let validDiscount = 0;
@@ -161,6 +182,7 @@ export const CartProvider = ({ children }) => {
         subtotal,
         total,
         itemCount,
+        campaign,
       }}
     >
       {children}

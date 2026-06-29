@@ -9,7 +9,7 @@ const SIZES_ALL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
 const emptyForm = {
-  name: '', price: '', originalPrice: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
+  name: '', price: '', originalPrice: '', campaignPrice: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
   inStock: true, material: '', fit: 'Oversized', image: '', category: 'shop', colors: [],
 };
 
@@ -112,6 +112,7 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
         ...safeForm, 
         price: Number(form.price), 
         originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
+        campaignPrice: form.campaignPrice ? Number(form.campaignPrice) : null,
         images: existingImages 
       };
       
@@ -225,6 +226,11 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
             <div>
               <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Original Price (₹)</label>
               <input name="originalPrice" type="number" value={form.originalPrice || ''} onChange={onChange} className="vy-input" placeholder="1499" />
+            </div>
+            <div className="col-span-2">
+              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Campaign Price Override (₹)</label>
+              <input name="campaignPrice" type="number" value={form.campaignPrice || ''} onChange={onChange} className="vy-input" placeholder="Optional: E.g. 799" />
+              <p className="text-[10px] text-vy-grey mt-1">Overrides standard price during active campaigns.</p>
             </div>
             <div>
               <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Fit</label>
@@ -435,12 +441,13 @@ const BulkEditModal = ({ onClose, onSaved, selectedCount, productsCount, default
   const [targetScope, setTargetScope] = useState(defaultTargetScope || 'all');
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
+  const [campaignPrice, setCampaignPrice] = useState('');
   const [stockStatus, setStockStatus] = useState('no_change');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!price && !originalPrice && stockStatus === 'no_change') {
+    if (!price && !originalPrice && !campaignPrice && stockStatus === 'no_change') {
       toast.error('Please specify at least one field to update.', { className: 'toast-vybera' });
       return;
     }
@@ -451,6 +458,9 @@ const BulkEditModal = ({ onClose, onSaved, selectedCount, productsCount, default
       if (price) data.price = Number(price);
       if (originalPrice) {
         data.originalPrice = Number(originalPrice) === 0 ? null : Number(originalPrice);
+      }
+      if (campaignPrice) {
+        data.campaignPrice = Number(campaignPrice) === 0 ? null : Number(campaignPrice);
       }
       if (stockStatus !== 'no_change') {
         data.inStock = stockStatus === 'in_stock';
@@ -547,6 +557,20 @@ const BulkEditModal = ({ onClose, onSaved, selectedCount, productsCount, default
               placeholder="Keep current original price"
             />
             <p className="text-[10px] text-vy-grey mt-1">Leave empty to keep existing original price. Set to 0 to clear discount.</p>
+          </div>
+
+          <div>
+            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">
+              New Campaign Price Override (₹)
+            </label>
+            <input
+              type="number"
+              value={campaignPrice}
+              onChange={e => setCampaignPrice(e.target.value)}
+              className="vy-input"
+              placeholder="Keep current campaign price"
+            />
+            <p className="text-[10px] text-vy-grey mt-1">Leave empty to keep existing campaign price. Set to 0 to clear override.</p>
           </div>
 
           <div>

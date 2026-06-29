@@ -5,6 +5,7 @@ import { Minus, Plus, X, Tag, ArrowRight, ShoppingBag, Ticket } from 'lucide-rea
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { validateCoupon, getAllCoupons } from '../firebase/coupons';
+import { getProductPricing } from '../utils/pricing';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import toast from 'react-hot-toast';
@@ -13,7 +14,7 @@ import BackButton from '../components/ui/BackButton';
 const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 
 const Cart = () => {
-  const { items, removeItem, updateQuantity, coupon, discount, applyCoupon, removeCoupon, subtotal, total, itemCount } = useCart();
+  const { items, removeItem, updateQuantity, coupon, discount, applyCoupon, removeCoupon, subtotal, total, itemCount, campaign } = useCart();
   const { user } = useAuth();
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
@@ -151,7 +152,7 @@ const Cart = () => {
                           <p className="text-vy-grey/60 text-[10px] mt-1 italic line-clamp-1">{item.description}</p>
                         )}
                         <p className="text-vy-white text-sm font-semibold mt-2">
-                          ₹{(item.price * item.quantity).toLocaleString()}
+                          ₹{(getProductPricing(item, campaign).price * item.quantity).toLocaleString()}
                         </p>
                       </div>
                       <button

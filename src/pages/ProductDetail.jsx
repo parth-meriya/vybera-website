@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
 import { trackViewProduct, trackAddToCart } from '../utils/analytics';
+import { getProductPricing } from '../utils/pricing';
+import CountdownTimer from '../components/ui/CountdownTimer';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -27,7 +29,8 @@ const ProductDetail = () => {
   const [currentImage, setCurrentImage] = useState(null);
   const [zoomed, setZoomed] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const { addItem } = useCart();
+  const { addItem, campaign } = useCart();
+  const pricing = product ? getProductPricing(product, campaign) : null;
 
   useEffect(() => {
     setLoading(true);
@@ -139,7 +142,7 @@ const ProductDetail = () => {
     }
     const sizeToUse = product?.sizes?.length > 0 ? selectedSize : 'Standard';
     const colorToUse = product?.colors?.length > 0 ? selectedColor : null;
-    addItem({ ...product, selectedColor: colorToUse }, sizeToUse, 1);
+    addItem({ ...product, price: pricing.price, compareAtPrice: pricing.compareAtPrice, selectedColor: colorToUse }, sizeToUse, 1);
     trackAddToCart(product, sizeToUse, 1);
     toast.success(`${product.name} added to cart.`, { className: 'toast-vybera' });
   };
@@ -281,21 +284,26 @@ const ProductDetail = () => {
             </div>
 
             {/* Price */}
-            <div className="flex items-end gap-3 mb-8 flex-wrap">
+            <div className="flex items-end gap-3 mb-4 flex-wrap">
               <span className="text-2xl font-semibold text-vy-white">
-                ₹{product.price.toLocaleString()}
+                ₹{pricing ? pricing.price.toLocaleString() : ''}
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
+              {pricing?.compareAtPrice && pricing.compareAtPrice > pricing.price && (
                 <>
                   <span className="text-lg font-medium text-vy-grey line-through">
-                    ₹{product.originalPrice.toLocaleString()}
+                    ₹{pricing.compareAtPrice.toLocaleString()}
                   </span>
                   <span className="text-sm font-bold text-green-500 pb-0.5">
-                    -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                    -{pricing.discountPercent}% OFF
                   </span>
                 </>
               )}
             </div>
+
+            {/* Campaign Countdown Timer */}
+            {campaign?.active && campaign?.endDate && (
+              <CountdownTimer endDate={campaign.endDate} campaignName={campaign.name} />
+            )}
 
             {/* Description */}
             {product.description && (

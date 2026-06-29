@@ -6,6 +6,8 @@ import ProductCard from '../components/ui/ProductCard';
 import { getProducts } from '../firebase/products';
 import { getBannerConfig } from '../firebase/content';
 import SEO from '../components/SEO';
+import { useCart } from '../context/CartContext';
+import CountdownTimer from '../components/ui/CountdownTimer';
 
 
 const DEFAULT_BANNER = {
@@ -22,6 +24,7 @@ const DEFAULT_BANNER = {
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { campaign } = useCart();
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -194,6 +197,12 @@ const Home = () => {
       {/* ─── FEATURED ────────────────────────────────── */}
       <section className="section-pad">
         <div className="max-w-screen-xl mx-auto">
+          {campaign?.active && campaign?.endDate && (
+            <div className="mb-10 flex justify-center lg:justify-start">
+              <CountdownTimer endDate={campaign.endDate} campaignName={campaign.name} />
+            </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
