@@ -6,6 +6,7 @@
  */
 
 import admin from 'firebase-admin';
+import { dispatchNotification } from '../_lib/notification-dispatcher';
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -162,6 +163,27 @@ export default async function handler(req, res) {
       
       transaction.update(orderRef, updatePayload);
     });
+
+    // Dispatch order status update notification to user post-transaction
+    try {
+      let message = `Your order #${orderId.slice(0, 8)} status has been updated to ${newStatus}.`;
+      if (newStatus === 'shipped') {
+        message = `Your order #${orderId.slice(0, 8)} has been shipped! ${trackingId ? `Tracking ID: ${trackingId}` : ''}`;
+      } else if (newStatus === 'delivered') {
+        message = `Your order #${orderId.slice(0, 8)} has been successfully delivered! Thank you for choosing VYBERA.`;
+      } else if (newStatus === 'cancelled') {
+        message = `Your order #${orderId.slice(0, 8)} has been cancelled.`;
+      }
+
+      await dispatchNotification(db, {
+        userId: userId,
+        type: 'order',
+        title: `Order ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`,
+        message
+      });
+    } catch (notifErr) {
+      console.error('[Update Order Status API] Post-transaction notification dispatch failed:', notifErr);
+    }
 
     return res.status(200).json({ success: true, message: `Order updated to ${newStatus}` });
   } catch (error) {

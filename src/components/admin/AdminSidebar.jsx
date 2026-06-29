@@ -15,7 +15,8 @@ import {
   Megaphone,
   Image as ImageIcon,
   Award,
-  Ticket
+  Ticket,
+  Bell
 } from 'lucide-react';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
@@ -37,6 +38,7 @@ const navItems = [
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
   { to: '/admin/content', label: 'Content', icon: FileText },
   { to: '/admin/size-guides', label: 'Size Guides', icon: FileText },
+  { to: '/admin/notifications', label: 'Notifications', icon: Bell },
 ];
 
 const AdminSidebar = () => {

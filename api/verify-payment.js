@@ -12,6 +12,7 @@
 import crypto from 'crypto';
 import admin from 'firebase-admin';
 import Razorpay from 'razorpay';
+import { dispatchNotification } from './_lib/notification-dispatcher';
 
 // Lazy-initialize Firebase Admin SDK
 function initAdmin() {
@@ -192,19 +193,6 @@ export default async function handler(req, res) {
             timesUsed: admin.firestore.FieldValue.increment(1) 
           });
         }
-
-        // Add notification to user about coupon usage
-        const userNotifRef = db.collection('users').doc(userId);
-        transaction.update(userNotifRef, {
-          notifications: admin.firestore.FieldValue.arrayUnion({
-            id: `notif_${Date.now()}_coupon_used`,
-            type: 'coupon',
-            title: 'Coupon Used Successfully',
-            message: `Your coupon ${couponCode} (${couponData.type === 'percentage' ? couponData.value + '% OFF' : '₹' + couponData.value + ' OFF'}) was applied to order #${firebase_order_id.slice(0, 8)}.`,
-            createdAt: new Date().toISOString(),
-            read: false,
-          })
-        });
       }
 
       // Apply Net User Wallet Points updates
@@ -276,6 +264,31 @@ export default async function handler(req, res) {
     });
 
     console.log(`[Payment] Successfully verified and updated order ${firebase_order_id}`);
+
+    // Dispatch dynamic multi-channel notifications post-transaction
+    try {
+      await dispatchNotification(db, {
+        userId: userId,
+        type: 'order',
+        title: 'Order Confirmed',
+        message: `Your order #${firebase_order_id.slice(0, 8)} of ₹${orderData.total.toLocaleString()} has been confirmed! We will update you when it ships.`
+      });
+
+      if (couponCode) {
+        const couponSnap = await db.collection('coupons').where('code', '==', couponCode).get();
+        if (!couponSnap.empty) {
+          const cData = couponSnap.docs[0].data();
+          await dispatchNotification(db, {
+            userId: userId,
+            type: 'coupon',
+            title: 'Coupon Applied',
+            message: `Your coupon ${couponCode} (${cData.type === 'percentage' ? cData.value + '% OFF' : '₹' + cData.value + ' OFF'}) was used successfully on order #${firebase_order_id.slice(0, 8)}.`
+          });
+        }
+      }
+    } catch (notifErr) {
+      console.error('[Verify Payment API] Post-transaction notification dispatch failed:', notifErr);
+    }
 
     return res.status(200).json({ success: true, message: 'Payment verified and order confirmed' });
   } catch (error) {

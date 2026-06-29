@@ -66,6 +66,7 @@ const AdminMainBanner = lazy(() => import('./pages/admin/AdminMainBanner'));
 const AdminCampaigns = lazy(() => import('./pages/admin/AdminCampaigns'));
 const AdminSections = lazy(() => import('./pages/admin/AdminSections'));
 const AdminSizeGuides = lazy(() => import('./pages/admin/AdminSizeGuides'));
+const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
 
 // Dynamic Category (Lazy Loaded)
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
@@ -260,6 +261,7 @@ const App = () => {
             <Route path="popup-banners" element={<AdminPopupBanner />} />
             <Route path="main-banner" element={<AdminMainBanner />} />
             <Route path="size-guides" element={<AdminSizeGuides />} />
+            <Route path="notifications" element={<AdminNotifications />} />
           </Route>
         </Routes>
         </Suspense>
