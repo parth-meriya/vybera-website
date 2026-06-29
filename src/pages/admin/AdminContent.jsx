@@ -13,7 +13,14 @@ const compressionOptions = {
 };
 
 const AdminContent = () => {
-  const [text, setText] = useState('');
+  const [aboutData, setAboutData] = useState({
+    text: '',
+    brandStory: '',
+    founderName: '',
+    founderQuote: '',
+    brandMission: '',
+    imageUrl: ''
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -38,7 +45,19 @@ const AdminContent = () => {
       getDoc(doc(db, 'settings', 'campaign')),
       getTrustBadges()
     ]).then(([aboutSnap, customSnap, campaignSnap, badges]) => {
-      if (aboutSnap.exists()) setText(aboutSnap.data().text || '');
+      if (aboutSnap.exists()) {
+        const d = aboutSnap.data();
+        setAboutData({
+          text: '',
+          brandStory: '',
+          founderName: '',
+          founderQuote: '',
+          brandMission: '',
+          imageUrl: '',
+          ...d,
+          brandStory: d.brandStory || d.text || ''
+        });
+      }
       if (customSnap.exists()) setCustomize(customSnap.data());
       if (campaignSnap.exists()) {
         setCampaign({
@@ -57,15 +76,18 @@ const AdminContent = () => {
   const handleSaveAbout = async () => {
     setSaving(true);
     try {
-      await setDoc(doc(db, 'content', 'about'), { text, updatedAt: serverTimestamp() });
-      toast.success('About content saved.', { className: 'toast-vybera' });
+      await setDoc(doc(db, 'content', 'about'), { 
+        text: aboutData.brandStory || aboutData.text || '',
+        ...aboutData, 
+        updatedAt: serverTimestamp() 
+      });
+      toast.success('About page content saved.', { className: 'toast-vybera' });
     } catch {
-      toast.error('Failed to save.', { className: 'toast-vybera' });
+      toast.error('Failed to save About page content.', { className: 'toast-vybera' });
     } finally {
       setSaving(false);
     }
   };
-
 
 
   const handleSaveCustomize = async () => {
@@ -123,35 +145,82 @@ const AdminContent = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Left Column: About & Campaign */}
         <div className="space-y-8">
-          {/* About Page */}
+          {/* About Page CMS */}
           <div className="bg-vy-card border border-vy-border p-6">
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4">About Page</h2>
+            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">About Page CMS</h2>
             <p className="text-vy-grey text-xs mb-6 tracking-wide">
-              Edit the content that appears on the About page.
+              Manage founder details, brand story, and mission.
             </p>
 
             {loading ? (
               <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
             ) : (
-              <>
-                <textarea
-                  value={text}
-                  onChange={e => setText(e.target.value)}
-                  rows={10}
-                  className="vy-input resize-none w-full text-sm leading-relaxed font-light mb-4"
-                  placeholder="Write your brand story here..."
-                />
-                <div className="flex items-center justify-between">
-                  <span className="text-vy-grey text-xs">{text.length} characters</span>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Founder Name</label>
+                  <input
+                    type="text"
+                    value={aboutData.founderName}
+                    onChange={e => setAboutData(d => ({ ...d, founderName: e.target.value }))}
+                    placeholder="E.g. Parth Meriya"
+                    className="vy-input text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Brand Mission / Tagline</label>
+                  <input
+                    type="text"
+                    value={aboutData.brandMission}
+                    onChange={e => setAboutData(d => ({ ...d, brandMission: e.target.value }))}
+                    placeholder="E.g. Born from an obsession with forward-thinking clothing."
+                    className="vy-input text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Founder Quote</label>
+                  <textarea
+                    value={aboutData.founderQuote}
+                    onChange={e => setAboutData(d => ({ ...d, founderQuote: e.target.value }))}
+                    placeholder="E.g. We don't build clothing, we build vibes."
+                    rows={2}
+                    className="vy-input resize-none w-full text-sm leading-relaxed"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Brand Story</label>
+                  <textarea
+                    value={aboutData.brandStory}
+                    onChange={e => setAboutData(d => ({ ...d, brandStory: e.target.value }))}
+                    rows={8}
+                    className="vy-input resize-none w-full text-sm leading-relaxed"
+                    placeholder="Write the full brand story..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Banner Image URL</label>
+                  <input
+                    type="text"
+                    value={aboutData.imageUrl}
+                    onChange={e => setAboutData(d => ({ ...d, imageUrl: e.target.value }))}
+                    placeholder="E.g. https://images.unsplash.com/..."
+                    className="vy-input text-sm"
+                  />
+                </div>
+
+                <div className="pt-4 border-t border-vy-border text-right">
                   <button
                     onClick={handleSaveAbout}
                     disabled={saving || loading}
                     className="btn-primary disabled:opacity-60"
                   >
-                    {saving ? 'Saving...' : 'Save About'}
+                    {saving ? 'Saving...' : 'Save About Page Content'}
                   </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
 

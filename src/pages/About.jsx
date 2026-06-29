@@ -6,12 +6,21 @@ import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
 
 const About = () => {
-  const [content, setContent] = useState('');
+  const [aboutData, setAboutData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getDoc(doc(db, 'content', 'about')).then(snap => {
-      if (snap.exists()) setContent(snap.data().text || '');
+      if (snap.exists()) {
+        const d = snap.data();
+        setAboutData({
+          brandStory: d.brandStory || d.text || '',
+          founderName: d.founderName || '',
+          founderQuote: d.founderQuote || '',
+          brandMission: d.brandMission || '',
+          imageUrl: d.imageUrl || ''
+        });
+      }
       setLoading(false);
     });
   }, []);
@@ -31,7 +40,7 @@ const About = () => {
       <section className="relative h-[60vh] overflow-hidden flex items-end pb-16 border-b border-vy-border">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-vy-black z-10" />
         <img
-          src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80"
+          src={aboutData?.imageUrl || "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80"}
           alt="About VYBERA"
           className="absolute inset-0 w-full h-full object-cover opacity-30"
         />
@@ -41,7 +50,7 @@ const About = () => {
             animate={{ opacity: 1 }}
             className="text-vy-grey text-xs tracking-[0.5em] uppercase mb-3"
           >
-            Our Story
+            {aboutData?.brandMission ? aboutData.brandMission : "Our Story"}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -63,33 +72,65 @@ const About = () => {
                 <div key={i} className="h-4 bg-vy-card rounded animate-pulse" style={{ width: i % 3 === 0 ? '60%' : '100%' }} />
               ))}
             </div>
-          ) : content ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-vy-light text-base leading-relaxed whitespace-pre-wrap"
-            >
-              {content}
-            </motion.div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-6 text-vy-light text-base leading-relaxed"
-            >
-              <p>
-                VYBERA was born from a simple obsession: clothing that feels as forward-thinking as the people who wear it. We exist at the intersection of minimalism and futurism — crafting oversized silhouettes that transcend trend cycles.
-              </p>
-              <p>
-                Every piece in our collection is designed with intention. The weight of the fabric, the precision of the drop shoulder, the placement of every graphic — nothing is incidental. We make clothes for those who understand that what you wear is a conversation before you even speak.
-              </p>
-              <p>
-                Our drops are limited. Our standards are not. Each collection is produced in small batches to ensure quality and exclusivity. When a drop ends, it ends — no restocks, no compromises.
-              </p>
-              <p className="text-vy-white font-medium text-lg">
-                The Era of Vibes. Always.
-              </p>
-            </motion.div>
+            <>
+              {aboutData?.brandStory ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-vy-light text-base leading-relaxed whitespace-pre-wrap mb-16 font-light"
+                >
+                  {aboutData.brandStory}
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6 text-vy-light text-base leading-relaxed mb-16"
+                >
+                  <p>
+                    VYBERA was born from a simple obsession: clothing that feels as forward-thinking as the people who wear it. We exist at the intersection of minimalism and futurism — crafting oversized silhouettes that transcend trend cycles.
+                  </p>
+                  <p>
+                    Every piece in our collection is designed with intention. The weight of the fabric, the precision of the drop shoulder, the placement of every graphic — nothing is incidental. We make clothes for those who understand that what you wear is a conversation before you even speak.
+                  </p>
+                  <p>
+                    Our drops are limited. Our standards are not. Each collection is produced in small batches to ensure quality and exclusivity. When a drop ends, it ends — no restocks, no compromises.
+                  </p>
+                  <p className="text-vy-white font-medium text-lg">
+                    The Era of Vibes. Always.
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Founder Spotlight */}
+              {aboutData?.founderName && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-16 p-8 border border-vy-border bg-vy-white/[0.01] flex flex-col md:flex-row gap-8 items-center"
+                >
+                  {aboutData.imageUrl && (
+                    <img
+                      src={aboutData.imageUrl}
+                      alt={aboutData.founderName}
+                      className="w-24 h-24 rounded-full object-cover border border-vy-border flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 text-center md:text-left">
+                    <p className="text-vy-accent text-[10px] tracking-[0.3em] uppercase mb-2">Founder Spotlight</p>
+                    <h3 className="text-vy-white font-display font-bold text-lg uppercase tracking-wider mb-3">
+                      {aboutData.founderName}
+                    </h3>
+                    {aboutData.founderQuote && (
+                      <p className="text-vy-grey text-xs italic leading-relaxed font-light">
+                        "{aboutData.founderQuote}"
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </>
           )}
         </div>
       </section>
