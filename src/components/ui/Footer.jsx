@@ -29,7 +29,7 @@ const Footer = () => {
           <div>
             <h4 className="text-vy-white text-xs font-semibold tracking-widest uppercase mb-4">Legal</h4>
             <ul className="space-y-3">
-              {[['Privacy Policy', '/privacy-policy'], ['Terms & Conditions', '/terms'], ['Refund Policy', '/refund-policy'], ['Shipping Policy', '/shipping-policy']].map(([label, to]) => (
+              {[['Privacy Policy', '/privacy-policy'], ['Terms & Conditions', '/terms'], ['Cancellation & Exchange', '/refund-policy'], ['Shipping Policy', '/shipping-policy']].map(([label, to]) => (
                 <li key={to}>
                   <Link to={to} className="text-vy-light/60 text-sm hover:text-vy-accent transition-colors">{label}</Link>
                 </li>

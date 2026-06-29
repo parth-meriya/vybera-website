@@ -26,8 +26,13 @@ const AdminContent = () => {
 
   const [customize, setCustomize] = useState({
     prices: { Front: 700, Back: 700, Both: 900 },
-    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    colors: []
   });
+
+  // New color form state
+  const [newColorName, setNewColorName] = useState('');
+  const [newColorHex, setNewColorHex] = useState('#0A0A0A');
 
   const [campaign, setCampaign] = useState({
     active: false,
@@ -349,6 +354,82 @@ const AdminContent = () => {
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* T-Shirt Colors Management */}
+              <div>
+                <label className="text-vy-accent text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-vy-accent pl-2">T-Shirt Color Presets</label>
+                <p className="text-vy-grey text-[10px] mb-4">These colors appear as selectable swatches in the customer T-Shirt Studio.</p>
+
+                {/* Existing Colors */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {(customize.colors || []).map((c, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-vy-black/40 border border-vy-border px-2.5 py-1.5 group">
+                      <div className="w-4 h-4 border border-vy-border/60" style={{ backgroundColor: c.hex }} />
+                      <span className="text-[10px] text-vy-light tracking-wide">{c.name}</span>
+                      <button
+                        onClick={() => {
+                          setCustomize(prev => ({
+                            ...prev,
+                            colors: prev.colors.filter((_, i) => i !== idx)
+                          }));
+                        }}
+                        className="text-red-400/60 hover:text-red-400 transition-colors text-[10px] font-bold ml-1"
+                        title="Remove color"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {(!customize.colors || customize.colors.length === 0) && (
+                    <p className="text-vy-grey text-[10px] italic">No colors configured yet. Using default presets on the studio page.</p>
+                  )}
+                </div>
+
+                {/* Add New Color */}
+                <div className="flex flex-wrap items-end gap-2">
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Color Name</label>
+                    <input
+                      type="text"
+                      value={newColorName}
+                      onChange={e => setNewColorName(e.target.value)}
+                      placeholder="e.g. Acid Wash Grey"
+                      className="vy-input text-xs w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Hex</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="color"
+                        value={newColorHex}
+                        onChange={e => setNewColorHex(e.target.value)}
+                        className="w-8 h-8 cursor-pointer border border-vy-border bg-transparent"
+                      />
+                      <input
+                        type="text"
+                        value={newColorHex}
+                        onChange={e => setNewColorHex(e.target.value)}
+                        className="vy-input text-xs w-20"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!newColorName.trim()) return;
+                      setCustomize(prev => ({
+                        ...prev,
+                        colors: [...(prev.colors || []), { name: newColorName.trim(), hex: newColorHex }]
+                      }));
+                      setNewColorName('');
+                      setNewColorHex('#0A0A0A');
+                    }}
+                    className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-vy-accent text-vy-accent hover:bg-vy-accent/10 transition-all"
+                  >
+                    + Add Color
+                  </button>
                 </div>
               </div>
 

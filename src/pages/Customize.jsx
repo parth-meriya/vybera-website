@@ -226,7 +226,7 @@ const Customize = () => {
   const [textRotation, setTextRotation] = useState(0);
   const [mockupColor, setMockupColor] = useState('#0A0A0A'); // maps to selected color
 
-  const colorPresets = [
+  const [colorPresets, setColorPresets] = useState([
     { name: 'Pure Black', hex: '#0A0A0A' },
     { name: 'Vintage White', hex: '#F5F5F0' },
     { name: 'Charcoal Grey', hex: '#252526' },
@@ -235,7 +235,7 @@ const Customize = () => {
     { name: 'Military Olive', hex: '#3b3f30' },
     { name: 'Deep Navy', hex: '#1d2b3a' },
     { name: 'Desert Sand', hex: '#C2B280' }
-  ];
+  ]);
 
   const selectColorPreset = (preset) => {
     setColor(preset.name);
@@ -267,7 +267,12 @@ const Customize = () => {
   useEffect(() => {
     getCustomizeSettings()
       .then(s => {
-        if (s) setSettings(s);
+        if (s) {
+          setSettings(s);
+          if (s.colors && Array.isArray(s.colors) && s.colors.length > 0) {
+            setColorPresets(s.colors);
+          }
+        }
         if (s && s.sizes) setSizes(s.sizes);
       })
       .catch(err => {
@@ -915,7 +920,7 @@ const Customize = () => {
                     ))}
                   </div>
                   <p className="text-vy-white text-[13px] mt-4 block p-3 border border-vy-white/10 bg-vy-white/5">
-                    <strong>Note:</strong> If your print design is small, we will automatically refund the price difference.
+                    <strong>Note:</strong> If your print design is small, we will adjust the final price accordingly before production.
                   </p>
                 </div>
 
