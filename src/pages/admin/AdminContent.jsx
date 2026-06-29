@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import toast from 'react-hot-toast';
+import { getTrustBadges, updateTrustBadges } from '../../firebase/content';
 
 // ── Image Compression Settings ──────────────────────────
 const compressionOptions = {
@@ -28,12 +29,15 @@ const AdminContent = () => {
     endDate: ''
   });
 
+  const [trustBadges, setTrustBadges] = useState([]);
+
   useEffect(() => {
     Promise.all([
       getDoc(doc(db, 'content', 'about')),
       getDoc(doc(db, 'settings', 'customize')),
-      getDoc(doc(db, 'settings', 'campaign'))
-    ]).then(([aboutSnap, customSnap, campaignSnap]) => {
+      getDoc(doc(db, 'settings', 'campaign')),
+      getTrustBadges()
+    ]).then(([aboutSnap, customSnap, campaignSnap, badges]) => {
       if (aboutSnap.exists()) setText(aboutSnap.data().text || '');
       if (customSnap.exists()) setCustomize(customSnap.data());
       if (campaignSnap.exists()) {
@@ -45,6 +49,7 @@ const AdminContent = () => {
           ...campaignSnap.data()
         });
       }
+      setTrustBadges(badges);
       setLoading(false);
     });
   }, []);
@@ -90,6 +95,19 @@ const AdminContent = () => {
     } catch (err) {
       console.error(err);
       toast.error('Failed to save campaign settings.', { className: 'toast-vybera' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveTrustBadges = async () => {
+    setSaving(true);
+    try {
+      await updateTrustBadges(trustBadges);
+      toast.success('Trust badges settings saved.', { className: 'toast-vybera' });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save trust badges settings.', { className: 'toast-vybera' });
     } finally {
       setSaving(false);
     }
@@ -210,9 +228,11 @@ const AdminContent = () => {
 
 
 
-        {/* Customization Settings */}
-        <div className="bg-vy-card border border-vy-border p-6">
-          <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Studio Settings</h2>
+        {/* Right Column: Customization & Trust Badges */}
+        <div className="space-y-8">
+          {/* Customization Settings */}
+          <div className="bg-vy-card border border-vy-border p-6">
+            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Studio Settings</h2>
           <p className="text-vy-grey text-xs mb-6 tracking-wide">
             Manage pricing and sizes for the Custom T-Shirt Studio.
           </p>
@@ -299,6 +319,106 @@ const AdminContent = () => {
               </div>
             </div>
           )}
+          </div>
+
+          {/* Trust Badges Settings */}
+          <div className="bg-vy-card border border-vy-border p-6">
+            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Trust Badges Settings</h2>
+            <p className="text-vy-grey text-xs mb-6 tracking-wide">
+              Configure the trust badges shown right below the Add To Cart button on product pages.
+            </p>
+
+            {loading ? (
+              <div className="h-64 flex items-center justify-center"><div className="spinner" /></div>
+            ) : (
+              <div className="space-y-6">
+                {trustBadges.map((badge, idx) => (
+                  <div key={idx} className="p-4 bg-vy-black/40 border border-vy-border space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-vy-white text-xs font-bold uppercase tracking-wider">Badge #{idx + 1}</span>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={badge.active}
+                          onChange={e => {
+                            const updated = [...trustBadges];
+                            updated[idx] = { ...updated[idx], active: e.target.checked };
+                            setTrustBadges(updated);
+                          }}
+                          className="w-3.5 h-3.5 accent-vy-accent"
+                        />
+                        <span className="text-vy-grey text-[10px] uppercase tracking-widest font-semibold">Active</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Icon</label>
+                        <select
+                          value={badge.icon}
+                          onChange={e => {
+                            const updated = [...trustBadges];
+                            updated[idx] = { ...updated[idx], icon: e.target.value };
+                            setTrustBadges(updated);
+                          }}
+                          className="vy-input text-xs"
+                        >
+                          <option value="Truck">Truck (Delivery)</option>
+                          <option value="RotateCcw">RotateCcw (Returns)</option>
+                          <option value="ShieldCheck">ShieldCheck (Security)</option>
+                          <option value="Award">Award (Quality)</option>
+                          <option value="Sparkles">Sparkles (Specialty)</option>
+                          <option value="Package">Package (Packaging)</option>
+                          <option value="Clock">Clock (Speed/Time)</option>
+                          <option value="Heart">Heart (Love/Care)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Title</label>
+                        <input
+                          type="text"
+                          value={badge.title}
+                          onChange={e => {
+                            const updated = [...trustBadges];
+                            updated[idx] = { ...updated[idx], title: e.target.value };
+                            setTrustBadges(updated);
+                          }}
+                          className="vy-input text-xs"
+                          placeholder="E.g. Free Delivery"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Description</label>
+                      <input
+                        type="text"
+                        value={badge.description}
+                        onChange={e => {
+                          const updated = [...trustBadges];
+                          updated[idx] = { ...updated[idx], description: e.target.value };
+                          setTrustBadges(updated);
+                        }}
+                        className="vy-input text-xs"
+                        placeholder="E.g. On orders over ₹999"
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <div className="pt-4 border-t border-vy-border text-right">
+                  <button
+                    onClick={handleSaveTrustBadges}
+                    disabled={saving || loading}
+                    className="btn-primary disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save Trust Badges'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

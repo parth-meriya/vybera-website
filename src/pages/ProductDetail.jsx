@@ -1,17 +1,33 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, Star, ImageIcon, X, Trash2, Share2, Copy, MessageCircle, AtSign, Camera } from 'lucide-react';
+import { 
+  Heart, Star, ShoppingBag, Plus, Minus, ArrowRight, Share2, Copy, 
+  MessageCircle, X, AtSign, Camera, ImageIcon, Trash2,
+  Truck, RotateCcw, ShieldCheck, Award, Sparkles, Package, Clock, ArrowLeft
+} from 'lucide-react';
 import { getProductById } from '../firebase/products';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { getReviewsByProduct, addReview, deleteReview, isVerifiedBuyer } from '../firebase/reviews';
+import { getTrustBadges } from '../firebase/content';
 import toast from 'react-hot-toast';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
 import { trackViewProduct, trackAddToCart } from '../utils/analytics';
 import { getProductPricing } from '../utils/pricing';
 import CountdownTimer from '../components/ui/CountdownTimer';
+
+const IconMap = {
+  Truck,
+  RotateCcw,
+  ShieldCheck,
+  Award,
+  Sparkles,
+  Package,
+  Clock,
+  Heart
+};
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -27,6 +43,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [verifiedBuyer, setVerifiedBuyer] = useState(false);
+  const [trustBadges, setTrustBadges] = useState([]);
 
   useEffect(() => {
     if (user && id) {
@@ -46,10 +63,12 @@ const ProductDetail = () => {
     
     Promise.all([
       getProductById(id),
-      getReviewsByProduct(id)
-    ]).then(([p, rcvs]) => {
+      getReviewsByProduct(id),
+      getTrustBadges()
+    ]).then(([p, rcvs, badges]) => {
       setProduct(p);
       setReviews(rcvs);
+      setTrustBadges(badges);
       if (p?.sizes?.length) {
         const firstAvailable = p.sizes.find(s => !(p.outOfStockSizes || []).includes(s));
         setSelectedSize(firstAvailable || null);
@@ -417,6 +436,30 @@ const ProductDetail = () => {
               >
                 Out of Stock
               </button>
+            )}
+
+            {/* Dynamic Trust Badges */}
+            {trustBadges.filter(b => b.active).length > 0 && (
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 border border-vy-border bg-vy-white/[0.01] p-4">
+                {trustBadges.filter(b => b.active).map((badge, i) => {
+                  const IconComponent = IconMap[badge.icon] || Truck;
+                  return (
+                    <div key={i} className="flex gap-3 items-start">
+                      <div className="text-vy-accent mt-0.5 flex-shrink-0">
+                        <IconComponent size={16} />
+                      </div>
+                      <div>
+                        <h4 className="text-vy-white text-[11px] font-bold uppercase tracking-wider leading-tight mb-1">
+                          {badge.title}
+                        </h4>
+                        <p className="text-vy-grey text-[9px] leading-relaxed uppercase tracking-wide">
+                          {badge.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
 
             {/* Meta */}

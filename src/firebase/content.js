@@ -95,4 +95,26 @@ export const uploadMusic = (file, onProgress) => {
     );
   });
 };
+export const getTrustBadges = async () => {
+  const defaults = [
+    { icon: 'Truck', title: 'Free Shipping', description: 'On all orders above ₹999', active: true },
+    { icon: 'RotateCcw', title: '7-Day Easy Exchange', description: 'Hassle-free size exchanges', active: true },
+    { icon: 'ShieldCheck', title: 'Secure Payment', description: '100% Encrypted transactions', active: true }
+  ];
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'trust'));
+    if (snap.exists()) {
+      return snap.data().badges || defaults;
+    }
+  } catch (err) {
+    console.error('Error getting trust badges:', err);
+  }
+  return defaults;
+};
 
+export const updateTrustBadges = async (badges) => {
+  return setDoc(doc(db, 'settings', 'trust'), {
+    badges,
+    updatedAt: serverTimestamp()
+  });
+};
