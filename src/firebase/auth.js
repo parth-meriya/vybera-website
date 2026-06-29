@@ -69,6 +69,13 @@ export const signUp = async (email, password, name, phoneNumber) => {
 
   const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
 
+  let cleanReferredBy = null;
+  try {
+    cleanReferredBy = sessionStorage.getItem('referred_by') || null;
+  } catch (e) {
+    // Ignore if sessionStorage is not accessible
+  }
+
   try {
     await updateProfile(userCred.user, { displayName: cleanName });
     
@@ -84,6 +91,7 @@ export const signUp = async (email, password, name, phoneNumber) => {
       role: 'user',           // Never trust client for role assignment
       emailVerified: false,
       provider: 'email',
+      referredBy: cleanReferredBy,
       createdAt: serverTimestamp(),
     });
   } catch (error) {

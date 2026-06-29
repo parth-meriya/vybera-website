@@ -46,9 +46,11 @@ const Onboarding = () => {
     setLoading(true);
     try {
       // Direct update to Firestore without OTP verification
+      const referredBy = sessionStorage.getItem('referred_by');
       await setDoc(doc(db, 'users', user.uid), {
         phoneNumber: form.phone,
-        gender: form.gender || null
+        gender: form.gender || null,
+        ...(referredBy ? { referredBy } : {})
       }, { merge: true });
 
       toast.success('Profile saved successfully!', { className: 'toast-vybera' });

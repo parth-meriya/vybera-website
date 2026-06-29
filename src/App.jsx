@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
@@ -80,6 +80,14 @@ const UserLayout = ({ children }) => (
 
 const App = () => {
   const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      sessionStorage.setItem('referred_by', ref);
+    }
+  }, [location]);
 
   return (
     <>
