@@ -7,7 +7,7 @@ const RefundPolicy = () => {
     <div className="min-h-screen bg-vy-black pt-24 pb-16">
       <SEO
         title="Cancellation Policy"
-        description="VYBERA's cancellation policy. We do not offer COD, returns, refunds, or exchanges. Free replacement is available only for defective or damaged items."
+        description="VYBERA's cancellation policy. All sales are final. We do not offer COD, returns, refunds, exchanges, or replacements."
         path="/refund-policy"
       />
       <div className="max-w-3xl mx-auto px-6 md:px-12">
@@ -32,9 +32,12 @@ const RefundPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-vy-white font-semibold text-lg mb-3">2. No Returns, Refunds, or Exchanges</h2>
+              <h2 className="text-vy-white font-semibold text-lg mb-3">2. All Sales Are Final</h2>
               <p>
-                All sales are <strong>final</strong>. We do not accept returns, issue refunds, or offer exchanges for any reason, including change of mind, incorrect size selection, or buyer's remorse. Please refer to our size guide carefully before placing your order.
+                All sales are <strong>final</strong>. We do not accept returns, issue refunds, offer exchanges, or provide replacements for any reason whatsoever. This includes but is not limited to change of mind, incorrect size selection, colour mismatch on screen vs. actual product, or buyer's remorse.
+              </p>
+              <p className="mt-3">
+                Please review our size guide, product images, and descriptions carefully before placing your order.
               </p>
             </section>
 
@@ -46,15 +49,10 @@ const RefundPolicy = () => {
             </section>
 
             <section>
-              <h2 className="text-vy-white font-semibold text-lg mb-3">4. Defective or Damaged Items Only</h2>
+              <h2 className="text-vy-white font-semibold text-lg mb-3">4. Quality Assurance</h2>
               <p>
-                If you receive a defective or damaged item, please contact us within <strong>48 hours</strong> of delivery with clear photographic evidence. Upon verification, we will arrange a <strong>free replacement</strong> (subject to stock availability). No monetary refunds or exchanges will be issued — only replacements of the same product.
+                We take product quality very seriously. Every item undergoes a quality check before dispatch. By purchasing from VYBERA, you acknowledge and agree that all sales are final and no post-delivery claims will be entertained.
               </p>
-              <ul className="list-disc pl-5 mt-2 space-y-2 text-vy-grey">
-                <li>Contact us via our Contact page or email at vybera@gmail.com with your order ID and photos.</li>
-                <li>Customized products are eligible for replacement only if there is a manufacturing defect.</li>
-                <li>Items bought during clearance sales follow the same defective-only exchange policy.</li>
-              </ul>
             </section>
 
             <section>
