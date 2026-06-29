@@ -75,6 +75,11 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
+    // Validate email verification status to prevent bot attacks/fake signups
+    if (decodedToken.email && !decodedToken.email_verified) {
+      return res.status(403).json({ error: 'Please verify your email address in profile settings before participating.' });
+    }
+
     const db = admin.firestore();
     const userSnap = await db.collection('users').doc(uid).get();
     
@@ -88,6 +93,7 @@ export default async function handler(req, res) {
     }
 
     const phoneNumber = userData.phoneNumber;
+    const userEmail = userData.email || decodedToken.email || '';
 
     // 2. Check if Campaign exists and is active
     const campaignSnap = await db.collection('campaigns').doc(campaignId).get();
@@ -101,15 +107,16 @@ export default async function handler(req, res) {
     }
 
     // 3. Prevent Multiple Spins
-    // We check if this exact uid OR this exact phoneNumber has already spun for this campaign.
+    // We check if this exact uid OR this exact phoneNumber OR this exact email has already spun for this campaign.
     const spinsRef = db.collection('spinResults');
     
-    const [uidSpins, phoneSpins] = await Promise.all([
+    const [uidSpins, phoneSpins, emailSpins] = await Promise.all([
       spinsRef.where('uid', '==', uid).where('campaignId', '==', campaignId).get(),
-      spinsRef.where('phoneNumber', '==', phoneNumber).where('campaignId', '==', campaignId).get()
+      spinsRef.where('phoneNumber', '==', phoneNumber).where('campaignId', '==', campaignId).get(),
+      spinsRef.where('email', '==', userEmail).where('campaignId', '==', campaignId).get()
     ]);
 
-    if (!uidSpins.empty || !phoneSpins.empty) {
+    if (!uidSpins.empty || !phoneSpins.empty || !emailSpins.empty) {
       return res.status(403).json({ error: 'You have already participated in this campaign!' });
     }
 
