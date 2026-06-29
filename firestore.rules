@@ -30,9 +30,13 @@ service cloud.firestore {
       return isAuthed() && request.auth.uid == uid;
     }
 
-    // Check for Firebase custom claim (set server-side via Admin SDK)
+    // Check for Firebase custom claim (set server-side via Admin SDK) or fallback admin emails
     function hasAdminClaim() {
-      return isAuthed() && request.auth.token.admin == true;
+      return isAuthed() && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'parthmeriya32@gmail.com' ||
+        request.auth.token.email == 'panugamer5858@gmail.com'
+      );
     }
 
     // ── Users Collection ────────────────────────────────────────
@@ -49,7 +53,7 @@ service cloud.firestore {
 
       // Allow user to update their own profile (but NOT change role)
       allow update: if isOwner(uid)
-        && request.resource.data.role == resource.data.role  // Role cannot be changed
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || request.resource.data.role == 'user')
         && request.resource.data.uid == resource.data.uid;   // UID cannot be changed
 
       // Admins can update any user (including role changes via Admin SDK)
@@ -121,15 +125,19 @@ service cloud.firestore {
 
     // ── Reviews Collection ──────────────────────────────────────
     // Everyone can read reviews.
-    // Authenticated users can create reviews (one review per product enforcement
-    // should be done in app logic or Cloud Functions).
+    // Authenticated users can create reviews.
     // Admins can delete/moderate reviews.
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if isAuthed()
         && request.resource.data.userId == request.auth.uid;
       allow update: if isAuthed()
-        && resource.data.userId == request.auth.uid;
+        && resource.data.userId == request.auth.uid
+        && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']) ||
+          request.resource.data.status == 'pending'
+        );
+      allow update: if hasAdminClaim();
       allow delete: if hasAdminClaim();
     }
 

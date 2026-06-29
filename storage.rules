@@ -23,7 +23,11 @@ service firebase.storage {
     }
 
     function hasAdminClaim() {
-      return isAuthed() && request.auth.token.admin == true;
+      return isAuthed() && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'parthmeriya32@gmail.com' ||
+        request.auth.token.email == 'panugamer5858@gmail.com'
+      );
     }
 
     function isValidImage() {
@@ -61,6 +65,14 @@ service firebase.storage {
     // Users upload their design images for customization requests
     match /customizations/{userId}/{allPaths=**} {
       allow read: if request.auth.uid == userId || hasAdminClaim();
+      allow write: if isAuthed()
+        && request.auth.uid == userId
+        && isValidImage();
+    }
+
+    // ── Review Images (Authenticated users) ──────────────────────
+    match /reviews/{userId}/{allPaths=**} {
+      allow read: if true;
       allow write: if isAuthed()
         && request.auth.uid == userId
         && isValidImage();
