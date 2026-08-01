@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import { dispatchNotification } from '../_lib/notification-dispatcher';
+import { dispatchNotification } from '../_lib/notification-dispatcher.js';
 
 // Lazy-initialize Firebase Admin SDK (singleton)
 if (!admin.apps.length) {

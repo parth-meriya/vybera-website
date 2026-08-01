@@ -6,7 +6,7 @@
  */
 
 import admin from 'firebase-admin';
-import { dispatchNotification } from '../_lib/notification-dispatcher';
+import { dispatchNotification } from '../_lib/notification-dispatcher.js';
 
 if (!admin.apps.length) {
   admin.initializeApp({

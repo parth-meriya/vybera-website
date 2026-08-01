@@ -12,7 +12,7 @@
 import crypto from 'crypto';
 import admin from 'firebase-admin';
 import Razorpay from 'razorpay';
-import { dispatchNotification } from './_lib/notification-dispatcher';
+import { dispatchNotification } from './_lib/notification-dispatcher.js';
 
 // Lazy-initialize Firebase Admin SDK
 function initAdmin() {
