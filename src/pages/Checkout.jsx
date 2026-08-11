@@ -421,6 +421,9 @@ const Checkout = () => {
       const { auth } = await import('../firebase/config');
       const idToken = await auth.currentUser?.getIdToken();
 
+      // Store order ID for UPI redirect recovery (SPA state is lost on redirect)
+      localStorage.setItem('vybera_pending_order', orderId);
+
       await openRazorpay({
         firebaseOrderId: orderId,
         idToken,
@@ -452,6 +455,7 @@ const Checkout = () => {
             }
 
             clearCart();
+            localStorage.removeItem('vybera_pending_order');
             trackPurchase(response.razorpay_payment_id, total, items);
             setPaymentState('success');
             setTimeout(() => navigate('/order-success'), 800);

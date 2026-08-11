@@ -69,6 +69,13 @@ export default async function handler(req, res) {
     }
     
     const orderData = orderSnap.data();
+
+    // Idempotency: if order is already confirmed, return success (handles double-verify from popup + redirect)
+    if (orderData.status === 'confirmed' && orderData.paymentStatus === 'paid') {
+      console.log(`[Payment] Order ${firebase_order_id} already confirmed — returning success (idempotent)`);
+      return res.status(200).json({ success: true, message: 'Order already confirmed' });
+    }
+
     const isFreeOrder = (orderData.total || 0) === 0;
 
     const secret = process.env.RAZORPAY_KEY_SECRET;
@@ -288,6 +295,42 @@ export default async function handler(req, res) {
       }
     } catch (notifErr) {
       console.error('[Verify Payment API] Post-transaction notification dispatch failed:', notifErr);
+    }
+
+    // ── 6. Create entries in customOrders collection for custom products ──
+    try {
+      const customProducts = (orderData.products || []).filter(p => p.isCustom);
+      if (customProducts.length > 0) {
+        const batch = db.batch();
+        for (const product of customProducts) {
+          const customOrderRef = db.collection('customOrders').doc();
+          batch.set(customOrderRef, {
+            orderId: firebase_order_id,
+            userId: userId,
+            userEmail: orderData.userEmail || null,
+            customerName: orderData.customerName || '',
+            customerPhone: orderData.customerPhone || '',
+            productName: product.name || 'Custom T-Shirt',
+            size: product.size || 'N/A',
+            selectedColor: product.selectedColor || null,
+            fit: product.fit || null,
+            position: product.position || null,
+            imageUrls: product.imageUrls || [],
+            description: product.description || '',
+            designStatus: product.designStatus || 'Received',
+            customizationParams: product.customizationParams || null,
+            quantity: product.quantity || 1,
+            price: product.price || 0,
+            status: 'Pending',
+            address: orderData.address || {},
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+        await batch.commit();
+        console.log(`[Payment] Created ${customProducts.length} custom order(s) for order ${firebase_order_id}`);
+      }
+    } catch (customErr) {
+      console.error('[Verify Payment API] Custom order creation failed:', customErr);
     }
 
     return res.status(200).json({ success: true, message: 'Payment verified and order confirmed' });

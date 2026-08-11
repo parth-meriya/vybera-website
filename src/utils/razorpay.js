@@ -90,6 +90,10 @@ export const openRazorpay = async ({
   }
 
   // ── Step 3: Open Checkout ────────────────────────────────────
+  // Build callback URL for UPI redirect payments (mobile apps redirect away from SPA)
+  const baseUrl = window.location.origin;
+  const callbackUrl = `${baseUrl}/order-success?foid=${firebaseOrderId}`;
+
   return new Promise((resolve, reject) => {
     const options = {
       key: keyId,
@@ -99,6 +103,7 @@ export const openRazorpay = async ({
       description: description || 'VYBERA Order',
       image: '/favicon.svg',
       order_id: razorpayOrder.id,
+      callback_url: callbackUrl,
       prefill: {
         name: prefill.name || '',
         email: prefill.email || '',
@@ -107,6 +112,7 @@ export const openRazorpay = async ({
       notes: {
         receipt: receipt || '',
         platform: 'VYBERA',
+        firebase_order_id: firebaseOrderId,
       },
       theme: {
         color: '#f0f0f0',
