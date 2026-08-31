@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAllCustomOrders, updateCustomOrderStatus, updateCustomDesignStatus } from '../../firebase/customOrders';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { Check, Clock, MessageSquare } from 'lucide-react';
 
 const STATUS_OPTIONS = ['Pending', 'Processing', 'Completed', 'Cancelled'];
@@ -18,7 +20,74 @@ const AdminCustomOrders = () => {
   const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
-    getAllCustomOrders().then(o => { setOrders(o); setLoading(false); });
+    const fetchAll = async () => {
+      try {
+        // 1. Fetch from dedicated customOrders collection
+        const customOrdersDirect = await getAllCustomOrders();
+
+        // 2. Fetch from orders collection — extract products with isCustom: true
+        const ordersSnap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
+        const fromOrders = [];
+        ordersSnap.docs.forEach(doc => {
+          const data = doc.data();
+          const customProducts = (data.products || []).filter(p => p.isCustom);
+          customProducts.forEach((p, idx) => {
+            fromOrders.push({
+              id: `${doc.id}_${idx}`,
+              orderId: doc.id,
+              source: 'orders',
+              // Customer info
+              userName: data.customerName || data.address?.name || '—',
+              userEmail: data.userEmail || data.address?.email || '',
+              customerPhone: data.customerPhone || data.address?.phone || '',
+              // Product spec
+              productName: p.name || 'Custom T-Shirt',
+              position: p.position || '—',
+              color: p.selectedColor || '—',
+              size: p.size || '—',
+              fit: p.fit || '—',
+              // Images & design
+              imageUrls: p.imageUrls || [],
+              description: p.description || '',
+              designStatus: p.designStatus || 'Received',
+              // Pricing
+              price: p.price || 0,
+              basePrice: p.price || 0,
+              discount: data.discount || 0,
+              couponCode: data.couponCode || null,
+              // Payment
+              paymentId: data.paymentId || null,
+              razorpayOrderId: data.razorpayOrderId || null,
+              // Status — map from order status
+              status: data.status === 'delivered' ? 'Completed' 
+                    : data.status === 'cancelled' ? 'Cancelled'
+                    : data.status === 'confirmed' || data.status === 'processing' || data.status === 'shipped' ? 'Processing'
+                    : 'Pending',
+              orderStatus: data.status,
+              // Date
+              createdAt: data.createdAt || null,
+            });
+          });
+        });
+
+        // 3. Merge — deduplicate by orderId (prefer customOrders collection entries)
+        const directOrderIds = new Set(customOrdersDirect.map(o => o.orderId).filter(Boolean));
+        const uniqueFromOrders = fromOrders.filter(o => !directOrderIds.has(o.orderId));
+
+        const merged = [...customOrdersDirect, ...uniqueFromOrders].sort((a, b) => {
+          const aTime = a.createdAt?.toMillis?.() || a.createdAt?.seconds * 1000 || 0;
+          const bTime = b.createdAt?.toMillis?.() || b.createdAt?.seconds * 1000 || 0;
+          return bTime - aTime;
+        });
+
+        setOrders(merged);
+      } catch (err) {
+        console.error('Failed to fetch custom orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
   }, []);
 
   const handleStatusChange = async (id, status) => {
@@ -104,8 +173,11 @@ const AdminCustomOrders = () => {
 
                     {/* Customer */}
                     <td className="px-4 py-3">
-                      <p className="text-vy-white text-xs font-medium">{order.userName || '—'}</p>
+                      <p className="text-vy-white text-xs font-medium">{order.customerName || order.userName || '—'}</p>
                       <p className="text-vy-grey text-xs">{order.userEmail}</p>
+                      {order.source === 'orders' && order.orderStatus && (
+                        <p className="text-vy-accent text-[9px] uppercase tracking-widest mt-1">via checkout • {order.orderStatus}</p>
+                      )}
                     </td>
 
                     {/* Spec */}
