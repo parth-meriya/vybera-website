@@ -185,6 +185,59 @@ export default async function handler(req, res) {
       console.error('[Update Order Status API] Post-transaction notification dispatch failed:', notifErr);
     }
 
+    // ── Auto-archive to deliveredOrders collection when marked as delivered ──
+    if (newStatus === 'delivered') {
+      try {
+        const db = admin.firestore();
+        const orderSnap = await db.collection('orders').doc(orderId).get();
+        if (orderSnap.exists) {
+          const orderData = orderSnap.data();
+          await db.collection('deliveredOrders').doc(orderId).set({
+            // Order identification
+            orderId: orderId,
+            paymentReceipt: orderData.paymentReceipt || null,
+            paymentId: orderData.paymentId || null,
+            razorpayOrderId: orderData.razorpayOrderId || null,
+
+            // Customer info
+            userId: orderData.userId || null,
+            userEmail: orderData.userEmail || null,
+            customerName: orderData.customerName || orderData.address?.name || '',
+            customerPhone: orderData.customerPhone || orderData.address?.phone || '',
+            customerEmail: orderData.address?.email || orderData.userEmail || '',
+
+            // Address
+            address: orderData.address || {},
+
+            // Products
+            products: orderData.products || [],
+
+            // Pricing
+            subtotal: orderData.subtotal || 0,
+            discount: orderData.discount || 0,
+            total: orderData.total || 0,
+            couponCode: orderData.couponCode || null,
+            pointsRedeemed: orderData.pointsRedeemed || 0,
+            pointsEarned: orderData.pointsEarned || 0,
+
+            // Tracking
+            trackingId: orderData.trackingId || trackingId || null,
+
+            // Dates
+            orderDate: orderData.createdAt || null,
+            deliveredAt: admin.firestore.FieldValue.serverTimestamp(),
+
+            // Status
+            status: 'delivered',
+            paymentStatus: orderData.paymentStatus || 'paid',
+          });
+          console.log(`[Admin] Order ${orderId} archived to deliveredOrders collection`);
+        }
+      } catch (archiveErr) {
+        console.error('[Admin] Failed to archive delivered order:', archiveErr);
+      }
+    }
+
     return res.status(200).json({ success: true, message: `Order updated to ${newStatus}` });
   } catch (error) {
     console.error('[Admin] Update order status error:', error);
