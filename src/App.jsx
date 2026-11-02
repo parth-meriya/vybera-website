@@ -64,6 +64,7 @@ const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
 const AdminPopupBanner = lazy(() => import('./pages/admin/AdminPopupBanner'));
 const AdminMainBanner = lazy(() => import('./pages/admin/AdminMainBanner'));
 const AdminCampaigns = lazy(() => import('./pages/admin/AdminCampaigns'));
+const AdminDiwaliCampaign = lazy(() => import('./pages/admin/AdminDiwaliCampaign'));
 const AdminSections = lazy(() => import('./pages/admin/AdminSections'));
 const AdminSizeGuides = lazy(() => import('./pages/admin/AdminSizeGuides'));
 const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
@@ -251,6 +252,7 @@ const App = () => {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="coupons" element={<AdminCoupons />} />
+            <Route path="diwali" element={<AdminDiwaliCampaign />} />
             <Route path="campaigns" element={<AdminCampaigns />} />
             <Route path="sections" element={<AdminSections />} />
             <Route path="rewards" element={<AdminRewards />} />

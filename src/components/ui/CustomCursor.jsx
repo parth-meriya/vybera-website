@@ -1,46 +1,26 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Shirt } from 'lucide-react';
 
 const CustomCursor = () => {
   const [position, setPosition] = useState({ x: -100, y: -100 });
   const [isPointer, setIsPointer] = useState(false);
-  const [hidden, setHidden] = useState(true); // Start hidden until mouse moves
+  const [hidden, setHidden] = useState(true);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
-    // We add a global style to hide the default cursor
-    const style = document.createElement('style');
-    style.innerHTML = `
-      * {
-        cursor: none !important;
-      }
-    `;
-    document.head.appendChild(style);
+    // Detect touch device
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouch) {
+      setIsTouchDevice(true);
+      return;
+    }
 
     const updatePosition = (e) => {
       setHidden(false);
-      let x, y;
-      if (e.touches && e.touches.length > 0) {
-        x = e.touches[0].clientX;
-        y = e.touches[0].clientY;
-      } else {
-        x = e.clientX;
-        y = e.clientY;
-      }
-      setPosition({ x, y });
+      setPosition({ x: e.clientX, y: e.clientY });
     };
 
-    const handleMouseLeave = (e) => {
-      if (
-        e.clientY <= 0 || 
-        e.clientX <= 0 || 
-        e.clientX >= window.innerWidth || 
-        e.clientY >= window.innerHeight
-      ) {
-        setHidden(true);
-      }
-    };
-    
+    const handleMouseLeave = () => setHidden(true);
     const handleMouseEnter = () => setHidden(false);
 
     const handleMouseOver = (e) => {
@@ -60,43 +40,47 @@ const CustomCursor = () => {
         } else {
           setIsPointer(false);
         }
-      } catch (err) {
+      } catch {
         setIsPointer(false);
       }
     };
 
-    document.addEventListener('mousemove', updatePosition);
-    document.addEventListener('touchmove', updatePosition, { passive: true });
-    document.addEventListener('touchstart', updatePosition, { passive: true });
+    window.addEventListener('mousemove', updatePosition, { passive: true });
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('mouseenter', handleMouseEnter);
-    document.addEventListener('mouseover', handleMouseOver);
 
     return () => {
-      document.head.removeChild(style);
-      document.removeEventListener('mousemove', updatePosition);
-      document.removeEventListener('touchmove', updatePosition);
-      document.removeEventListener('touchstart', updatePosition);
+      window.removeEventListener('mousemove', updatePosition);
+      window.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
-      document.removeEventListener('mouseover', handleMouseOver);
     };
   }, []);
 
+  if (isTouchDevice || hidden) return null;
+
   return (
-    <motion.div
-      className="fixed top-0 left-0 pointer-events-none z-[999999] flex items-center justify-center mix-blend-difference"
-      style={{ zIndex: 999999 }}
-      animate={{
-        x: position.x - (isPointer ? 14 : 10), // Adjust centering based on size
-        y: position.y - (isPointer ? 14 : 10),
-        scale: isPointer ? 1.2 : 1,
-        opacity: hidden ? 0 : 1,
-      }}
-      transition={{ type: 'spring', stiffness: 800, damping: 35, mass: 0.1 }}
-    >
-      <Shirt size={isPointer ? 28 : 20} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
-    </motion.div>
+    <div className={`custom-cursor ${isPointer ? 'cursor-hovered' : ''}`}>
+      <motion.div
+        className="cursor-dot"
+        animate={{
+          x: position.x,
+          y: position.y,
+          scale: isPointer ? 1.5 : 1,
+        }}
+        transition={{ type: 'spring', damping: 40, stiffness: 450, mass: 0.1 }}
+      />
+      <motion.div
+        className="cursor-ring"
+        animate={{
+          x: position.x,
+          y: position.y,
+          scale: isPointer ? 1.3 : 1,
+        }}
+        transition={{ type: 'spring', damping: 25, stiffness: 220, mass: 0.3 }}
+      />
+    </div>
   );
 };
 

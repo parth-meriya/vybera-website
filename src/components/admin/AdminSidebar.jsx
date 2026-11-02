@@ -16,7 +16,8 @@ import {
   Image as ImageIcon,
   Award,
   Ticket,
-  Bell
+  Bell,
+  Flame
 } from 'lucide-react';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/coupons', label: 'Coupons', icon: Tag },
+  { to: '/admin/diwali', label: 'Diwali Sale', icon: Flame },
   { to: '/admin/campaigns', label: 'Campaigns', icon: Ticket },
   { to: '/admin/sections', label: 'Sections', icon: LayoutDashboard },
   { to: '/admin/rewards', label: 'Rewards', icon: Award },

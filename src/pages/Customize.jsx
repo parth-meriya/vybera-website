@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import imageCompression from 'browser-image-compression';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import {
   Upload, X, CheckCircle, AlertCircle, Loader2,
-  Shirt, ChevronRight, Image as ImageIcon, MessageCircle, Clock,
+  Shirt, ChevronRight, Image as ImageIcon, MessageCircle, Clock, Users,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -199,6 +199,12 @@ const UploadZone = ({ files, previews, onFiles, onRemove, uploading, progress })
 const Customize = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkQty, setBulkQty] = useState('25');
+  const [bulkOrg, setBulkOrg] = useState('');
+  const [bulkNotes, setBulkNotes] = useState('');
 
   // Form state
   const [files, setFiles]         = useState([]);
@@ -282,6 +288,24 @@ const Customize = () => {
         setSettingsLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const fitParam = params.get('fit');
+    if (fitParam) {
+      if (fitParam.toLowerCase().includes('over')) {
+        setFit('Oversize');
+        setStep(2);
+      } else if (fitParam.toLowerCase().includes('reg')) {
+        setFit('Regular');
+        setStep(2);
+      }
+    }
+    const tabParam = params.get('tab');
+    if (tabParam === 'bulk') {
+      setShowBulkModal(true);
+    }
+  }, [location.search]);
 
   if (settingsLoading) {
     return (
@@ -515,6 +539,136 @@ const Customize = () => {
           )}
         </AnimatePresence>
 
+        {/* ── Bulk / Group Order Modal ─────────────────── */}
+        <AnimatePresence>
+          {showBulkModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="bg-[#FAF5ED] w-full max-w-lg border border-vy-border-light shadow-2xl p-6 md:p-8 relative"
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowBulkModal(false)}
+                  className="absolute top-4 right-4 p-2 text-vy-text-muted hover:text-vy-burgundy"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="p-2.5 bg-vy-burgundy text-[#FAF5ED]">
+                    <Users size={20} />
+                  </span>
+                  <div>
+                    <h3 className="font-display font-bold text-xl uppercase tracking-wider text-vy-text">
+                      Bulk & Group Orders
+                    </h3>
+                    <p className="text-[11px] text-vy-text-muted uppercase tracking-widest">
+                      COLLEGES • STARTUPS • BRAND MERCH • FESTS
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-vy-text-muted mb-6 leading-relaxed">
+                  Get exclusive tier discounts, personalized fabric samples, screen/DTF/embroidery options, and dedicated priority production for orders over 20 pieces.
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                      Organization / College / Brand Name
+                    </label>
+                    <input
+                      type="text"
+                      value={bulkOrg}
+                      onChange={(e) => setBulkOrg(e.target.value)}
+                      placeholder="e.g. IIT Bombay / Starlight Club"
+                      className="vy-input"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                        Estimated Quantity
+                      </label>
+                      <select
+                        value={bulkQty}
+                        onChange={(e) => setBulkQty(e.target.value)}
+                        className="vy-input font-bold"
+                      >
+                        <option value="20-50">20 – 50 pcs (Tier 1)</option>
+                        <option value="50-100">50 – 100 pcs (Tier 2)</option>
+                        <option value="100-250">100 – 250 pcs (Tier 3)</option>
+                        <option value="250+">250+ pcs (Enterprise)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                        Preferred Fit
+                      </label>
+                      <select
+                        value={fit}
+                        onChange={(e) => setFit(e.target.value)}
+                        className="vy-input font-bold"
+                      >
+                        <option value="Oversize">Oversized Fit</option>
+                        <option value="Regular">Regular Fit</option>
+                        <option value="Mix">Mix of Both</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                      Specific Requirements / Notes
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={bulkNotes}
+                      onChange={(e) => setBulkNotes(e.target.value)}
+                      placeholder="e.g. Front chest embroidery + oversized back print, delivery by next month."
+                      className="vy-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={`https://wa.me/917574097366?text=${encodeURIComponent(
+                      `Hello VYBERA Team! I would like a quote for a Bulk Order:\n- Organization: ${bulkOrg || 'Not specified'}\n- Quantity: ${bulkQty} pieces\n- Preferred Fit: ${fit}\n- Requirements: ${bulkNotes || 'Standard custom print'}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary w-full !py-3.5"
+                  >
+                    <MessageCircle size={16} />
+                    Inquire Instantly on WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBulkModal(false);
+                      setStep(2);
+                    }}
+                    className="text-center text-[11px] font-bold text-vy-text-muted hover:text-vy-burgundy uppercase tracking-wider py-2"
+                  >
+                    Or design prototype in Studio first &rarr;
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {/* ── Step 1: Fit Selection ────────────────────── */}
           {step === 1 && (
@@ -525,47 +679,63 @@ const Customize = () => {
               exit={{ opacity: 0, y: -20 }}
               className="max-w-4xl mx-auto"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                   { 
                     id: 'Oversize', 
                     title: 'Oversized Fit', 
-                    desc: 'Drop shoulder, loose boxy fit, premium heavy-weight fabric.',
-                    price: `Starting ₹${getMinPrice(safeOversize, 700)}`
+                    desc: 'Drop shoulder, loose boxy streetwear fit, 240+ GSM heavyweight cotton.',
+                    price: `Starting ₹${getMinPrice(safeOversize, 700)}`,
+                    isBulk: false
                   },
                   { 
                     id: 'Regular', 
                     title: 'Regular Fit', 
-                    desc: 'Standard comfort fit, classic silhouette, mid-weight cotton.',
-                    price: `Starting ₹${getMinPrice(safeRegular, 600)}`
+                    desc: 'Standard comfort fit, classic silhouette, 100% combed cotton.',
+                    price: `Starting ₹${getMinPrice(safeRegular, 600)}`,
+                    isBulk: false
+                  },
+                  { 
+                    id: 'Bulk', 
+                    title: 'Bulk / Group Orders', 
+                    desc: 'College fests, startup merch, team drops & wholesale tier discounts.',
+                    price: 'Min 20+ pcs',
+                    isBulk: true
                   },
                 ].map(item => (
                   <button
                     key={item.id}
-                    onClick={() => { setFit(item.id); setStep(2); }}
-                    className={`p-8 border text-left transition-all duration-500 group relative overflow-hidden ${
-                      fit === item.id 
-                        ? 'border-vy-white bg-vy-white/5' 
-                        : 'border-vy-border hover:border-vy-grey bg-vy-card/30'
+                    onClick={() => {
+                      if (item.isBulk) {
+                        setShowBulkModal(true);
+                      } else {
+                        setFit(item.id);
+                        setStep(2);
+                      }
+                    }}
+                    className={`p-6 border text-left transition-all duration-500 group relative overflow-hidden ${
+                      !item.isBulk && fit === item.id 
+                        ? 'border-vy-burgundy bg-vy-burgundy/5' 
+                        : 'border-vy-border-light hover:border-vy-burgundy bg-white'
                     }`}
                   >
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-4">
-                        <Shirt size={32} className={fit === item.id ? 'text-vy-accent' : 'text-vy-grey group-hover:text-vy-white'} />
-                        <span className="text-[10px] tracking-widest uppercase font-bold text-vy-border">{item.price}</span>
+                        {item.isBulk ? (
+                          <Users size={28} className="text-vy-burgundy" />
+                        ) : (
+                          <Shirt size={28} className={fit === item.id ? 'text-vy-burgundy' : 'text-vy-sage group-hover:text-vy-burgundy'} />
+                        )}
+                        <span className="text-[10px] tracking-widest uppercase font-bold text-vy-burgundy bg-vy-cream px-2 py-0.5">{item.price}</span>
                       </div>
-                      <h3 className="text-vy-white text-xl font-bold tracking-wider mb-2 uppercase">{item.title}</h3>
-                      <p className="text-vy-grey text-xs leading-relaxed max-w-[200px]">{item.desc}</p>
+                      <h3 className="text-vy-text text-lg font-bold tracking-wider mb-2 uppercase">{item.title}</h3>
+                      <p className="text-vy-text-muted text-xs leading-relaxed">{item.desc}</p>
                       
-                      <div className={`mt-8 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${
-                        fit === item.id ? 'text-vy-accent translate-x-2' : 'text-vy-grey group-hover:text-vy-white translate-x-0'
+                      <div className={`mt-6 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase transition-all duration-300 ${
+                        item.isBulk ? 'text-vy-burgundy' : fit === item.id ? 'text-vy-burgundy translate-x-1' : 'text-vy-text-muted group-hover:text-vy-burgundy'
                       }`}>
-                        Select Fit <ChevronRight size={12} />
+                        {item.isBulk ? 'Inquire Bulk' : 'Select Fit'} <ChevronRight size={12} />
                       </div>
-                    </div>
-                    {/* Visual hint */}
-                    <div className={`absolute -right-8 -bottom-8 opacity-[0.03] transition-transform duration-700 group-hover:scale-110 ${fit === item.id ? 'scale-110' : 'scale-100'}`}>
-                      <Shirt size={200} />
                     </div>
                   </button>
                 ))}
@@ -1080,6 +1250,136 @@ const Customize = () => {
                   </p>
                 </div>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Bulk / Group Order Modal ─────────────────── */}
+        <AnimatePresence>
+          {showBulkModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+            >
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="bg-[#FAF5ED] w-full max-w-lg border border-vy-border-light shadow-2xl p-6 md:p-8 relative"
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowBulkModal(false)}
+                  className="absolute top-4 right-4 p-2 text-vy-text-muted hover:text-vy-burgundy"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="p-2.5 bg-vy-burgundy text-[#FAF5ED]">
+                    <Users size={20} />
+                  </span>
+                  <div>
+                    <h3 className="font-display font-bold text-xl uppercase tracking-wider text-vy-text">
+                      Bulk & Group Orders
+                    </h3>
+                    <p className="text-[11px] text-vy-text-muted uppercase tracking-widest">
+                      COLLEGES • STARTUPS • BRAND MERCH • FESTS
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-vy-text-muted mb-6 leading-relaxed">
+                  Get exclusive tier discounts, personalized fabric samples, screen/DTF/embroidery options, and dedicated priority production for orders over 20 pieces.
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                      Organization / College / Brand Name
+                    </label>
+                    <input
+                      type="text"
+                      value={bulkOrg}
+                      onChange={(e) => setBulkOrg(e.target.value)}
+                      placeholder="e.g. IIT Bombay / Starlight Club"
+                      className="vy-input"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                        Estimated Quantity
+                      </label>
+                      <select
+                        value={bulkQty}
+                        onChange={(e) => setBulkQty(e.target.value)}
+                        className="vy-input font-bold"
+                      >
+                        <option value="20-50">20 – 50 pcs (Tier 1)</option>
+                        <option value="50-100">50 – 100 pcs (Tier 2)</option>
+                        <option value="100-250">100 – 250 pcs (Tier 3)</option>
+                        <option value="250+">250+ pcs (Enterprise)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                        Preferred Fit
+                      </label>
+                      <select
+                        value={fit}
+                        onChange={(e) => setFit(e.target.value)}
+                        className="vy-input font-bold"
+                      >
+                        <option value="Oversize">Oversized Fit</option>
+                        <option value="Regular">Regular Fit</option>
+                        <option value="Mix">Mix of Both</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-vy-text mb-1">
+                      Specific Requirements / Notes
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={bulkNotes}
+                      onChange={(e) => setBulkNotes(e.target.value)}
+                      placeholder="e.g. Front chest embroidery + oversized back print, delivery by next month."
+                      className="vy-input"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={`https://wa.me/917574097366?text=${encodeURIComponent(
+                      `Hello VYBERA Team! I would like a quote for a Bulk Order:\n- Organization: ${bulkOrg || 'Not specified'}\n- Quantity: ${bulkQty} pieces\n- Preferred Fit: ${fit}\n- Requirements: ${bulkNotes || 'Standard custom print'}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary w-full !py-3.5"
+                  >
+                    <MessageCircle size={16} />
+                    Inquire Instantly on WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBulkModal(false);
+                      setStep(2);
+                    }}
+                    className="text-center text-[11px] font-bold text-vy-text-muted hover:text-vy-burgundy uppercase tracking-wider py-2"
+                  >
+                    Or design prototype in Studio first &rarr;
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

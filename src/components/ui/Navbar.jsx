@@ -1,7 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, User, Menu, X } from 'lucide-react';
+import {
+  ShoppingBag,
+  User,
+  Menu,
+  X,
+  Heart,
+  Package,
+  Tag,
+  Award,
+  Bell,
+  Settings,
+  LogOut,
+  Sparkles,
+  ChevronRight,
+  Flame,
+} from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { logOut } from '../../firebase/auth';
@@ -11,29 +26,41 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
   const { itemCount } = useCart();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
-
-  const [dynamicLinks, setDynamicLinks] = useState([]);
+  const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', onScroll);
-    
-    // Fetch dynamic sections for navbar
-    import('../../firebase/sections').then(({ getSections }) => {
-      getSections().then(sections => {
-        const visible = sections.filter(s => s.visible).map(s => ({
-          label: s.label,
-          to: s.path
-        }));
-        setDynamicLinks(visible);
-      });
-    });
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
 
-    return () => window.removeEventListener('scroll', onScroll);
+    // Read wishlist count from localStorage
+    const updateWishCount = () => {
+      try {
+        const local = JSON.parse(localStorage.getItem('vy_wishlist') || '[]');
+        setWishlistCount(Array.isArray(local) ? local.length : 0);
+      } catch {
+        setWishlistCount(0);
+      }
+    };
+
+    updateWishCount();
+    window.addEventListener('storage', updateWishCount);
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('storage', updateWishCount);
+    };
   }, []);
+
+  // Close menus on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setUserMenuOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     await logOut();
@@ -42,161 +69,331 @@ const Navbar = () => {
     setUserMenuOpen(false);
   };
 
-  const staticLinks = [
-    { label: 'Customize', to: '/customize' },
-    { label: 'About', to: '/about' },
-    { label: 'Contact', to: '/contact' },
-    ...(isAdmin ? [{ label: 'Admin', to: '/admin' }] : []),
+  // Primary navigation specified by user:
+  // - New Drops
+  // - Collections
+  // - Customize
+  // - Sale
+  const primaryNavLinks = [
+    { label: 'New Drops', to: '/shop?filter=drops', badge: 'NEW' },
+    { label: 'Collections', to: '/shop' },
+    { label: 'Customize', to: '/customize', badge: 'USP' },
+    { label: 'Sale', to: '/shop?filter=sale', isSale: true },
+    ...(isAdmin ? [{ label: 'Admin', to: '/admin', isAdmin: true }] : []),
   ];
 
-  const navLinks = [...dynamicLinks, ...staticLinks];
+  const profileLinks = [
+    { label: 'My Orders', to: '/dashboard/orders', icon: Package },
+    { label: 'Wishlist', to: '/dashboard/wishlist', icon: Heart },
+    { label: 'Coupons', to: '/dashboard/coupons', icon: Tag },
+    { label: 'Rewards', to: '/dashboard/rewards', icon: Award },
+    { label: 'Notifications', to: '/dashboard/notifications', icon: Bell },
+    { label: 'Account Settings', to: '/dashboard/settings', icon: Settings },
+  ];
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-[#1C2A21]/95 navbar-blur border-b border-vy-border/30'
-            : 'bg-transparent'
+            ? 'bg-[#FAF5ED]/95 navbar-blur border-b border-vy-border-light shadow-sm py-3'
+            : 'bg-gradient-to-b from-[#30231F]/70 via-[#30231F]/30 to-transparent py-4 text-white'
         }`}
       >
-        <div className="max-w-screen-xl mx-auto px-6 md:px-12 flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="font-display font-bold text-xl tracking-[0.3em] text-vy-white">
-            VYBERA
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12 flex items-center justify-between">
+          {/* Brand Logo */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 group tracking-[0.35em] uppercase font-display font-black text-xl md:text-2xl transition-transform active:scale-95"
+          >
+            <span
+              className={`transition-colors ${
+                scrolled ? 'text-vy-text group-hover:text-vy-burgundy' : 'text-[#FAF5ED]'
+              }`}
+            >
+              VYBERA
+            </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map(link => (
+          {/* Desktop Primary Nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {primaryNavLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `text-xs font-medium tracking-widest uppercase transition-colors duration-300 ${
-                    isActive ? 'text-vy-accent' : 'text-vy-light hover:text-vy-accent'
+                  `relative text-xs font-bold tracking-[0.2em] uppercase transition-all duration-200 py-1 flex items-center gap-1.5 ${
+                    link.isSale
+                      ? scrolled
+                        ? 'text-vy-burgundy hover:text-vy-burgundy-hover font-black'
+                        : 'text-amber-300 hover:text-amber-200 font-black'
+                      : isActive
+                      ? scrolled
+                        ? 'text-vy-burgundy font-black'
+                        : 'text-white font-black'
+                      : scrolled
+                      ? 'text-vy-text/80 hover:text-vy-burgundy'
+                      : 'text-[#FAF5ED]/80 hover:text-white'
                   }`
                 }
               >
+                {link.isSale && <Flame size={12} className="text-vy-burgundy" />}
                 {link.label}
+                {link.badge && !link.isSale && (
+                  <span className="text-[8px] px-1 py-0.2 bg-vy-burgundy/10 text-vy-burgundy rounded font-extrabold tracking-normal">
+                    {link.badge}
+                  </span>
+                )}
               </NavLink>
             ))}
-          </div>
+          </nav>
 
-          {/* Right Icons */}
-          <div className="flex items-center gap-4">
-            {/* Cart */}
-            <Link to="/cart" className="relative p-2 text-vy-grey hover:text-vy-white transition-colors">
-              <ShoppingBag size={18} />
+          {/* Right Action Icons */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Wishlist Icon */}
+            <Link
+              to="/dashboard/wishlist"
+              aria-label="Wishlist"
+              className={`p-2 transition-colors relative ${
+                scrolled
+                  ? 'text-vy-text hover:text-vy-burgundy'
+                  : 'text-[#FAF5ED] hover:text-white'
+              }`}
+            >
+              <Heart size={19} />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-vy-burgundy text-[#FAF5ED] text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {wishlistCount > 9 ? '9+' : wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart Icon */}
+            <Link
+              to="/cart"
+              aria-label="Shopping Bag"
+              className={`p-2 transition-colors relative ${
+                scrolled
+                  ? 'text-vy-text hover:text-vy-burgundy'
+                  : 'text-[#FAF5ED] hover:text-white'
+              }`}
+            >
+              <ShoppingBag size={19} />
               {itemCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-vy-white text-vy-black text-[10px] font-bold rounded-full flex items-center justify-center"
+                  className="absolute top-1 right-1 w-4 h-4 bg-vy-burgundy text-[#FAF5ED] text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm"
                 >
                   {itemCount > 9 ? '9+' : itemCount}
                 </motion.span>
               )}
             </Link>
 
-            {/* User */}
+            {/* Profile Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setUserMenuOpen(o => !o)}
-                className="p-2 text-vy-grey hover:text-vy-white transition-colors"
+                type="button"
+                onClick={() => setUserMenuOpen((o) => !o)}
+                aria-label="User Account"
+                className={`p-2 transition-colors flex items-center gap-1 ${
+                  scrolled
+                    ? 'text-vy-text hover:text-vy-burgundy'
+                    : 'text-[#FAF5ED] hover:text-white'
+                }`}
               >
-                <User size={18} />
+                <User size={19} />
               </button>
+
               <AnimatePresence>
                 {userMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-2 w-44 bg-vy-card border border-vy-border py-1"
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-2 w-56 bg-[#FAF5ED] border border-vy-border-light shadow-xl py-2 z-50 text-vy-text"
                   >
                     {user ? (
-                      <>
-                        <Link
-                          to="/dashboard"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="block px-4 py-2.5 text-xs text-vy-grey hover:text-vy-white hover:bg-vy-border transition-colors"
-                        >
-                          My Profile
-                        </Link>
-                      </>
+                      <div>
+                        {/* User Header */}
+                        <div className="px-4 py-2 border-b border-vy-border-light/70 mb-1">
+                          <p className="text-[10px] uppercase font-bold tracking-widest text-vy-sage">
+                            Account
+                          </p>
+                          <p className="text-xs font-semibold text-vy-text truncate">
+                            {user.displayName || user.email || 'VYBERA Member'}
+                          </p>
+                        </div>
+
+                        {/* Profile Links */}
+                        {profileLinks.map(({ label, to, icon: Icon }) => (
+                          <Link
+                            key={to}
+                            to={to}
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-vy-text hover:text-vy-burgundy hover:bg-vy-cream/60 transition-colors"
+                          >
+                            <Icon size={14} className="text-vy-sage" />
+                            {label}
+                          </Link>
+                        ))}
+
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-vy-burgundy hover:bg-vy-burgundy/10 transition-colors border-t border-vy-border-light/70 mt-1"
+                          >
+                            <Sparkles size={14} />
+                            Admin Console
+                          </Link>
+                        )}
+
+                        <div className="border-t border-vy-border-light/70 mt-1 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-rose-700 hover:bg-rose-50 transition-colors text-left"
+                          >
+                            <LogOut size={14} />
+                            Sign Out
+                          </button>
+                        </div>
+                      </div>
                     ) : (
-                      <>
+                      <div className="p-2 space-y-1">
                         <Link
                           to="/login"
                           onClick={() => setUserMenuOpen(false)}
-                          className="block px-4 py-2.5 text-xs text-vy-grey hover:text-vy-white hover:bg-vy-border transition-colors"
+                          className="block text-center py-2 bg-vy-burgundy text-[#FAF5ED] text-xs font-bold tracking-widest uppercase hover:bg-vy-burgundy-hover"
                         >
                           Sign In
                         </Link>
                         <Link
                           to="/signup"
                           onClick={() => setUserMenuOpen(false)}
-                          className="block px-4 py-2.5 text-xs text-vy-grey hover:text-vy-white hover:bg-vy-border transition-colors"
+                          className="block text-center py-2 text-xs font-semibold tracking-wider text-vy-text hover:text-vy-burgundy"
                         >
-                          Sign Up
+                          Create Account
                         </Link>
-                      </>
+                      </div>
                     )}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Hamburger Toggle */}
             <button
-              onClick={() => setMobileOpen(o => !o)}
-              className="md:hidden p-2 text-vy-grey hover:text-vy-white transition-colors"
+              type="button"
+              onClick={() => setMobileOpen((o) => !o)}
+              aria-label="Toggle Menu"
+              className={`md:hidden p-2 transition-colors ${
+                scrolled
+                  ? 'text-vy-text hover:text-vy-burgundy'
+                  : 'text-[#FAF5ED] hover:text-white'
+              }`}
             >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Mobile Menu */}
+      {/* ── Mobile Fullscreen Editorial Drawer ─────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, x: '100%' }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-0 z-40 bg-vy-black pt-16 px-6 flex flex-col gap-6 md:hidden"
+            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+            className="fixed inset-0 z-40 bg-[#FAF5ED] pt-20 px-6 pb-8 flex flex-col justify-between overflow-y-auto md:hidden text-vy-text"
           >
-            {navLinks.map(link => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                onClick={() => setMobileOpen(false)}
-                className={({ isActive }) =>
-                  `text-2xl font-display font-light tracking-widest uppercase transition-colors ${
-                    isActive ? 'text-vy-white' : 'text-vy-grey'
-                  }`
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-            <div className="border-t border-vy-border pt-6 flex flex-col gap-4">
+            {/* Primary Nav Links */}
+            <div className="space-y-6 pt-4">
+              <p className="text-[10px] tracking-[0.3em] font-bold uppercase text-vy-sage">
+                Navigation
+              </p>
+              <div className="space-y-4">
+                {primaryNavLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `flex items-center justify-between text-2xl font-display font-bold uppercase tracking-wider transition-colors ${
+                        link.isSale
+                          ? 'text-vy-burgundy'
+                          : isActive
+                          ? 'text-vy-burgundy'
+                          : 'text-vy-text hover:text-vy-burgundy'
+                      }`
+                    }
+                  >
+                    <span className="flex items-center gap-2">
+                      {link.isSale && <Flame size={20} className="text-vy-burgundy" />}
+                      {link.label}
+                    </span>
+                    <ChevronRight size={18} className="text-vy-sage" />
+                  </NavLink>
+                ))}
+              </div>
+
+              {/* Quick Account Links in Profile Drawer */}
+              <div className="pt-6 border-t border-vy-border-light space-y-3">
+                <p className="text-[10px] tracking-[0.3em] font-bold uppercase text-vy-sage">
+                  My Profile & Preferences
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {profileLinks.map(({ label, to, icon: Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setMobileOpen(false)}
+                      className="p-3 bg-white border border-vy-border-light text-xs font-medium text-vy-text flex items-center gap-2 hover:border-vy-burgundy"
+                    >
+                      <Icon size={14} className="text-vy-burgundy" />
+                      <span className="truncate">{label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="pt-6 border-t border-vy-border-light space-y-3">
               {user ? (
-                <>
-                  <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="text-vy-white text-sm tracking-widest uppercase">
-                    My Profile
-                  </Link>
-                </>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full py-3 text-center text-xs font-bold tracking-widest uppercase border border-rose-300 text-rose-700 bg-rose-50"
+                >
+                  Sign Out ({user.displayName || user.email})
+                </button>
               ) : (
-                <>
-                  <Link to="/login" onClick={() => setMobileOpen(false)} className="text-vy-grey text-sm tracking-widest uppercase">Sign In</Link>
-                  <Link to="/signup" onClick={() => setMobileOpen(false)} className="text-vy-grey text-sm tracking-widest uppercase">Sign Up</Link>
-                </>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="btn-primary !py-3 text-center text-xs"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="btn-secondary !py-3 text-center text-xs"
+                  >
+                    Register
+                  </Link>
+                </div>
               )}
+
+              <p className="text-[10px] text-center tracking-[0.25em] uppercase text-vy-sage pt-2">
+                VYBERA — THE ERA OF VIBES
+              </p>
             </div>
           </motion.div>
         )}
