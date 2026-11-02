@@ -95,6 +95,53 @@ export const uploadMusic = (file, onProgress) => {
     );
   });
 };
+
+export const DEFAULT_MUSIC_CONFIG = {
+  enabled: true,
+  title: 'Diwali Festive Instrumental — Flute, Sitar & Bells',
+  musicUrl: '/sounds/diwali_ambient.mp3',
+  defaultVolume: 0.25,
+  showWelcomePrompt: true,
+};
+
+/**
+ * Get background music settings.
+ */
+export const getMusicConfig = async () => {
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'music'));
+    if (snap.exists()) {
+      const data = { ...DEFAULT_MUSIC_CONFIG, ...snap.data() };
+      try {
+        localStorage.setItem('vy_music_config', JSON.stringify(data));
+      } catch {}
+      return data;
+    }
+  } catch (err) {
+    console.warn('Failed to load music config from firestore:', err);
+  }
+  try {
+    const cached = localStorage.getItem('vy_music_config');
+    if (cached) return JSON.parse(cached);
+  } catch {}
+  return DEFAULT_MUSIC_CONFIG;
+};
+
+/**
+ * Update background music settings.
+ */
+export const updateMusicConfig = async (config) => {
+  const payload = {
+    ...config,
+    defaultVolume: Number(config.defaultVolume) || 0.25,
+    updatedAt: serverTimestamp(),
+  };
+  await setDoc(doc(db, 'settings', 'music'), payload);
+  try {
+    localStorage.setItem('vy_music_config', JSON.stringify(payload));
+  } catch {}
+  return payload;
+};
 export const getTrustBadges = async () => {
   const defaults = [
     { icon: 'Truck', title: 'Free Shipping', description: 'On all orders above ₹999', active: true },

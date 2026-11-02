@@ -17,7 +17,8 @@ import {
   Award,
   Ticket,
   Bell,
-  Flame
+  Flame,
+  Music
 } from 'lucide-react';
 import { logOut } from '../../firebase/auth';
 import toast from 'react-hot-toast';
@@ -30,6 +31,7 @@ const navItems = [
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/coupons', label: 'Coupons', icon: Tag },
   { to: '/admin/diwali', label: 'Diwali Sale', icon: Flame },
+  { to: '/admin/music', label: 'Diwali Music', icon: Music },
   { to: '/admin/campaigns', label: 'Campaigns', icon: Ticket },
   { to: '/admin/sections', label: 'Sections', icon: LayoutDashboard },
   { to: '/admin/rewards', label: 'Rewards', icon: Award },

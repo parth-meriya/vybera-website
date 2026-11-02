@@ -62,39 +62,13 @@ body {
   background: #590907;
 }
 
-/* Custom Cursor */
-.custom-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  z-index: 99999;
-  mix-blend-mode: multiply;
+/* Standard Browser Cursor */
+body {
+  cursor: default;
 }
 
-.cursor-dot {
-  width: 8px;
-  height: 8px;
-  background: #590907;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s, height 0.2s;
-}
-
-.cursor-ring {
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(89, 9, 7, 0.45);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s, border-color 0.3s;
-}
-
-.cursor-hovered .cursor-ring {
-  width: 52px;
-  height: 52px;
-  border-color: rgba(89, 9, 7, 0.8);
-  background-color: rgba(232, 210, 181, 0.25);
+a, button, [role="button"], input[type="submit"], input[type="button"], select {
+  cursor: pointer;
 }
 
 /* Selection */

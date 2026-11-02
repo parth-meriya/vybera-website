@@ -6,7 +6,6 @@ import { Toaster } from 'react-hot-toast';
 // Layout
 import Navbar from './components/ui/Navbar';
 import Footer from './components/ui/Footer';
-import CustomCursor from './components/ui/CustomCursor';
 import ScrollToTop from './components/ui/ScrollToTop';
 import PageTransition from './components/ui/PageTransition';
 import BackgroundMusic from './components/ui/BackgroundMusic';
@@ -65,6 +64,7 @@ const AdminPopupBanner = lazy(() => import('./pages/admin/AdminPopupBanner'));
 const AdminMainBanner = lazy(() => import('./pages/admin/AdminMainBanner'));
 const AdminCampaigns = lazy(() => import('./pages/admin/AdminCampaigns'));
 const AdminDiwaliCampaign = lazy(() => import('./pages/admin/AdminDiwaliCampaign'));
+const AdminMusic = lazy(() => import('./pages/admin/AdminMusic'));
 const AdminSections = lazy(() => import('./pages/admin/AdminSections'));
 const AdminSizeGuides = lazy(() => import('./pages/admin/AdminSizeGuides'));
 const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
@@ -94,7 +94,6 @@ const App = () => {
   return (
     <>
       <ScrollToTop />
-      <CustomCursor />
       <BackgroundMusic />
       <PopupBanner />
       <Toaster
@@ -253,6 +252,7 @@ const App = () => {
             <Route path="users" element={<AdminUsers />} />
             <Route path="coupons" element={<AdminCoupons />} />
             <Route path="diwali" element={<AdminDiwaliCampaign />} />
+            <Route path="music" element={<AdminMusic />} />
             <Route path="campaigns" element={<AdminCampaigns />} />
             <Route path="sections" element={<AdminSections />} />
             <Route path="rewards" element={<AdminRewards />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Flame,
@@ -16,7 +17,8 @@ import {
   ExternalLink,
   Layers,
   Clock,
-  Video
+  Video,
+  Music
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -171,6 +173,13 @@ const AdminDiwaliCampaign = () => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
+          <Link
+            to="/admin/music"
+            className="btn-secondary !py-2.5 !px-4 text-xs flex items-center gap-1.5"
+          >
+            <Music size={14} />
+            Diwali Music
+          </Link>
           <button
             type="button"
             onClick={() => setPreviewOpen(true)}
