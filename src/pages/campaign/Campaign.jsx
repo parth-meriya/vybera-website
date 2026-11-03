@@ -11,6 +11,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { getUserProfile } from '../../firebase/users';
 import SVGSpinWheel from '../../components/campaign/SpinWheel';
+import DiwaliSpinWheel from '../../components/campaign/DiwaliSpinWheel';
+import DiwaliDiyaIcon from '../../components/campaign/DiwaliDiyaIcon';
 import BackButton from '../../components/ui/BackButton';
 
 const Campaign = () => {
@@ -206,17 +208,21 @@ const Campaign = () => {
     );
   }
 
-  const needsMobile = user && (!userProfile || !userProfile.phoneNumber);
+  const isDiwali = id === 'diwali-dhamaka' || campaign?.theme === 'diwali_festive';
 
   return (
-    <div className="min-h-screen bg-vy-black pt-24 pb-12 relative overflow-hidden">
+    <div className={`min-h-screen pt-24 pb-12 relative overflow-hidden ${
+      isDiwali ? 'bg-[#F3E7D8] text-[#30231F]' : 'bg-vy-black text-white'
+    }`}>
       <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       
       {/* Background Banner */}
       {campaign.bannerUrl && (
         <div className="absolute top-0 left-0 w-full h-96 opacity-20 pointer-events-none">
           <img src={campaign.bannerUrl} alt="Campaign Banner" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-vy-black" />
+          <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${
+            isDiwali ? 'to-[#F3E7D8]' : 'to-vy-black'
+          }`} />
         </div>
       )}
 
@@ -224,21 +230,52 @@ const Campaign = () => {
         <BackButton className="absolute top-0 left-6" />
         
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
-          <h1 className="font-display font-bold text-3xl md:text-5xl text-vy-gold tracking-widest uppercase mb-4 drop-shadow-[0_0_15px_rgba(196,160,107,0.5)]">
-            SECRET VYBERA REWARD
-          </h1>
-          <p className="text-vy-white/80 text-sm tracking-wide max-w-md mx-auto">
-            You've unlocked the hidden {campaign.id.replace('-', ' ')} campaign. Spin the wheel for a chance to win exclusive rewards.
-          </p>
+          {isDiwali ? (
+            <>
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <DiwaliDiyaIcon size={34} />
+                <span className="text-xs font-black uppercase tracking-[0.3em] text-[#590907] font-display">
+                  FESTIVAL OF LIGHTS SPECIAL
+                </span>
+                <DiwaliDiyaIcon size={34} />
+              </div>
+              <h1 className="font-display font-black text-3xl md:text-5xl text-[#590907] tracking-wider uppercase mb-2">
+                VYBERA DIWALI DHAMAKA
+              </h1>
+              <p className="font-display font-bold text-base md:text-lg tracking-[0.25em] text-[#30231F] uppercase mb-2">
+                SPIN. WIN. SLAY.
+              </p>
+              <p className="text-sm text-[#75665C] font-medium tracking-wide max-w-md mx-auto">
+                Your Diwali surprise is waiting! (20% | 30% | 50% | 70% OFF)
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="font-display font-bold text-3xl md:text-5xl text-vy-gold tracking-widest uppercase mb-4 drop-shadow-[0_0_15px_rgba(196,160,107,0.5)]">
+                SECRET VYBERA REWARD
+              </h1>
+              <p className="text-vy-white/80 text-sm tracking-wide max-w-md mx-auto">
+                You've unlocked the hidden {campaign.id?.replace('-', ' ')} campaign. Spin the wheel for a chance to win exclusive rewards.
+              </p>
+            </>
+          )}
         </motion.div>
 
         {/* The Spin Wheel */}
         <div className="mb-12">
-          <SVGSpinWheel 
-            isSpinning={isSpinning} 
-            winningIndex={winningIndex} 
-            onSpinComplete={onSpinComplete} 
-          />
+          {isDiwali ? (
+            <DiwaliSpinWheel 
+              isSpinning={isSpinning} 
+              winningIndex={winningIndex} 
+              onSpinComplete={onSpinComplete} 
+            />
+          ) : (
+            <SVGSpinWheel 
+              isSpinning={isSpinning} 
+              winningIndex={winningIndex} 
+              onSpinComplete={onSpinComplete} 
+            />
+          )}
         </div>
 
         {/* Result Area */}
@@ -247,37 +284,55 @@ const Campaign = () => {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 
-              className="mb-8 p-6 border-2 border-vy-gold bg-vy-card/80 backdrop-blur"
+              className={`mb-8 p-6 border-2 ${
+                isDiwali 
+                  ? 'border-[#D4AF37] bg-white/90 shadow-xl rounded-2xl text-[#30231F]' 
+                  : 'border-vy-gold bg-vy-card/80 backdrop-blur text-white'
+              }`}
             >
-              <h2 className="text-vy-gold font-display font-bold text-2xl tracking-widest uppercase mb-2">
+              <h2 className={`font-display font-bold text-2xl tracking-widest uppercase mb-2 ${
+                isDiwali ? 'text-[#590907]' : 'text-vy-gold'
+              }`}>
                 YOU WON {reward.name}!
               </h2>
               {couponCode ? (
-                <div className="bg-vy-black/40 p-6 rounded-md border border-vy-border shadow-lg">
-                  <p className="text-vy-white text-sm mb-2 font-bold tracking-wide">Coupon has been applied to your cart!</p>
-                  <p className="text-vy-grey text-xs mb-6">You can also copy it to use later (Single Use):</p>
+                <div className={`p-6 rounded-xl border shadow-lg ${
+                  isDiwali 
+                    ? 'bg-[#FAF5ED] border-[#D4AF37]' 
+                    : 'bg-vy-black/40 border-vy-border'
+                }`}>
+                  <p className={`text-sm mb-2 font-bold tracking-wide ${isDiwali ? 'text-[#30231F]' : 'text-vy-white'}`}>Coupon has been applied to your cart!</p>
+                  <p className={`text-xs mb-6 ${isDiwali ? 'text-[#75665C]' : 'text-vy-grey'}`}>You can also copy it to use later (Single Use):</p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <span className="text-vy-black bg-vy-gold px-6 py-3 font-mono font-bold tracking-widest text-xl select-all rounded-sm shadow-md w-full sm:w-auto">
+                    <span className={`px-6 py-3 font-mono font-bold tracking-widest text-xl select-all rounded-lg shadow-md w-full sm:w-auto ${
+                      isDiwali 
+                        ? 'bg-[#590907] text-[#FAF5ED] border border-[#D4AF37]' 
+                        : 'text-vy-black bg-vy-gold'
+                    }`}>
                       {couponCode}
                     </span>
                     <button 
                       onClick={handleCopy}
-                      className="bg-vy-white text-vy-black px-6 py-3 hover:bg-vy-accent transition-colors rounded-sm shadow-md font-bold text-sm tracking-widest flex items-center justify-center gap-2 w-full sm:w-auto"
+                      className={`px-6 py-3 transition-colors rounded-lg shadow-md font-bold text-sm tracking-widest flex items-center justify-center gap-2 w-full sm:w-auto ${
+                        isDiwali 
+                          ? 'bg-white border border-[#D4AF37] text-[#590907] hover:bg-[#D4AF37]/20' 
+                          : 'bg-vy-white text-vy-black hover:bg-vy-accent'
+                      }`}
                       title="Copy Code"
                     >
                       <Copy size={16} /> COPY
                     </button>
                   </div>
-                  <p className="text-vy-grey text-[10px] mt-6 uppercase tracking-widest">
+                  <p className={`text-[10px] mt-6 uppercase tracking-widest ${isDiwali ? 'text-[#75665C]' : 'text-vy-grey'}`}>
                     Code has been saved to your profile rewards.
                   </p>
                 </div>
               ) : (
                 <div>
-                  <p className="text-vy-white text-sm mb-4">
-                    Our team will contact you on your registered mobile number to arrange the delivery of your FREE TEE.
+                  <p className={`text-sm mb-4 ${isDiwali ? 'text-[#30231F]' : 'text-vy-white'}`}>
+                    Our team will contact you to arrange the delivery of your FREE TEE.
                   </p>
-                  <p className="text-vy-grey text-[10px] uppercase tracking-widest">
+                  <p className={`text-[10px] uppercase tracking-widest ${isDiwali ? 'text-[#75665C]' : 'text-vy-grey'}`}>
                     Status available in your profile dashboard.
                   </p>
                 </div>
@@ -298,25 +353,20 @@ const Campaign = () => {
                 <LogIn size={18} />
                 Sign In to Spin
               </button>
-            ) : needsMobile ? (
-              <div className="text-center">
-                <p className="text-vy-yellow text-xs mb-3">Mobile number required to participate.</p>
-                <button onClick={handleOnboardingRedirect} className="btn-primary flex items-center gap-3 w-full sm:w-auto">
-                  <Phone size={18} />
-                  Complete Profile
-                </button>
-              </div>
             ) : (
               <button 
                 onClick={spin} 
                 disabled={isSpinning}
-                className="bg-vy-gold hover:bg-vy-white text-vy-black font-display font-bold text-xl uppercase tracking-widest px-12 py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(196,160,107,0.3)] hover:shadow-[0_0_40px_rgba(196,160,107,0.6)]"
+                className={isDiwali 
+                  ? "bg-gradient-to-r from-[#590907] via-[#821210] to-[#590907] hover:brightness-110 text-[#FAF5ED] font-display font-bold text-xl uppercase tracking-widest px-12 py-4 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_8px_30px_rgba(89,9,7,0.4)] border border-[#D4AF37] rounded-xl"
+                  : "bg-vy-gold hover:bg-vy-white text-vy-black font-display font-bold text-xl uppercase tracking-widest px-12 py-4 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(196,160,107,0.3)] hover:shadow-[0_0_40px_rgba(196,160,107,0.6)]"
+                }
               >
                 {isSpinning ? 'SPINNING...' : 'SPIN TO WIN'}
               </button>
             )}
-            <p className="text-vy-grey/50 text-[10px] uppercase tracking-widest mt-2">
-              Limit 1 spin per account & mobile number.
+            <p className={`text-[10px] uppercase tracking-widest mt-2 ${isDiwali ? 'text-[#75665C]' : 'text-vy-grey/50'}`}>
+              Limit 1 spin per customer account.
             </p>
           </div>
         )}

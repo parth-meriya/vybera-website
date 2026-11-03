@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     }
     const idToken = authHeader.split('Bearer ')[1];
 
-    const { campaignId } = req.body;
+    const { campaignId, preview = false } = req.body;
     if (!campaignId) {
       return res.status(400).json({ error: 'Campaign ID is required' });
     }
@@ -75,49 +75,69 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
-    // Validate email verification status to prevent bot attacks/fake signups
-    if (decodedToken.email && !decodedToken.email_verified) {
-      return res.status(403).json({ error: 'Please verify your email address in profile settings before participating.' });
-    }
-
     const db = admin.firestore();
     const userSnap = await db.collection('users').doc(uid).get();
-    
-    if (!userSnap.exists) {
-      return res.status(404).json({ error: 'User profile not found' });
-    }
-    const userData = userSnap.data();
-
-    if (!userData.phoneNumber) {
-      return res.status(400).json({ error: 'Mobile number is required to participate in campaigns.', needsPhone: true });
-    }
-
-    const phoneNumber = userData.phoneNumber;
+    const userData = userSnap.exists ? userSnap.data() : {};
+    const phoneNumber = userData.phoneNumber || '';
     const userEmail = userData.email || decodedToken.email || '';
 
     // 2. Check if Campaign exists and is active
     const campaignSnap = await db.collection('campaigns').doc(campaignId).get();
-    if (!campaignSnap.exists || !campaignSnap.data().active) {
+    if (!campaignSnap.exists || (!campaignSnap.data().active && !preview)) {
       return res.status(404).json({ error: 'This campaign is no longer active.' });
     }
     const campaignData = campaignSnap.data();
+
+    // Check Campaign Schedule (Asia/Kolkata / IST)
+    if (!preview) {
+      const now = Date.now();
+      if (campaignData.startDate) {
+        const start = new Date(campaignData.startDate).getTime();
+        if (!isNaN(start) && now < start) {
+          return res.status(403).json({ 
+            error: 'This Diwali campaign has not started yet. Launches on 7 November 2026 IST!',
+            startsAt: campaignData.startDate
+          });
+        }
+      }
+      if (campaignData.endDate) {
+        const end = new Date(campaignData.endDate).getTime();
+        if (!isNaN(end) && now > end) {
+          return res.status(403).json({ 
+            error: 'This Diwali campaign ended on 20 November 2026 IST.',
+            endedAt: campaignData.endDate
+          });
+        }
+      }
+    }
 
     if (campaignData.usageLimit > 0 && (campaignData.totalSpins || 0) >= campaignData.usageLimit) {
       return res.status(403).json({ error: 'This campaign has reached its maximum participation limit.' });
     }
 
     // 3. Prevent Multiple Spins
-    // We check if this exact uid OR this exact phoneNumber OR this exact email has already spun for this campaign.
+    // Available to every registered customer, strictly one successful spin per Firebase UID.
     const spinsRef = db.collection('spinResults');
-    
-    const [uidSpins, phoneSpins, emailSpins] = await Promise.all([
-      spinsRef.where('uid', '==', uid).where('campaignId', '==', campaignId).get(),
-      spinsRef.where('phoneNumber', '==', phoneNumber).where('campaignId', '==', campaignId).get(),
-      spinsRef.where('email', '==', userEmail).where('campaignId', '==', campaignId).get()
-    ]);
+    const queries = [
+      spinsRef.where('uid', '==', uid).where('campaignId', '==', campaignId).get()
+    ];
+    if (phoneNumber) {
+      queries.push(spinsRef.where('phoneNumber', '==', phoneNumber).where('campaignId', '==', campaignId).get());
+    }
+    if (userEmail) {
+      queries.push(spinsRef.where('email', '==', userEmail).where('campaignId', '==', campaignId).get());
+    }
 
-    if (!uidSpins.empty || !phoneSpins.empty || !emailSpins.empty) {
-      return res.status(403).json({ error: 'You have already participated in this campaign!' });
+    const checkResults = await Promise.all(queries);
+    const hasAlreadySpun = checkResults.some(snap => !snap.empty);
+
+    if (hasAlreadySpun) {
+      const existingSpin = checkResults.find(snap => !snap.empty)?.docs[0]?.data();
+      return res.status(403).json({ 
+        error: 'You have already participated in this campaign!',
+        alreadySpun: true,
+        previousReward: existingSpin?.rewardWon || null
+      });
     }
 
     // 4. Determine Reward (Server-side RNG)

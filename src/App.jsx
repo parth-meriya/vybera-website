@@ -12,6 +12,7 @@ import BackgroundMusic from './components/ui/BackgroundMusic';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/ui/ProtectedRoute';
 import PopupBanner from './components/ui/PopupBanner';
+import DiwaliCampaignCoordinator from './components/campaign/DiwaliCampaignCoordinator';
 
 // User Pages (Lazy Loaded)
 const Home = lazy(() => import('./pages/Home'));
@@ -96,6 +97,7 @@ const App = () => {
       <ScrollToTop />
       <BackgroundMusic />
       <PopupBanner />
+      <DiwaliCampaignCoordinator />
       <Toaster
         position="bottom-right"
         toastOptions={{

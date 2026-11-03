@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Link as LinkIcon, Download, RefreshCw, X, Save, Gift, Copy, Check, Eye, BarChart3, TrendingUp, Users, QrCode } from 'lucide-react';
+import { Plus, Edit2, Trash2, Link as LinkIcon, Download, RefreshCw, X, Save, Gift, Copy, Check, Eye, BarChart3, TrendingUp, Users, QrCode, Sparkles } from 'lucide-react';
 import { collection, doc, getDocs, setDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import toast from 'react-hot-toast';
@@ -314,6 +315,32 @@ const AdminCampaigns = () => {
             >
               <Plus size={16} /> New Campaign
             </button>
+          </div>
+
+          {/* Diwali Dhamaka Spotlight */}
+          <div className="bg-gradient-to-r from-[#FAF5ED] via-[#F3E7D8] to-[#E8D2B5] border-2 border-[#D4AF37] p-6 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <span className="p-3 bg-[#590907] text-[#FFE57F] rounded-full shadow-md flex-shrink-0">
+                <Sparkles size={22} />
+              </span>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#590907] text-white text-[9px] font-bold uppercase tracking-widest rounded-full mb-1">
+                  7 Nov – 20 Nov 2026 IST
+                </div>
+                <h3 className="font-display font-black text-lg text-[#590907] tracking-wider uppercase">
+                  VYBERA DIWALI DHAMAKA — SPIN & WIN
+                </h3>
+                <p className="text-xs text-[#75665C]">
+                  Official festive campaign with 20%–70% discounts, VIP Free Tees, automatic single-spin enforcement, and user coupon generation.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/admin/diwali?tab=spin"
+              className="px-5 py-2.5 bg-[#590907] hover:bg-[#430605] text-white text-xs font-bold uppercase tracking-widest shadow-md transition-all flex items-center gap-2 flex-shrink-0"
+            >
+              Manage Diwali Spin & Win →
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

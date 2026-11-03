@@ -31,6 +31,7 @@ import {
 import { getProducts } from '../../firebase/products';
 import { getShoppableVideos, updateShoppableVideos } from '../../firebase/shoppableVideos';
 import BackButton from '../../components/ui/BackButton';
+import AdminDiwaliSpinManager from '../../components/admin/AdminDiwaliSpinManager';
 
 const LOCAL_PRESETS = [
   { label: 'Hero Banner (Default)', path: '/hero_banner.png' },
@@ -50,7 +51,7 @@ const AdminDiwaliCampaign = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'mobile'
 
-  const [activeTab, setActiveTab] = useState('diwali'); // 'diwali' | 'videos'
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('tab') || 'diwali'); // 'diwali' | 'spin' | 'videos'
   const [videos, setVideos] = useState([]);
   const [editingVideo, setEditingVideo] = useState(null);
 
@@ -182,11 +183,19 @@ const AdminDiwaliCampaign = () => {
           </Link>
           <button
             type="button"
-            onClick={() => setPreviewOpen(true)}
+            onClick={() => {
+              if (activeTab === 'spin') {
+                sessionStorage.setItem('vy_diwali_admin_preview', 'true');
+                window.dispatchEvent(new CustomEvent('open-diwali-spin', { detail: { preview: true } }));
+                toast('Opening Diwali Spin Wheel Live Preview...', { icon: '✨', className: 'toast-vybera' });
+              } else {
+                setPreviewOpen(true);
+              }
+            }}
             className="btn-secondary !py-2.5 !px-5"
           >
             <Eye size={15} />
-            Live Preview
+            {activeTab === 'spin' ? 'Preview Wheel' : 'Live Preview'}
           </button>
           <button
             type="button"
@@ -201,7 +210,7 @@ const AdminDiwaliCampaign = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-8 border-b border-vy-border-light pb-2">
+      <div className="flex gap-4 mb-8 border-b border-vy-border-light pb-2 flex-wrap">
         <button
           onClick={() => setActiveTab('diwali')}
           className={`pb-2 text-xs font-bold tracking-[0.2em] uppercase transition-all ${
@@ -210,7 +219,18 @@ const AdminDiwaliCampaign = () => {
               : 'text-vy-text-muted hover:text-vy-text'
           }`}
         >
-          Diwali Campaign Setup
+          Diwali Campaign Setup (Hero & Sale)
+        </button>
+        <button
+          onClick={() => setActiveTab('spin')}
+          className={`pb-2 text-xs font-bold tracking-[0.2em] uppercase transition-all flex items-center gap-1.5 ${
+            activeTab === 'spin'
+              ? 'text-vy-burgundy border-b-2 border-vy-burgundy'
+              : 'text-vy-text-muted hover:text-vy-text'
+          }`}
+        >
+          <Sparkles size={13} className="text-[#D4AF37]" />
+          Diwali Spin & Win (7–20 Nov)
         </button>
         <button
           onClick={() => setActiveTab('videos')}
@@ -224,7 +244,8 @@ const AdminDiwaliCampaign = () => {
         </button>
       </div>
 
-      {/* Live Status Pill */}
+      {/* Live Status Pill (For Hero Banner Campaign) */}
+      {activeTab === 'diwali' && (
       <div className="mb-8 p-4 bg-[#FAF5ED] border border-vy-border-light flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span
@@ -259,6 +280,7 @@ const AdminDiwaliCampaign = () => {
           </span>
         </label>
       </div>
+      )}
 
       {activeTab === 'diwali' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -641,6 +663,8 @@ const AdminDiwaliCampaign = () => {
             </div>
           </div>
         </div>
+      ) : activeTab === 'spin' ? (
+        <AdminDiwaliSpinManager />
       ) : (
         /* Shoppable Videos Admin Tab */
         <div className="bg-[#FAF5ED] border border-vy-border-light p-6">

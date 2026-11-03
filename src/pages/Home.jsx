@@ -299,6 +299,16 @@ const Home = () => {
               {diwaliActive ? campaign.ctaText || 'SHOP DIWALI SALE' : 'SHOP NOW'}
               <ArrowRight size={15} />
             </Link>
+            {diwaliActive && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-diwali-spin'))}
+                className="px-8 py-4 bg-gradient-to-r from-[#D4AF37] to-[#B38F26] text-[#30231F] text-xs font-black tracking-[0.25em] uppercase hover:brightness-110 transition-all duration-300 shadow-xl flex items-center justify-center gap-2 text-center border border-[#FFE57F]"
+              >
+                <Sparkles size={14} className="text-[#590907]" />
+                Spin & Win ✨
+              </button>
+            )}
             <Link
               to="/customize"
               className="px-8 py-4 bg-[#FAF5ED]/10 backdrop-blur-md border border-[#FAF5ED]/30 text-[#FAF5ED] text-xs font-bold tracking-[0.25em] uppercase hover:bg-[#FAF5ED] hover:text-[#30231F] transition-all duration-300 flex items-center justify-center gap-2 text-center"
