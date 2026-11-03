@@ -52,22 +52,45 @@ class ErrorBoundary extends Component {
             }}>
               Something went wrong. Please refresh the page or try again later.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                background: '#D9C7A6',
-                color: '#0a0a0a',
-                border: 'none',
-                padding: '12px 32px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-              }}
-            >
-              Refresh Page
-            </button>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  background: '#590907',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  padding: '12px 24px',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  borderRadius: '2px',
+                }}
+              >
+                Refresh Page
+              </button>
+              <button
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.href = '/';
+                }}
+                style={{
+                  background: '#FAF5ED',
+                  color: '#30231F',
+                  border: '1px solid #D4BEA5',
+                  padding: '12px 24px',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  borderRadius: '2px',
+                }}
+              >
+                Back to Store
+              </button>
+            </div>
           </div>
         </div>
       );

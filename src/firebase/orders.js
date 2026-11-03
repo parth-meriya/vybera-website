@@ -52,12 +52,19 @@ export const getAllOrders = async () => {
 /**
  * Real-time listener for all orders (Admin).
  */
-export const listenToAllOrders = (callback) => {
+export const listenToAllOrders = (callback, onError) => {
   const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => {
-    const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    callback(orders);
-  });
+  return onSnapshot(
+    q,
+    (snap) => {
+      const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      callback(orders);
+    },
+    (err) => {
+      console.warn('Realtime listenToAllOrders snapshot error:', err);
+      if (onError) onError(err);
+    }
+  );
 };
 
 export const getOrderById = async (id) => {

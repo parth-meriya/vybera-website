@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, Fragment } from 'react';
 import { listenToAllOrders, getAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus, deleteOrder, updateOrderFull } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
@@ -37,23 +37,42 @@ const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const unsubscribe = listenToAllOrders(o => {
-      setOrders(o);
-      setLoading(false);
-      
-      // Update tracking inputs map if needed
-      setTrackingInputs(p => {
-        const next = { ...p };
-        o.forEach(order => {
-          if (next[order.id] === undefined) {
-            next[order.id] = order.trackingId || '';
-          }
+    let isMounted = true;
+    const unsubscribe = listenToAllOrders(
+      (o) => {
+        if (!isMounted) return;
+        setOrders(o);
+        setLoading(false);
+        
+        // Update tracking inputs map if needed
+        setTrackingInputs(p => {
+          const next = { ...p };
+          o.forEach(order => {
+            if (next[order.id] === undefined) {
+              next[order.id] = order.trackingId || '';
+            }
+          });
+          return next;
         });
-        return next;
-      });
-    });
+      },
+      async (err) => {
+        if (!isMounted) return;
+        console.warn('Real-time listener failed, falling back to direct fetch:', err);
+        try {
+          const o = await getAllOrders();
+          if (isMounted) setOrders(o);
+        } catch (fetchErr) {
+          console.error('Fallback orders fetch failed:', fetchErr);
+        } finally {
+          if (isMounted) setLoading(false);
+        }
+      }
+    );
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // ── Derived: unique coupon codes for dropdown ──
@@ -86,15 +105,15 @@ const AdminOrders = () => {
         const name = (o.customerName || o.address?.name || '').toLowerCase();
         const email = (o.userEmail || o.address?.email || '').toLowerCase();
         const phone = (o.customerPhone || o.address?.phone || '').toLowerCase();
-        const id = o.id.toLowerCase();
+        const id = (o.id || '').toLowerCase();
         if (!name.includes(q) && !email.includes(q) && !phone.includes(q) && !id.includes(q)) return false;
       }
 
       return true;
     })
     .sort((a, b) => {
-      const aTime = a.createdAt?.toMillis?.() || 0;
-      const bTime = b.createdAt?.toMillis?.() || 0;
+      const aTime = a.createdAt?.toMillis?.() || (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const bTime = b.createdAt?.toMillis?.() || (b.createdAt ? new Date(b.createdAt).getTime() : 0);
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
     });
 
@@ -390,12 +409,12 @@ const AdminOrders = () => {
             </thead>
             <tbody>
               {filteredOrders.map(order => (
-                <React.Fragment key={order.id}>
+                <Fragment key={order.id}>
                   <tr
                     className="border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors"
                   >
                     <td className="px-4 py-3 text-[#590907] text-xs font-mono font-bold">
-                      #{order.id.slice(0, 10)}
+                      #{order.id ? order.id.slice(0, 10) : '—'}
                     </td>
                     <td className="px-4 py-3">
                       <p className="text-[#30231F] text-xs font-bold">{order.customerName || order.address?.name || '—'}</p>
@@ -405,7 +424,7 @@ const AdminOrders = () => {
                       )}
                     </td>
                     <td className="px-4 py-3 text-[#30231F] text-xs font-medium">{order.products?.length || 0} item(s)</td>
-                    <td className="px-4 py-3 text-[#590907] text-xs font-bold">₹{order.total?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-[#590907] text-xs font-bold">₹{(order.total || 0).toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <select
                         value={order.status?.toLowerCase() || 'confirmed'}
@@ -652,7 +671,7 @@ const AdminOrders = () => {
                       </td>
                     </tr>
                   )}
-                </React.Fragment>
+                </Fragment>
               ))}
             </tbody>
           </table>
