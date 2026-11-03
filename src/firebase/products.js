@@ -12,13 +12,12 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
+import { isProductSaleActive, isProductNewDropActive } from '../utils/pricing';
 
 export const uploadProductImage = (file) => {
   return new Promise((resolve, reject) => {
-    // ALTERNATIVE: Convert compressed image directly to Base64 String 
-    // This perfectly bypasses all Firebase Storage network bottlenecks!
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result);
@@ -42,39 +41,102 @@ export const getProducts = async () => {
 };
 
 export const getFeaturedProducts = async () => {
-  const q = query(
-    collection(db, 'products'),
-    where('featured', '==', true)
-  );
-  const snap = await getDocs(q);
-  const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  return products.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  const prods = await getProducts();
+  return prods.filter(p => p.featured === true || p.isFeatured === true);
 };
 
-export const getDropProducts = async () => {
-  const q = query(
-    collection(db, 'products'),
-    where('isDrop', '==', true)
-  );
-  const snap = await getDocs(q);
-  const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  return products.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+/**
+ * 1. NEW DROPS:
+ * Fetches products manually assigned to New Drops by the admin (showInNewDrops === true).
+ * Ordered by newDropPriority desc, then createdAt desc.
+ */
+export const getNewDropProducts = async () => {
+  const prods = await getProducts();
+  const drops = prods.filter(p => isProductNewDropActive(p));
+  return drops.sort((a, b) => {
+    const prioDiff = (Number(b.newDropPriority) || 0) - (Number(a.newDropPriority) || 0);
+    if (prioDiff !== 0) return prioDiff;
+    return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+  });
+};
+
+// Backward-compatible alias
+export const getDropProducts = getNewDropProducts;
+
+/**
+ * 2. SALE:
+ * Fetches products manually assigned to the Sale section by the admin (showInSale === true).
+ * Ordered by salePriority desc, then createdAt desc.
+ */
+export const getSaleProducts = async () => {
+  const prods = await getProducts();
+  const saleList = prods.filter(p => isProductSaleActive(p));
+  return saleList.sort((a, b) => {
+    const prioDiff = (Number(b.salePriority) || 0) - (Number(a.salePriority) || 0);
+    if (prioDiff !== 0) return prioDiff;
+    return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+  });
+};
+
+/**
+ * 3. COLLECTIONS:
+ * Fetches products assigned to Collections (showInCollections !== false).
+ * All regular and older products remain accessible here.
+ */
+export const getCollectionProducts = async (category = null) => {
+  const prods = await getProducts();
+  let colls = prods.filter(p => p.showInCollections !== false);
+  if (category && category !== 'all' && category !== 'shop') {
+    const catLower = category.toLowerCase();
+    colls = colls.filter(p => p.category?.toLowerCase() === catLower);
+  }
+  return colls;
 };
 
 export const getProductsByCategory = async (category) => {
-  const q = query(
-    collection(db, 'products'),
-    where('category', '==', category)
-  );
-  const snap = await getDocs(q);
-  const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  return products.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  return getCollectionProducts(category);
 };
 
 export const getProductById = async (id) => {
   const snap = await getDoc(doc(db, 'products', id));
   if (!snap.exists()) return null;
   return { id: snap.id, ...snap.data() };
+};
+
+/**
+ * Product Analytics for Admin Dashboard
+ */
+export const getProductAnalytics = async () => {
+  const prods = await getProducts();
+  const now = Date.now();
+
+  let newDropsCount = 0;
+  let saleProductsCount = 0;
+  let collectionProductsCount = 0;
+  let activeSaleCount = 0;
+  let scheduledSaleCount = 0;
+
+  prods.forEach(p => {
+    if (p.showInCollections !== false) collectionProductsCount++;
+    if (isProductNewDropActive(p)) newDropsCount++;
+    if (p.showInSale === true || (p.salePrice && Number(p.salePrice) > 0)) {
+      saleProductsCount++;
+      if (isProductSaleActive(p)) {
+        activeSaleCount++;
+      } else if (p.saleStartAt && new Date(p.saleStartAt).getTime() > now) {
+        scheduledSaleCount++;
+      }
+    }
+  });
+
+  return {
+    totalProducts: prods.length,
+    newDropsCount,
+    saleProductsCount,
+    collectionProductsCount,
+    activeSaleCount,
+    scheduledSaleCount,
+  };
 };
 
 export const addProduct = async (productData, imageFiles = []) => {
@@ -93,13 +155,27 @@ export const addProduct = async (productData, imageFiles = []) => {
     images = [...images, ...newImageUrls];
   }
 
-  console.log("[Firebase] Adding doc to Firestore...");
-  const docRef = await addDoc(collection(db, 'products'), {
+  // Sanitize numeric and boolean fields
+  const sanitized = {
     ...productData,
+    price: Math.max(0, Number(productData.price || 0)),
+    originalPrice: productData.originalPrice ? Math.max(0, Number(productData.originalPrice)) : null,
+    salePrice: productData.salePrice ? Math.max(0, Number(productData.salePrice)) : null,
+    showInCollections: productData.showInCollections !== undefined ? Boolean(productData.showInCollections) : true,
+    showInNewDrops: Boolean(productData.showInNewDrops),
+    showInSale: Boolean(productData.showInSale),
+    newDropPriority: Number(productData.newDropPriority) || 0,
+    salePriority: Number(productData.salePriority) || 0,
+    isFeatured: Boolean(productData.isFeatured || productData.featured),
+    featured: Boolean(productData.isFeatured || productData.featured),
+    isDrop: Boolean(productData.showInNewDrops),
     image: images[0] || '',
     images,
     createdAt: serverTimestamp(),
-  });
+  };
+
+  console.log("[Firebase] Adding doc to Firestore...");
+  const docRef = await addDoc(collection(db, 'products'), sanitized);
   console.log("[Firebase] Firestore Write successful. ID:", docRef.id);
   return docRef.id;
 };
@@ -117,11 +193,25 @@ export const updateProduct = async (id, productData, imageFiles = []) => {
     images = [...images, ...newImageUrls];
   }
 
-  await updateDoc(doc(db, 'products', id), {
+  const sanitized = {
     ...productData,
+    price: Math.max(0, Number(productData.price || 0)),
+    originalPrice: productData.originalPrice ? Math.max(0, Number(productData.originalPrice)) : null,
+    salePrice: productData.salePrice ? Math.max(0, Number(productData.salePrice)) : null,
+    showInCollections: productData.showInCollections !== undefined ? Boolean(productData.showInCollections) : true,
+    showInNewDrops: Boolean(productData.showInNewDrops),
+    showInSale: Boolean(productData.showInSale),
+    newDropPriority: Number(productData.newDropPriority) || 0,
+    salePriority: Number(productData.salePriority) || 0,
+    isFeatured: Boolean(productData.isFeatured || productData.featured),
+    featured: Boolean(productData.isFeatured || productData.featured),
+    isDrop: Boolean(productData.showInNewDrops),
     image: images[0] || '',
     images,
-  });
+    updatedAt: serverTimestamp(),
+  };
+
+  await updateDoc(doc(db, 'products', id), sanitized);
 };
 
 export const deleteProduct = async (id) => {

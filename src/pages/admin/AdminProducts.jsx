@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, X, Upload, Image, Sliders } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Upload, Image, Sliders, Flame, Tag, Layers, Search, Sparkles } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, bulkUpdateProducts } from '../../firebase/products';
 import { getSections } from '../../firebase/sections';
+import { isProductSaleActive, isProductNewDropActive } from '../../utils/pricing';
 import { getSizeGuides } from '../../firebase/sizeGuides';
 import toast from 'react-hot-toast';
 
@@ -12,6 +13,17 @@ const PLACEHOLDER = 'https://placehold.co/200x250/141414/888888?text=NX';
 const emptyForm = {
   name: '', price: '', originalPrice: '', campaignPrice: '', description: '', sizes: [], outOfStockSizes: [], featured: false, isDrop: false,
   inStock: true, material: '', fit: 'Oversized', image: '', category: 'shop', colors: [],
+  showInCollections: true,
+  showInNewDrops: false,
+  showInSale: false,
+  newDropPriority: 0,
+  salePriority: 0,
+  salePrice: '',
+  saleStartAt: '',
+  saleEndAt: '',
+  newDropStartAt: '',
+  newDropEndAt: '',
+  saleCampaignImage: '',
 };
 
 // Extremely aggressive native image compressor to convert generic photos to fast WebP formats
@@ -103,6 +115,20 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
       toast.error('Name and price are required.', { className: 'toast-vybera' });
       return;
     }
+    if (Number(form.price) < 0) {
+      toast.error('Price cannot be negative.', { className: 'toast-vybera' });
+      return;
+    }
+    if (form.showInSale) {
+      if (!form.salePrice || Number(form.salePrice) <= 0) {
+        toast.error('Please enter a valid Sale Price greater than ₹0.', { className: 'toast-vybera' });
+        return;
+      }
+      if (Number(form.salePrice) >= Number(form.price)) {
+        toast.error(`Sale Price (₹${form.salePrice}) must be lower than Selling Price (₹${form.price}).`, { className: 'toast-vybera' });
+        return;
+      }
+    }
     
     try {
       if (imageFiles.length > 0) {
@@ -116,9 +142,18 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
       const safeForm = Object.fromEntries(Object.entries(form).filter(([_, v]) => v !== undefined));
       const data = { 
         ...safeForm, 
-        price: Number(form.price), 
-        originalPrice: form.originalPrice ? Number(form.originalPrice) : null,
-        campaignPrice: form.campaignPrice ? Number(form.campaignPrice) : null,
+        price: Math.max(0, Number(form.price)), 
+        originalPrice: form.originalPrice ? Math.max(0, Number(form.originalPrice)) : null,
+        campaignPrice: form.campaignPrice ? Math.max(0, Number(form.campaignPrice)) : null,
+        salePrice: form.salePrice ? Math.max(0, Number(form.salePrice)) : null,
+        showInCollections: form.showInCollections !== undefined ? Boolean(form.showInCollections) : true,
+        showInNewDrops: Boolean(form.showInNewDrops),
+        showInSale: Boolean(form.showInSale),
+        newDropPriority: Number(form.newDropPriority) || 0,
+        salePriority: Number(form.salePriority) || 0,
+        isFeatured: Boolean(form.featured || form.isFeatured),
+        featured: Boolean(form.featured || form.isFeatured),
+        isDrop: Boolean(form.showInNewDrops),
         images: existingImages 
       };
       
@@ -427,18 +462,235 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
             </div>
           )}
 
-          <div className="flex gap-6">
-            {[['featured', 'Featured'], ['isDrop', 'Limited Drop'], ['inStock', 'In Stock']].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 cursor-pointer">
+          {/* ══════════════════════════════════════════════════════════
+              PRODUCT DISPLAY SETTINGS (MANUAL HOMEPAGE & SECTION CONTROL)
+          ══════════════════════════════════════════════════════════ */}
+          <div className="bg-[#FAF5ED] border-2 border-[#D4BEA5] p-5 rounded-xs space-y-4 shadow-xs">
+            <div className="flex items-center justify-between border-b border-[#D4BEA5] pb-2">
+              <span className="text-xs font-black tracking-widest text-[#590907] uppercase">
+                Product Display Settings
+              </span>
+              <span className="text-[10px] text-[#75665C] font-semibold">
+                Select where this product appears
+              </span>
+            </div>
+
+            {/* Three Master Checkboxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* 1. Show in Collections */}
+              <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
+                form.showInCollections ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
+              }`}>
                 <input
                   type="checkbox"
-                  checked={form[key] !== undefined ? form[key] : true}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.checked }))}
-                  className="w-4 h-4 accent-white"
+                  checked={form.showInCollections !== false}
+                  onChange={e => setForm(f => ({ ...f, showInCollections: e.target.checked }))}
+                  className="mt-0.5 w-4 h-4 accent-[#590907]"
                 />
-                <span className="text-vy-grey text-xs tracking-widest uppercase">{label}</span>
+                <div>
+                  <span className="font-bold text-xs uppercase tracking-wider block">Collections</span>
+                  <span className="text-[10px] text-[#75665C] block">Visible in regular catalog</span>
+                </div>
               </label>
-            ))}
+
+              {/* 2. Show in New Drops */}
+              <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
+                form.showInNewDrops ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.showInNewDrops)}
+                  onChange={e => setForm(f => ({ ...f, showInNewDrops: e.target.checked, isDrop: e.target.checked }))}
+                  className="mt-0.5 w-4 h-4 accent-[#590907]"
+                />
+                <div>
+                  <span className="font-bold text-xs uppercase tracking-wider block">New Drops</span>
+                  <span className="text-[10px] text-[#75665C] block">Hero drops & /new-drops</span>
+                </div>
+              </label>
+
+              {/* 3. Show in Sale */}
+              <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
+                form.showInSale ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.showInSale)}
+                  onChange={e => setForm(f => ({ ...f, showInSale: e.target.checked }))}
+                  className="mt-0.5 w-4 h-4 accent-[#590907]"
+                />
+                <div>
+                  <span className="font-bold text-xs uppercase tracking-wider block">Sale Section</span>
+                  <span className="text-[10px] text-[#75665C] block">Homepage sale & /sale</span>
+                </div>
+              </label>
+            </div>
+
+            {/* Conditional New Drop Settings */}
+            {form.showInNewDrops && (
+              <div className="pt-3 border-t border-[#D4BEA5] space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#590907] animate-pulse" />
+                  <span className="text-[11px] font-bold text-[#590907] uppercase tracking-wider">
+                    New Drop Controls
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Display Priority (Higher = First)
+                    </label>
+                    <input
+                      name="newDropPriority"
+                      type="number"
+                      value={form.newDropPriority ?? 0}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Drop Start Date (Optional)
+                    </label>
+                    <input
+                      name="newDropStartAt"
+                      type="datetime-local"
+                      value={form.newDropStartAt || ''}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Drop End Date (Optional)
+                    </label>
+                    <input
+                      name="newDropEndAt"
+                      type="datetime-local"
+                      value={form.newDropEndAt || ''}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Conditional Sale Settings */}
+            {form.showInSale && (
+              <div className="pt-3 border-t border-[#D4BEA5] space-y-3 bg-[#FAF5ED] p-3 border border-[#D4BEA5]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black text-[#590907] uppercase tracking-wider flex items-center gap-2">
+                    <span className="px-1.5 py-0.5 bg-[#590907] text-white text-[9px]">SALE</span>
+                    Sale Price & Campaign Controls
+                  </span>
+                  {/* Live Discount Calculator Preview */}
+                  {form.price && form.salePrice && Number(form.salePrice) < Number(form.price) && (
+                    <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-full">
+                      🔥 Save {Math.round(((Number(form.price) - Number(form.salePrice)) / Number(form.price)) * 100)}% OFF
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#590907] uppercase tracking-wider block mb-1">
+                      Sale Price (₹) *
+                    </label>
+                    <input
+                      name="salePrice"
+                      type="number"
+                      value={form.salePrice ?? ''}
+                      onChange={onChange}
+                      className="vy-input text-xs border-[#590907] font-bold"
+                      placeholder="e.g. 599"
+                      required={form.showInSale}
+                    />
+                    <p className="text-[9px] text-[#75665C] mt-0.5">Must be less than regular price (₹{form.price || 0})</p>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Sale Start Date
+                    </label>
+                    <input
+                      name="saleStartAt"
+                      type="datetime-local"
+                      value={form.saleStartAt || ''}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Sale End Date
+                    </label>
+                    <input
+                      name="saleEndAt"
+                      type="datetime-local"
+                      value={form.saleEndAt || ''}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Sale Display Priority
+                    </label>
+                    <input
+                      name="salePriority"
+                      type="number"
+                      value={form.salePriority ?? 0}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-[#75665C] uppercase tracking-wider block mb-1">
+                      Sale Campaign Banner URL (Optional)
+                    </label>
+                    <input
+                      name="saleCampaignImage"
+                      type="text"
+                      value={form.saleCampaignImage || ''}
+                      onChange={onChange}
+                      className="vy-input text-xs"
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* General Attributes: Featured & In Stock */}
+            <div className="flex items-center gap-6 pt-2 border-t border-[#D4BEA5]">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.isFeatured || form.featured)}
+                  onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked, featured: e.target.checked }))}
+                  className="w-4 h-4 accent-[#590907]"
+                />
+                <span className="text-xs font-bold uppercase tracking-wider text-[#30231F]">Featured Product</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.inStock !== false}
+                  onChange={e => setForm(f => ({ ...f, inStock: e.target.checked }))}
+                  className="w-4 h-4 accent-[#590907]"
+                />
+                <span className="text-xs font-bold uppercase tracking-wider text-[#30231F]">In Stock</span>
+              </label>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -639,6 +891,22 @@ const AdminProducts = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [sectionTab, setSectionTab] = useState('all'); // 'all' | 'drops' | 'sale' | 'collections'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const handleToggleSection = async (product, field) => {
+    try {
+      const nextVal = !product[field];
+      const payload = { [field]: nextVal };
+      if (field === 'showInNewDrops') payload.isDrop = nextVal;
+      await updateProduct(product.id, payload);
+      toast.success(`Updated ${product.name} display settings.`, { className: 'toast-vybera' });
+      fetchProducts();
+    } catch {
+      toast.error('Failed to update display settings.', { className: 'toast-vybera' });
+    }
+  };
 
   const handleBulkUpdate = async (scope, data) => {
     const targetIds = scope === 'selected' ? selectedIds : products.map(p => p.id);
@@ -713,14 +981,49 @@ const AdminProducts = () => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
+    // Analytics calculations
+  const newDropsCount = products.filter(p => isProductNewDropActive(p)).length;
+  const saleProductsCount = products.filter(p => p.showInSale === true || (p.salePrice && Number(p.salePrice) > 0)).length;
+  const activeSaleCount = products.filter(p => isProductSaleActive(p)).length;
+  const collectionProductsCount = products.filter(p => p.showInCollections !== false).length;
+
+  // Filter products based on search, category and section tab
+  const displayedProducts = products.filter(p => {
+    // 1. Section tab filter
+    if (sectionTab === 'drops' && !isProductNewDropActive(p)) return false;
+    if (sectionTab === 'sale' && !isProductSaleActive(p) && !p.showInSale) return false;
+    if (sectionTab === 'collections' && p.showInCollections === false) return false;
+
+    // 2. Category filter
+    if (categoryFilter !== 'all' && (p.category || 'normal').toLowerCase() !== categoryFilter.toLowerCase()) {
+      return false;
+    }
+
+    // 3. Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchName = p.name?.toLowerCase().includes(q);
+      const matchCat = p.category?.toLowerCase().includes(q);
+      if (!matchName && !matchCat) return false;
+    }
+
+    return true;
+  });
+
   return (
     <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#D4BEA5]">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-[#D4BEA5]">
         <div>
           <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
-          <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">Products</h1>
+          <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">
+            Product Catalog & Section Manager
+          </h1>
+          <p className="text-xs text-[#75665C] mt-1">
+            Manually control product display across New Drops, Sale, and Collections.
+          </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <AnimatePresence>
             {selectedIds.length > 0 && (
               <motion.button
@@ -743,94 +1046,336 @@ const AdminProducts = () => {
               <Sliders size={13} /> Bulk Edit
             </button>
           )}
-          <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs font-bold">
+          <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs font-bold shadow-md">
             <Plus size={13} /> Add Product
           </button>
         </div>
       </div>
 
+      {/* ── 7. Admin Dashboard Analytics Cards (4 Metrics) ──────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Products */}
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#75665C]">Total Products</span>
+            <Layers size={16} className="text-[#30231F]" />
+          </div>
+          <p className="font-display font-bold text-3xl text-[#30231F]">{products.length}</p>
+          <p className="text-[10px] text-[#75665C] mt-1">Full inventory database</p>
+        </div>
+
+        {/* New Drops */}
+        <div
+          onClick={() => setSectionTab('drops')}
+          className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 shadow-xs cursor-pointer hover:border-[#590907] transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#590907] flex items-center gap-1.5">
+              <Flame size={12} className="text-[#590907]" /> New Drops
+            </span>
+            <span className="w-2 h-2 rounded-full bg-[#590907] animate-pulse" />
+          </div>
+          <p className="font-display font-bold text-3xl text-[#590907]">{newDropsCount}</p>
+          <p className="text-[10px] text-[#75665C] mt-1 group-hover:text-[#590907]">Assigned by admin to Drops</p>
+        </div>
+
+        {/* Sale Products */}
+        <div
+          onClick={() => setSectionTab('sale')}
+          className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 shadow-xs cursor-pointer hover:border-[#D4AF37] transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-900 flex items-center gap-1.5">
+              <Tag size={12} className="text-amber-700" /> Sale Products
+            </span>
+            <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-xs">
+              {activeSaleCount} Live
+            </span>
+          </div>
+          <p className="font-display font-bold text-3xl text-amber-900">{saleProductsCount}</p>
+          <p className="text-[10px] text-[#75665C] mt-1 group-hover:text-amber-900">
+            {saleProductsCount - activeSaleCount > 0 ? `${saleProductsCount - activeSaleCount} scheduled` : 'Discounted items'}
+          </p>
+        </div>
+
+        {/* Collections */}
+        <div
+          onClick={() => setSectionTab('collections')}
+          className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 shadow-xs cursor-pointer hover:border-[#30231F] transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#30231F]">Collections Catalog</span>
+            <Sparkles size={16} className="text-[#75665C]" />
+          </div>
+          <p className="font-display font-bold text-3xl text-[#30231F]">{collectionProductsCount}</p>
+          <p className="text-[10px] text-[#75665C] mt-1 group-hover:text-[#30231F]">All standard collections</p>
+        </div>
+      </div>
+
+      {/* ── Section Filter Tabs & Search Controls ─────────────────────── */}
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Tabs */}
+        <div className="flex flex-wrap items-center gap-1 bg-[#E8D2B5]/50 p-1 rounded-xs border border-[#D4BEA5]">
+          <button
+            type="button"
+            onClick={() => setSectionTab('all')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-all ${
+              sectionTab === 'all'
+                ? 'bg-[#590907] text-white shadow-xs'
+                : 'text-[#75665C] hover:text-[#30231F]'
+            }`}
+          >
+            All Products ({products.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSectionTab('drops')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-all flex items-center gap-1.5 ${
+              sectionTab === 'drops'
+                ? 'bg-[#590907] text-white shadow-xs'
+                : 'text-[#75665C] hover:text-[#590907]'
+            }`}
+          >
+            <Flame size={12} /> New Drops ({newDropsCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSectionTab('sale')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-all flex items-center gap-1.5 ${
+              sectionTab === 'sale'
+                ? 'bg-[#590907] text-white shadow-xs'
+                : 'text-[#75665C] hover:text-[#590907]'
+            }`}
+          >
+            <Tag size={12} /> On Sale ({saleProductsCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSectionTab('collections')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-all ${
+              sectionTab === 'collections'
+                ? 'bg-[#590907] text-white shadow-xs'
+                : 'text-[#75665C] hover:text-[#30231F]'
+            }`}
+          >
+            Collections ({collectionProductsCount})
+          </button>
+        </div>
+
+        {/* Search & Category Filter */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 sm:w-60">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#75665C]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search products..."
+              className="w-full pl-9 pr-3 py-1.5 bg-white border border-[#D4BEA5] text-[#30231F] text-xs rounded-xs focus:outline-none focus:border-[#590907]"
+            />
+          </div>
+
+          <select
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="py-1.5 px-3 bg-white border border-[#D4BEA5] text-[#30231F] text-xs rounded-xs focus:outline-none focus:border-[#590907]"
+          >
+            <option value="all">All Categories</option>
+            {sections.map(s => (
+              <option key={s.slug} value={s.slug}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* ── Products Table ────────────────────────────────────────────── */}
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : (
-        <div className="bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm overflow-hidden rounded-sm">
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm overflow-x-auto rounded-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b-2 border-[#D4BEA5] bg-[#FAF5ED]">
                 <th className="px-4 py-3.5 w-10">
                   <input
                     type="checkbox"
-                    checked={products.length > 0 && selectedIds.length === products.length}
+                    checked={displayedProducts.length > 0 && selectedIds.length === displayedProducts.length}
                     onChange={toggleSelectAll}
                     className="w-4 h-4 accent-[#590907] rounded-none cursor-pointer"
                   />
                 </th>
-                {['Image', 'Name', 'Price', 'Category', 'Stock', 'Sizes', 'Featured', 'Drop', 'Actions'].map(h => (
-                  <th key={h} className="text-[#75665C] text-xs tracking-widest uppercase text-left px-4 py-3.5 font-bold">{h}</th>
-                ))}
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-3 py-3.5 font-bold">Image</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-4 py-3.5 font-bold">Product</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-3 py-3.5 font-bold">Regular</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-3 py-3.5 font-bold">Sale Price</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-3 py-3.5 font-bold">Display Sections</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-3 py-3.5 font-bold">Category</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-left px-3 py-3.5 font-bold">Stock</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-center px-3 py-3.5 font-bold">Quick Section Toggle</th>
+                <th className="text-[#75665C] text-xs tracking-widest uppercase text-right px-4 py-3.5 font-bold">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {products.map(p => (
-                <tr key={p.id} className={`border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors ${selectedIds.includes(p.id) ? 'bg-[#E8D2B5]/40' : ''}`}>
-                  <td className="px-4 py-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(p.id)}
-                      onChange={() => toggleSelectOne(p.id)}
-                      className="w-4 h-4 accent-[#590907] rounded-none cursor-pointer"
-                    />
-                  </td>
-                  <td className="px-4 py-4">
-                    <img src={p.images?.[0] || p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-cover bg-[#E8D2B5] border border-[#D4BEA5] rounded-xs" />
-                  </td>
-                  <td className="px-4 py-3 text-[#30231F] font-bold max-w-xs truncate">{p.name}</td>
-                  <td className="px-4 py-3 text-[#590907] font-bold">₹{p.price?.toLocaleString()}</td>
-                  <td className="px-4 py-3">
-                    <span className="text-xs text-[#30231F] font-semibold capitalize px-2 py-0.5 border border-[#D4BEA5] bg-[#E8D2B5] rounded-xs">
-                      {p.category || 'normal'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-xs font-semibold ${p.inStock !== false ? 'text-emerald-900 bg-emerald-100 border border-emerald-300' : 'text-rose-900 bg-rose-100 border border-rose-300'}`}>
-                      {p.inStock !== false ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-[#75665C] text-xs font-medium">{p.sizes?.join(', ') || '—'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-bold ${p.featured ? 'text-emerald-800' : 'text-[#75665C]'}`}>
-                      {p.featured ? '✓' : '—'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`text-xs font-bold ${p.isDrop ? 'text-blue-800' : 'text-[#75665C]'}`}>
-                      {p.isDrop ? '✓' : '—'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setModal(p)}
-                        className="p-1.5 text-[#590907] hover:bg-[#E8D2B5] rounded-xs transition-colors"
-                        title="Edit"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(p)}
-                        className="p-1.5 text-rose-700 hover:bg-rose-100 rounded-xs transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {displayedProducts.map(p => {
+                const isSale = isProductSaleActive(p);
+                const isDrop = isProductNewDropActive(p);
+                const isColl = p.showInCollections !== false;
+                const regPrice = Number(p.price || 0);
+                const sPrice = Number(p.salePrice || 0);
+                const discount = regPrice > sPrice && sPrice > 0 ? Math.round(((regPrice - sPrice) / regPrice) * 100) : 0;
+
+                return (
+                  <tr key={p.id} className={`border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors ${selectedIds.includes(p.id) ? 'bg-[#E8D2B5]/40' : ''}`}>
+                    <td className="px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(p.id)}
+                        onChange={() => toggleSelectOne(p.id)}
+                        className="w-4 h-4 accent-[#590907] rounded-none cursor-pointer"
+                      />
+                    </td>
+                    <td className="px-3 py-3">
+                      <img src={p.images?.[0] || p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-cover bg-[#E8D2B5] border border-[#D4BEA5] rounded-xs" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-[#30231F] font-bold max-w-xs truncate">{p.name}</p>
+                      <p className="text-[10px] text-[#75665C]">{p.sizes?.join(', ') || 'Sizes: N/A'}</p>
+                    </td>
+                    <td className="px-3 py-3 text-[#30231F] font-bold font-mono">
+                      ₹{regPrice.toLocaleString()}
+                    </td>
+                    <td className="px-3 py-3">
+                      {isSale ? (
+                        <div className="flex flex-col">
+                          <span className="font-bold text-[#590907] font-mono">₹{sPrice.toLocaleString()}</span>
+                          <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1 py-0.2 rounded-xs w-max">
+                            -{discount}% OFF
+                          </span>
+                        </div>
+                      ) : p.showInSale ? (
+                        <span className="text-[10px] text-amber-700 italic">Scheduled (₹{sPrice})</span>
+                      ) : (
+                        <span className="text-[#75665C] text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {isColl && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F]">
+                            Collections
+                          </span>
+                        )}
+                        {isDrop && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[#590907] text-[#FAF5ED]">
+                            Drop {p.newDropPriority ? `#${p.newDropPriority}` : ''}
+                          </span>
+                        )}
+                        {isSale && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-900 border border-amber-300">
+                            Sale
+                          </span>
+                        )}
+                        {!isColl && !isDrop && !isSale && (
+                          <span className="text-[9px] text-[#75665C] italic">Hidden</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="text-xs text-[#30231F] font-semibold capitalize px-2 py-0.5 border border-[#D4BEA5] bg-[#E8D2B5] rounded-xs">
+                        {p.category || 'normal'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-xs font-semibold ${p.inStock !== false ? 'text-emerald-900 bg-emerald-100 border border-emerald-300' : 'text-rose-900 bg-rose-100 border border-rose-300'}`}>
+                        {p.inStock !== false ? 'In Stock' : 'Out'}
+                      </span>
+                    </td>
+                    {/* Quick Section Toggles */}
+                    <td className="px-3 py-3 text-center">
+                      <div className="inline-flex items-center gap-1 border border-[#D4BEA5] p-1 bg-white rounded-xs">
+                        {/* Toggle Drops */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSection(p, 'showInNewDrops')}
+                          className={`px-2 py-1 text-[9px] font-bold uppercase transition-all rounded-xs ${
+                            isDrop
+                              ? 'bg-[#590907] text-white shadow-xs'
+                              : 'text-[#75665C] hover:bg-[#E8D2B5]/50'
+                          }`}
+                          title="Click to add or remove from New Drops"
+                        >
+                          Drop
+                        </button>
+
+                        {/* Toggle Sale */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!p.salePrice && !p.showInSale) {
+                              setModal(p);
+                              toast('Please set a sale price in Product Display Settings.', { icon: '🏷️' });
+                            } else {
+                              handleToggleSection(p, 'showInSale');
+                            }
+                          }}
+                          className={`px-2 py-1 text-[9px] font-bold uppercase transition-all rounded-xs ${
+                            isSale
+                              ? 'bg-amber-600 text-white shadow-xs'
+                              : 'text-[#75665C] hover:bg-[#E8D2B5]/50'
+                          }`}
+                          title="Click to toggle Sale status"
+                        >
+                          Sale
+                        </button>
+
+                        {/* Toggle Collections */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSection(p, 'showInCollections')}
+                          className={`px-2 py-1 text-[9px] font-bold uppercase transition-all rounded-xs ${
+                            isColl
+                              ? 'bg-[#30231F] text-white shadow-xs'
+                              : 'text-[#75665C] hover:bg-[#E8D2B5]/50'
+                          }`}
+                          title="Click to toggle Collections visibility"
+                        >
+                          Coll
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => setModal(p)}
+                          className="p-1.5 text-[#590907] hover:bg-[#E8D2B5] rounded-xs transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(p)}
+                          className="p-1.5 text-rose-700 hover:bg-rose-100 rounded-xs transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
-          {products.length === 0 && (
+          {displayedProducts.length === 0 && (
             <div className="text-center py-16 text-[#75665C]">
-              <p className="text-sm tracking-widest uppercase">No products yet</p>
+              <p className="text-sm tracking-widest uppercase">No products found in this section</p>
+              <button
+                type="button"
+                onClick={() => { setSectionTab('all'); setSearchQuery(''); setCategoryFilter('all'); }}
+                className="mt-2 text-xs font-bold text-[#590907] underline"
+              >
+                Reset Filters
+              </button>
             </div>
           )}
         </div>

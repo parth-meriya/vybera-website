@@ -19,7 +19,14 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getFeaturedProducts, getDropProducts, getProducts } from '../firebase/products';
+import {
+  getFeaturedProducts,
+  getDropProducts,
+  getProducts,
+  getNewDropProducts,
+  getSaleProducts,
+  getCollectionProducts,
+} from '../firebase/products';
 import { getDiwaliCampaign, isCampaignActive, DEFAULT_DIWALI_CAMPAIGN } from '../firebase/diwaliCampaign';
 import { getShoppableVideos, DEFAULT_SHOPPABLE_VIDEOS } from '../firebase/shoppableVideos';
 import CountdownTimer from '../components/ui/CountdownTimer';
@@ -101,9 +108,24 @@ const FALLBACK_PRODUCTS = [
   },
 ];
 
+const POPULAR_COLLECTIONS = [
+  { name: 'Oversized', label: 'Oversized', icon: '🔥' },
+  { name: 'Anime', label: 'Anime', icon: '⚡' },
+  { name: 'Gaming', label: 'Gaming', icon: '🎮' },
+  { name: 'Meme', label: 'Meme', icon: '✨' },
+  { name: 'Coffee', label: 'Coffee', icon: '☕' },
+  { name: 'Cute Mascot', label: 'Cute Mascot', icon: '🧸' },
+  { name: 'Custom Designs', label: 'Custom Designs', icon: '🎨' },
+  { name: 'Couple', label: 'Couple', icon: '🖤' },
+  { name: 'Embroidery', label: 'Embroidery', icon: '🧵' },
+  { name: 'Kids', label: 'Kids', icon: '⭐' },
+];
+
 const Home = () => {
   const [campaign, setCampaign] = useState(DEFAULT_DIWALI_CAMPAIGN);
   const [drops, setDrops] = useState([]);
+  const [saleProducts, setSaleProducts] = useState([]);
+  const [collections, setCollections] = useState([]);
   const [bestsellers, setBestsellers] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,28 +140,39 @@ const Home = () => {
     // Parallel fetching for ultra-fast initial render
     Promise.all([
       getDiwaliCampaign().catch(() => DEFAULT_DIWALI_CAMPAIGN),
-      getDropProducts().catch(() => []),
+      getNewDropProducts().catch(() => []),
+      getSaleProducts().catch(() => []),
+      getCollectionProducts().catch(() => []),
       getFeaturedProducts().catch(() => []),
-      getProducts().catch(() => []),
       getShoppableVideos().catch(() => DEFAULT_SHOPPABLE_VIDEOS),
     ])
-      .then(([camp, dropList, featList, allProds, vidList]) => {
+      .then(([camp, dropList, saleList, colList, featList, vidList]) => {
         setCampaign(camp);
 
         // Populate drops
         if (dropList && dropList.length > 0) {
           setDrops(dropList.slice(0, 4));
-        } else if (allProds && allProds.length > 0) {
-          setDrops(allProds.slice(0, 4));
         } else {
           setDrops(FALLBACK_PRODUCTS.slice(0, 4));
+        }
+
+        // Populate sale products
+        if (saleList && saleList.length > 0) {
+          setSaleProducts(saleList.slice(0, 4));
+        } else {
+          setSaleProducts(FALLBACK_PRODUCTS.filter((p) => p.compareAtPrice > p.price).slice(0, 4));
+        }
+
+        // Populate collections
+        if (colList && colList.length > 0) {
+          setCollections(colList.slice(0, 4));
+        } else {
+          setCollections(FALLBACK_PRODUCTS.slice(0, 4));
         }
 
         // Populate bestsellers (4-6 products)
         if (featList && featList.length >= 4) {
           setBestsellers(featList.slice(0, 6));
-        } else if (allProds && allProds.length >= 4) {
-          setBestsellers(allProds.slice(0, 6));
         } else {
           setBestsellers(FALLBACK_PRODUCTS.slice(0, 6));
         }
@@ -150,6 +183,8 @@ const Home = () => {
       .catch((err) => {
         console.error('Home data load error:', err);
         setDrops(FALLBACK_PRODUCTS.slice(0, 4));
+        setSaleProducts(FALLBACK_PRODUCTS.slice(0, 4));
+        setCollections(FALLBACK_PRODUCTS.slice(0, 4));
         setBestsellers(FALLBACK_PRODUCTS.slice(0, 6));
         setVideos(DEFAULT_SHOPPABLE_VIDEOS);
         setLoading(false);
@@ -334,7 +369,7 @@ const Home = () => {
       </div>
 
       {/* ══════════════════════════════════════════════════════════════
-          SECTION 2 — NEW DROP
+          SECTION 2 — NEW DROPS
       ══════════════════════════════════════════════════════════════ */}
       <section className="section-pad bg-[#FAF5ED]">
         <div className="max-w-7xl mx-auto">
@@ -344,7 +379,7 @@ const Home = () => {
               <div className="flex items-center gap-2 text-[#590907] mb-1">
                 <span className="w-2 h-2 rounded-full bg-[#590907] animate-pulse" />
                 <span className="text-[10px] font-bold tracking-[0.3em] uppercase">
-                  LIMITED RELEASE
+                  MANUALLY CURATED • LIMITED RELEASE
                 </span>
               </div>
               <h2 className="font-display font-black text-3xl md:text-5xl tracking-tight uppercase text-[#30231F]">
@@ -352,7 +387,7 @@ const Home = () => {
               </h2>
             </div>
             <Link
-              to="/shop?filter=drops"
+              to="/new-drops"
               className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#590907] hover:text-[#430605] group"
             >
               Shop All Drops{' '}
@@ -366,6 +401,95 @@ const Home = () => {
           {/* Product Grid: 2 columns on mobile, 4 columns on desktop */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {drops.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SECTION 3 — SALE (LIMITED TIME OFFERS)
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="section-pad bg-[#F3E7D8] border-y border-[#E5DACD] relative">
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-4 border-b border-[#D4BEA5]">
+            <div>
+              <div className="flex items-center gap-2 text-[#590907] mb-1">
+                <Flame size={14} className="text-[#590907]" />
+                <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#590907]">
+                  FESTIVE & CLEARANCE PRICING
+                </span>
+              </div>
+              <h2 className="font-display font-black text-3xl md:text-5xl tracking-tight uppercase text-[#30231F]">
+                LIMITED TIME SALE
+              </h2>
+            </div>
+            <Link
+              to="/sale"
+              className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#590907] hover:text-[#430605] group"
+            >
+              Shop All Sale Fits{' '}
+              <ArrowRight
+                size={14}
+                className="group-hover:translate-x-1 transition-transform"
+              />
+            </Link>
+          </div>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {saleProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════
+          SECTION 4 — SHOP COLLECTIONS (ALL REGULAR & OLDER DESIGNS)
+      ══════════════════════════════════════════════════════════════ */}
+      <section className="section-pad bg-[#FAF5ED]">
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pb-4 border-b border-[#E5DACD]">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#75665C] mb-1">
+                FULL ARCHIVE & BRAND AESTHETICS
+              </p>
+              <h2 className="font-display font-black text-3xl md:text-5xl tracking-tight uppercase text-[#30231F]">
+                SHOP COLLECTIONS
+              </h2>
+            </div>
+            <Link
+              to="/collections"
+              className="inline-flex items-center gap-2 text-xs font-bold tracking-[0.2em] uppercase text-[#590907] hover:text-[#430605] group"
+            >
+              Explore All Collections{' '}
+              <ArrowRight
+                size={14}
+                className="group-hover:translate-x-1 transition-transform"
+              />
+            </Link>
+          </div>
+
+          {/* Quick Collection Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+            {POPULAR_COLLECTIONS.map((c) => (
+              <Link
+                key={c.name}
+                to={`/collections?category=${encodeURIComponent(c.name)}`}
+                className="px-4 py-2 bg-[#FAF5ED] hover:bg-[#590907] hover:text-white border border-[#D4BEA5] text-[#30231F] text-xs font-bold tracking-wider uppercase whitespace-nowrap transition-all flex items-center gap-2 shadow-sm"
+              >
+                <span>{c.icon}</span>
+                <span>{c.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {collections.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
@@ -435,7 +559,7 @@ const Home = () => {
             </div>
 
             <Link
-              to="/shop?category=Oversized"
+              to="/collections?category=Oversized"
               className="btn-primary inline-flex !py-4 !px-9 text-xs"
             >
               EXPLORE COLLECTION

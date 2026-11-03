@@ -100,13 +100,13 @@ const Footer = () => {
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link to="/shop?filter=drops" className="text-[#FAF5ED]/80 hover:text-white transition-colors">
+                <Link to="/new-drops" className="text-[#FAF5ED]/80 hover:text-white transition-colors">
                   New Drops
                 </Link>
               </li>
               <li>
-                <Link to="/shop" className="text-[#FAF5ED]/80 hover:text-white transition-colors">
-                  Oversized Collection
+                <Link to="/collections" className="text-[#FAF5ED]/80 hover:text-white transition-colors">
+                  Collections Catalog
                 </Link>
               </li>
               <li>
@@ -115,8 +115,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/shop?filter=sale" className="text-[#FAF5ED]/80 hover:text-white transition-colors">
-                  Festive Sale Drops
+                <Link to="/sale" className="text-[#FAF5ED]/80 hover:text-white transition-colors">
+                  Festive Sale Fits
                 </Link>
               </li>
               <li>

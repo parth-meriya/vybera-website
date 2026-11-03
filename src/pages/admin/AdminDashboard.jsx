@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Package, ShoppingCart, Users, DollarSign, TrendingUp, Plus, Copy, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '../../firebase/products';
+import { isProductSaleActive, isProductNewDropActive } from '../../utils/pricing';
 import { getAllOrders, updateOrderStatus } from '../../firebase/orders';
 import { getAllUsers } from '../../firebase/users';
 import toast from 'react-hot-toast';
@@ -104,6 +105,63 @@ const AdminDashboard = () => {
         <StatCard icon={ShoppingCart} label="Orders" value={orders.length} sub={`${orders.filter(o=>(o.status?.toLowerCase() || 'pending') === 'pending').length} pending`} color="bg-amber-50 text-amber-800 border border-amber-200" />
         <StatCard icon={Users} label="Users" value={users.length} color="bg-emerald-50 text-emerald-800 border border-emerald-200" />
         <StatCard icon={DollarSign} label="Revenue" value={`₹${revenue.toLocaleString()}`} isCurrency={true} color="bg-rose-50 text-[#590907] border border-rose-200" />
+      </div>
+
+      {/* ── Product Categorization & Display Analytics ──────────────── */}
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-[#D4BEA5] pb-3">
+          <div>
+            <h2 className="text-[#30231F] font-bold text-sm tracking-wider uppercase flex items-center gap-2">
+              <Package size={16} className="text-[#590907]" /> Product Categorization & Section Analytics
+            </h2>
+            <p className="text-[11px] text-[#75665C]">Real-time visibility across New Drops, Sale, and Collections</p>
+          </div>
+          <Link to="/admin/products" className="text-[#590907] text-xs hover:underline font-bold tracking-widest uppercase">
+            Manage Products →
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-1">
+          <div className="p-3 bg-white border border-[#D4BEA5] rounded-xs">
+            <span className="text-[10px] text-[#75665C] uppercase font-bold block mb-1">Total Products</span>
+            <span className="font-display font-bold text-2xl text-[#30231F]">{products.length}</span>
+          </div>
+
+          <div className="p-3 bg-white border border-[#D4BEA5] rounded-xs">
+            <span className="text-[10px] text-[#590907] uppercase font-bold block mb-1">New Drops</span>
+            <span className="font-display font-bold text-2xl text-[#590907]">
+              {products.filter(p => isProductNewDropActive(p)).length}
+            </span>
+          </div>
+
+          <div className="p-3 bg-white border border-[#D4BEA5] rounded-xs">
+            <span className="text-[10px] text-amber-900 uppercase font-bold block mb-1">Sale Products</span>
+            <span className="font-display font-bold text-2xl text-amber-900">
+              {products.filter(p => p.showInSale === true || (p.salePrice && Number(p.salePrice) > 0)).length}
+            </span>
+          </div>
+
+          <div className="p-3 bg-white border border-[#D4BEA5] rounded-xs">
+            <span className="text-[10px] text-emerald-900 uppercase font-bold block mb-1">Active Sale</span>
+            <span className="font-display font-bold text-2xl text-emerald-700">
+              {products.filter(p => isProductSaleActive(p)).length}
+            </span>
+          </div>
+
+          <div className="p-3 bg-white border border-[#D4BEA5] rounded-xs">
+            <span className="text-[10px] text-[#75665C] uppercase font-bold block mb-1">Scheduled Sale</span>
+            <span className="font-display font-bold text-2xl text-[#75665C]">
+              {products.filter(p => p.showInSale && p.saleStartAt && new Date(p.saleStartAt).getTime() > Date.now()).length}
+            </span>
+          </div>
+
+          <div className="p-3 bg-white border border-[#D4BEA5] rounded-xs">
+            <span className="text-[10px] text-[#30231F] uppercase font-bold block mb-1">Collections</span>
+            <span className="font-display font-bold text-2xl text-[#30231F]">
+              {products.filter(p => p.showInCollections !== false).length}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

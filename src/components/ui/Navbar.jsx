@@ -75,10 +75,10 @@ const Navbar = () => {
   // - Customize
   // - Sale
   const primaryNavLinks = [
-    { label: 'New Drops', to: '/shop?filter=drops', badge: 'NEW' },
-    { label: 'Collections', to: '/shop' },
+    { label: 'New Drops', to: '/new-drops', badge: 'NEW' },
+    { label: 'Collections', to: '/collections' },
     { label: 'Customize', to: '/customize', badge: 'USP' },
-    { label: 'Sale', to: '/shop?filter=sale', isSale: true },
+    { label: 'Sale', to: '/sale', isSale: true },
     ...(isAdmin ? [{ label: 'Admin', to: '/admin', isAdmin: true }] : []),
   ];
 

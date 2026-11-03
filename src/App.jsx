@@ -17,6 +17,9 @@ import DiwaliCampaignCoordinator from './components/campaign/DiwaliCampaignCoord
 // User Pages (Lazy Loaded)
 const Home = lazy(() => import('./pages/Home'));
 const Shop = lazy(() => import('./pages/Shop'));
+const NewDrops = lazy(() => import('./pages/NewDrops'));
+const Sale = lazy(() => import('./pages/Sale'));
+const Collections = lazy(() => import('./pages/Collections'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
@@ -118,6 +121,21 @@ const App = () => {
           <Route path="/" element={
             <UserLayout>
               <PageTransition><Home /></PageTransition>
+            </UserLayout>
+          } />
+          <Route path="/new-drops" element={
+            <UserLayout>
+              <PageTransition><NewDrops /></PageTransition>
+            </UserLayout>
+          } />
+          <Route path="/sale" element={
+            <UserLayout>
+              <PageTransition><Sale /></PageTransition>
+            </UserLayout>
+          } />
+          <Route path="/collections" element={
+            <UserLayout>
+              <PageTransition><Collections /></PageTransition>
             </UserLayout>
           } />
           <Route path="/shop" element={
