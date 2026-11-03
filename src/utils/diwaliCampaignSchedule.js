@@ -16,7 +16,7 @@ export const DIWALI_CAMPAIGN_DEFAULTS = {
   mainText: 'SPIN. WIN. SLAY.',
   subtitle: 'Your Diwali surprise is waiting!',
   discountDisplay: '20% | 30% | 50% | 70% OFF',
-  startDate: '2026-11-07T00:00:00+05:30',
+  startDate: '2026-11-01T00:00:00+05:30',
   endDate: '2026-11-20T23:59:59+05:30',
   active: true,
   expiryDays: 14,

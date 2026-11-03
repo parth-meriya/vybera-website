@@ -77,8 +77,10 @@ export const DiwaliSpinModal = ({
 
         if (!spinSnap.empty && isMounted) {
           const spinData = spinSnap.docs[0].data();
-          setHasSpun(true);
-          setPreviousReward(spinData.rewardWon);
+          if (!isPreview) {
+            setHasSpun(true);
+            setPreviousReward(spinData.rewardWon);
+          }
 
           // Find associated coupon if any
           const couponQ = query(
@@ -115,7 +117,7 @@ export const DiwaliSpinModal = ({
   const handleSpinNow = async () => {
     if (isSpinning) return;
 
-    if (!user) {
+    if (!user && !isPreview) {
       toast('Please sign in to spin and win your Diwali gift!', {
         icon: '✨',
         className: 'toast-vybera',
@@ -134,13 +136,18 @@ export const DiwaliSpinModal = ({
 
     try {
       setIsSpinning(true);
-      const idToken = await auth.currentUser?.getIdToken();
+      let idToken = null;
+      if (user) {
+        idToken = await auth.currentUser?.getIdToken();
+      } else if (isPreview) {
+        idToken = 'preview-test-token';
+      }
 
       const res = await fetch('/api/campaign/spin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
         body: JSON.stringify({
           campaignId,
@@ -418,6 +425,21 @@ export const DiwaliSpinModal = ({
                   >
                     <ShoppingCart size={15} />
                     Apply Code & View Cart
+                  </button>
+                )}
+
+                {isPreview && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHasSpun(false);
+                      setWonReward(null);
+                      setCouponCode(null);
+                      setWinningIndex(null);
+                    }}
+                    className="w-full py-2.5 bg-white border border-[#590907] text-[#590907] hover:bg-[#590907]/10 font-bold text-xs uppercase tracking-widest rounded-xl transition-all shadow-xs"
+                  >
+                    🔄 Test Another Spin (Preview Mode)
                   </button>
                 )}
 

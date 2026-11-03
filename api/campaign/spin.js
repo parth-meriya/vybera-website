@@ -1,16 +1,29 @@
 import admin from 'firebase-admin';
+import { readFileSync, existsSync } from 'fs';
 
 // Lazy-initialize Firebase Admin SDK
 function initAdmin() {
   if (!admin.apps.length) {
-    const projectId = process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL || process.env.VITE_FIREBASE_CLIENT_EMAIL;
-    const rawKey = process.env.FIREBASE_PRIVATE_KEY || process.env.VITE_FIREBASE_PRIVATE_KEY;
-    
+    let projectId = process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID;
+    let clientEmail = process.env.FIREBASE_CLIENT_EMAIL || process.env.VITE_FIREBASE_CLIENT_EMAIL;
+    let rawKey = process.env.FIREBASE_PRIVATE_KEY || process.env.VITE_FIREBASE_PRIVATE_KEY;
+
+    // Check if serviceAccountKey.json is available locally
+    if ((!rawKey || typeof rawKey !== 'string') && existsSync('serviceAccountKey.json')) {
+      try {
+        const sa = JSON.parse(readFileSync('serviceAccountKey.json', 'utf8'));
+        projectId = projectId || sa.project_id;
+        clientEmail = clientEmail || sa.client_email;
+        rawKey = sa.private_key;
+      } catch (err) {
+        console.warn('Could not read serviceAccountKey.json:', err.message);
+      }
+    }
+
     if (!rawKey || typeof rawKey !== 'string') {
       throw new Error('CRITICAL CONFIG ERROR: Firebase Private Key is missing from your environment variables. Please add FIREBASE_PRIVATE_KEY to Vercel.');
     }
-    
+
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId,
@@ -60,26 +73,45 @@ export default async function handler(req, res) {
 
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized: Missing token' });
-    }
-    const idToken = authHeader.split('Bearer ')[1];
-
     const { campaignId, preview = false } = req.body;
     if (!campaignId) {
       return res.status(400).json({ error: 'Campaign ID is required' });
     }
 
-    // 1. Verify User
     initAdmin();
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-
     const db = admin.firestore();
-    const userSnap = await db.collection('users').doc(uid).get();
-    const userData = userSnap.exists ? userSnap.data() : {};
-    const phoneNumber = userData.phoneNumber || '';
-    const userEmail = userData.email || decodedToken.email || '';
+
+    let uid = 'preview_tester';
+    let userData = { email: 'preview@admin.local', name: 'Preview Tester' };
+    let phoneNumber = '';
+    let userEmail = 'preview@admin.local';
+
+    // 1. Verify User (Required for live spins; optional for preview test spins)
+    if (!preview) {
+      if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized: Missing token' });
+      }
+      const idToken = authHeader.split('Bearer ')[1];
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      uid = decodedToken.uid;
+
+      const userSnap = await db.collection('users').doc(uid).get();
+      userData = userSnap.exists ? userSnap.data() : {};
+      phoneNumber = userData.phoneNumber || '';
+      userEmail = userData.email || decodedToken.email || '';
+    } else if (authHeader?.startsWith('Bearer ') && authHeader.split('Bearer ')[1] !== 'preview-test-token') {
+      try {
+        const idToken = authHeader.split('Bearer ')[1];
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        uid = decodedToken.uid;
+        const userSnap = await db.collection('users').doc(uid).get();
+        userData = userSnap.exists ? userSnap.data() : {};
+        phoneNumber = userData.phoneNumber || '';
+        userEmail = userData.email || decodedToken.email || '';
+      } catch {
+        // In preview mode, allow fallback to test user
+      }
+    }
 
     // 2. Check if Campaign exists and is active
     const campaignSnap = await db.collection('campaigns').doc(campaignId).get();
@@ -95,7 +127,7 @@ export default async function handler(req, res) {
         const start = new Date(campaignData.startDate).getTime();
         if (!isNaN(start) && now < start) {
           return res.status(403).json({ 
-            error: 'This Diwali campaign has not started yet. Launches on 7 November 2026 IST!',
+            error: 'This Diwali campaign has not started yet.',
             startsAt: campaignData.startDate
           });
         }
@@ -115,36 +147,36 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'This campaign has reached its maximum participation limit.' });
     }
 
-    // 3. Prevent Multiple Spins
-    // Available to every registered customer, strictly one successful spin per Firebase UID.
-    const spinsRef = db.collection('spinResults');
-    const queries = [
-      spinsRef.where('uid', '==', uid).where('campaignId', '==', campaignId).get()
-    ];
-    if (phoneNumber) {
-      queries.push(spinsRef.where('phoneNumber', '==', phoneNumber).where('campaignId', '==', campaignId).get());
-    }
-    if (userEmail) {
-      queries.push(spinsRef.where('email', '==', userEmail).where('campaignId', '==', campaignId).get());
+    // 3. Prevent Multiple Spins (strictly enforced for real live customer spins)
+    if (!preview) {
+      const spinsRef = db.collection('spinResults');
+      const queries = [
+        spinsRef.where('uid', '==', uid).where('campaignId', '==', campaignId).get()
+      ];
+      if (phoneNumber) {
+        queries.push(spinsRef.where('phoneNumber', '==', phoneNumber).where('campaignId', '==', campaignId).get());
+      }
+      if (userEmail) {
+        queries.push(spinsRef.where('email', '==', userEmail).where('campaignId', '==', campaignId).get());
+      }
+
+      const checkResults = await Promise.all(queries);
+      const hasAlreadySpun = checkResults.some(snap => !snap.empty);
+
+      if (hasAlreadySpun) {
+        const existingSpin = checkResults.find(snap => !snap.empty)?.docs[0]?.data();
+        return res.status(403).json({ 
+          error: 'You have already claimed your Diwali gift for this year!',
+          alreadySpun: true,
+          previousReward: existingSpin?.rewardWon || null
+        });
+      }
     }
 
-    const checkResults = await Promise.all(queries);
-    const hasAlreadySpun = checkResults.some(snap => !snap.empty);
-
-    if (hasAlreadySpun) {
-      const existingSpin = checkResults.find(snap => !snap.empty)?.docs[0]?.data();
-      return res.status(403).json({ 
-        error: 'You have already participated in this campaign!',
-        alreadySpun: true,
-        previousReward: existingSpin?.rewardWon || null
-      });
-    }
-
-    // 4. Determine Reward (Server-side RNG)
+    // 4. Determine Reward (Server-side RNG with weighted probabilities)
     let roll = Math.random() * 100;
     let selectedReward = REWARDS[0]; // Default fallback
 
-    // If campaign has custom rewards, use them, otherwise use default
     const campaignRewards = campaignData.rewards && campaignData.rewards.length > 0 ? campaignData.rewards : REWARDS;
 
     let cumulative = 0;
@@ -156,7 +188,18 @@ export default async function handler(req, res) {
       }
     }
 
-    // 5. Generate and Store Reward securely using a Transaction to ensure atomic operation
+    // 5. Handle Preview Spins (Fast return without polluting customer production stats)
+    if (preview) {
+      const previewCode = `VYB-TEST-${Math.floor(1000 + Math.random() * 9000)}`;
+      return res.status(200).json({
+        success: true,
+        reward: selectedReward,
+        couponCode: selectedReward.type === 'free_tee' ? null : previewCode,
+        preview: true,
+      });
+    }
+
+    // 6. Handle Live Production Spin via Firestore Transaction
     let generatedCode = null;
 
     await db.runTransaction(async (transaction) => {
@@ -173,7 +216,7 @@ export default async function handler(req, res) {
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // Update analytics counter safely (or we can just aggregate later, but incrementing is nice)
+      // Update analytics counter
       const analyticsRef = db.collection('campaigns').doc(campaignId);
       transaction.update(analyticsRef, {
         totalSpins: admin.firestore.FieldValue.increment(1)
@@ -181,7 +224,6 @@ export default async function handler(req, res) {
 
       // If it's a discount, create a single-use coupon with collision check
       if (selectedReward.type === 'percentage' || selectedReward.type === 'flat') {
-        // Generate unique code with collision check (retry up to 5 times)
         let codeIsUnique = false;
         let attempts = 0;
         while (!codeIsUnique && attempts < 5) {
@@ -195,9 +237,8 @@ export default async function handler(req, res) {
         if (!codeIsUnique) {
           throw new Error('Failed to generate a unique coupon code. Please try again.');
         }
-        
-        // Expiry date (e.g. 7 days from now, or campaign specific)
-        const expiryDays = campaignData.expiryDays || 7;
+
+        const expiryDays = campaignData.expiryDays || 14;
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + expiryDays);
 
@@ -237,10 +278,10 @@ export default async function handler(req, res) {
         notifications: admin.firestore.FieldValue.arrayUnion({
           id: `notif_${Date.now()}_coupon_won`,
           type: 'promo',
-          title: isFreeTee ? 'Free Tee Won!' : 'New Reward Won!',
+          title: isFreeTee ? 'Diwali Free Tee Won! ✨' : 'Diwali Reward Won! ✨',
           message: isFreeTee 
-            ? `Congratulations! You won a FREE TEE in the ${campaignId} campaign.`
-            : `Congratulations! You won a ${selectedReward.name} coupon (${generatedCode}) in the ${campaignId} campaign.`,
+            ? `Congratulations! You won a FREE TEE in the ${campaignData.name || campaignId}.`
+            : `Congratulations! You won a ${selectedReward.name} coupon (${generatedCode}) in the ${campaignData.name || campaignId}.`,
           createdAt: new Date().toISOString(),
           read: false,
         })

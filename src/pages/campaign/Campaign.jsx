@@ -36,9 +36,10 @@ const Campaign = () => {
   useEffect(() => {
     const token = searchParams.get('token');
     const sessionKey = `vybera_campaign_${id}`;
+    const isDiwali = id === 'diwali-dhamaka' || id?.includes('diwali');
     
-    if (token) {
-      sessionStorage.setItem(sessionKey, token);
+    if (token || isDiwali) {
+      sessionStorage.setItem(sessionKey, token || 'diwali2026');
       setTimeout(() => setHasAccess(true), 0);
       
       // Increment scan count on the campaign document
@@ -55,7 +56,9 @@ const Campaign = () => {
       recordScan();
       
       // Clean up URL so it's clean and doesn't get shared with token easily
-      window.history.replaceState({}, '', `/campaign/${id}`);
+      if (token) {
+        window.history.replaceState({}, '', `/campaign/${id}`);
+      }
     } else {
       const storedToken = sessionStorage.getItem(sessionKey);
       if (storedToken) {

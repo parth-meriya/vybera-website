@@ -123,8 +123,8 @@ export const DiwaliCampaignCoordinator = () => {
     sessionStorage.setItem(SESSION_DISMISSED_KEY, 'true');
   };
 
-  // Only render if campaign is active (7-20 Nov 2026 IST) or in Admin Preview mode
-  if (!scheduleStatus.isLive && !isPreview) {
+  // Only render if campaign is active, in Admin Preview mode, or modal was manually triggered
+  if (!scheduleStatus.isLive && !isPreview && !modalOpen) {
     return null;
   }
 
