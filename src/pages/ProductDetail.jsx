@@ -228,7 +228,7 @@ const ProductDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-vy-black pt-24 flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF5ED] pt-24 flex items-center justify-center">
         <div className="spinner" />
       </div>
     );
@@ -236,9 +236,9 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6">
-        <p className="text-vy-grey tracking-widest uppercase text-sm">Product not found</p>
-        <Link to="/shop" className="btn-outline">Back to Shop</Link>
+      <div className="min-h-screen bg-[#FAF5ED] pt-24 flex flex-col items-center justify-center gap-6">
+        <p className="text-[#75665C] tracking-widest uppercase text-sm">Product not found</p>
+        <Link to="/shop" className="btn-primary">Back to Shop</Link>
       </div>
     );
   }
@@ -266,7 +266,7 @@ const ProductDetail = () => {
   } : null;
 
   return (
-    <div className="min-h-screen bg-vy-black pt-16">
+    <div className="min-h-screen bg-[#FAF5ED] pt-16">
       <SEO
         title={product.name}
         description={product.description?.slice(0, 150) || `Buy ${product.name} from VYBERA. Premium oversized streetwear.`}
@@ -291,7 +291,7 @@ const ProductDetail = () => {
             className="relative flex flex-col gap-4"
           >
             <div
-              className="relative overflow-hidden bg-vy-card border border-vy-border aspect-[3/4] cursor-zoom-in"
+              className="relative overflow-hidden bg-[#F3E7D8] border border-[#D4BEA5] aspect-[3/4] cursor-zoom-in"
               onMouseEnter={() => setZoomed(true)}
               onMouseLeave={() => setZoomed(false)}
             >
@@ -308,16 +308,16 @@ const ProductDetail = () => {
 
             {/* Gallery Thumbnails */}
             {product.images?.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-2 mt-2">
                 {product.images.map((img, idx) => (
                   <button 
                     key={idx}
                     onClick={() => setCurrentImage(img)}
-                    className={`flex-shrink-0 w-20 h-24 border transition-colors bg-white ${
-                      currentImage === img ? 'border-[#590907] ring-1 ring-[#590907]' : 'border-[#D4BEA5] hover:border-[#75665C]'
+                    className={`aspect-[3/4] border-2 transition-all bg-[#F3E7D8] overflow-hidden ${
+                      currentImage === img ? 'border-[#590907] ring-1 ring-[#590907] shadow-md' : 'border-[#D4BEA5] hover:border-[#75665C]'
                     }`}
                   >
-                    <img src={img} alt={`view ${idx}`} className="w-full h-full object-cover" />
+                    <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
