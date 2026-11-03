@@ -34,7 +34,9 @@ import BackButton from '../../components/ui/BackButton';
 import AdminDiwaliSpinManager from '../../components/admin/AdminDiwaliSpinManager';
 
 const LOCAL_PRESETS = [
-  { label: 'Hero Banner (Default)', path: '/hero_banner.png' },
+  { label: 'Diwali Sale (Men & Girl)', path: '/banners/diwali_sale_banner.png' },
+  { label: 'Diwali Mobile (Men & Girl)', path: '/banners/diwali_sale_banner_mobile.png' },
+  { label: 'Hero Banner (Original)', path: '/hero_banner.png' },
   { label: 'Anniversary Campaign', path: '/mainbanner/anniversary_banner.png' },
   { label: 'Editorial Model 01', path: '/Design/7th%20boy/ChatGPT%20Image%20May%204,%202026,%2010_07_57%20AM.png' },
   { label: 'Editorial Model 02', path: '/Design/6th%20girl/ChatGPT%20Image%20May%204,%202026,%2009_39_33%20AM.png' },

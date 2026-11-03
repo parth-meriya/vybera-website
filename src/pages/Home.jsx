@@ -190,18 +190,19 @@ const Home = () => {
         {/* Parallax / Responsive Image Background */}
         <div className="absolute inset-0 z-0">
           <picture>
-            {campaign.mobileBannerUrl && (
-              <source media="(max-width: 768px)" srcSet={campaign.mobileBannerUrl} />
-            )}
+            <source
+              media="(max-width: 768px)"
+              srcSet={campaign.mobileBannerUrl || '/banners/diwali_sale_banner_mobile.png'}
+            />
             <img
-              src={campaign.desktopBannerUrl || '/hero_banner.png'}
-              alt="VYBERA Fashion Campaign"
+              src={campaign.desktopBannerUrl || '/banners/diwali_sale_banner.png'}
+              alt="VYBERA Diwali Fashion Campaign"
               fetchpriority="high"
               decoding="async"
               className="w-full h-full object-cover object-center md:object-[68%_center] opacity-75"
               onError={(e) => {
-                if (e.target.src.includes('hero_banner.png')) return;
-                e.target.src = '/hero_banner.png';
+                if (e.target.src.includes('diwali_sale_banner.png')) return;
+                e.target.src = '/banners/diwali_sale_banner.png';
               }}
             />
           </picture>

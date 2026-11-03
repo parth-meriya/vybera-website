@@ -345,6 +345,7 @@ const AdminMainBanner = () => {
             <p className="text-[#75665C] text-[10px] mb-3">Select from <code className="text-[#590907] font-semibold">/public/mainbanner/</code>.</p>
             <div className="flex flex-wrap gap-2">
               {[
+                '/banners/diwali_sale_banner.png',
                 '/mainbanner/anniversary_banner.png',
                 '/hero_banner.png',
                 '/anniversary_manual.png'
