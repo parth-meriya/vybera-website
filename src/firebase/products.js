@@ -175,6 +175,11 @@ export const addProduct = async (productData, imageFiles = []) => {
     images = [...images, ...newImageUrls];
   }
 
+  // Determine showOnHome value and keep legacy isFeatured / featured in sync
+  const homeVal = productData.showOnHome !== undefined
+    ? Boolean(productData.showOnHome)
+    : Boolean(productData.isFeatured || productData.featured);
+
   // Sanitize numeric and boolean fields
   const sanitized = {
     ...productData,
@@ -184,10 +189,11 @@ export const addProduct = async (productData, imageFiles = []) => {
     showInCollections: productData.showInCollections !== undefined ? Boolean(productData.showInCollections) : true,
     showInNewDrops: Boolean(productData.showInNewDrops),
     showInSale: Boolean(productData.showInSale),
+    showOnHome: homeVal,
     newDropPriority: Number(productData.newDropPriority) || 0,
     salePriority: Number(productData.salePriority) || 0,
-    isFeatured: Boolean(productData.isFeatured || productData.featured),
-    featured: Boolean(productData.isFeatured || productData.featured),
+    isFeatured: homeVal,
+    featured: homeVal,
     isDrop: Boolean(productData.showInNewDrops),
     image: images[0] || '',
     images,
@@ -213,6 +219,13 @@ export const updateProduct = async (id, productData, imageFiles = []) => {
     images = [...images, ...newImageUrls];
   }
 
+  // Determine showOnHome value and keep legacy isFeatured / featured in sync
+  const homeVal = productData.showOnHome !== undefined
+    ? Boolean(productData.showOnHome)
+    : (productData.isFeatured !== undefined || productData.featured !== undefined)
+      ? Boolean(productData.isFeatured || productData.featured)
+      : undefined;
+
   const sanitized = {
     ...productData,
     price: Math.max(0, Number(productData.price || 0)),
@@ -221,10 +234,9 @@ export const updateProduct = async (id, productData, imageFiles = []) => {
     showInCollections: productData.showInCollections !== undefined ? Boolean(productData.showInCollections) : true,
     showInNewDrops: Boolean(productData.showInNewDrops),
     showInSale: Boolean(productData.showInSale),
+    ...(homeVal !== undefined ? { showOnHome: homeVal, isFeatured: homeVal, featured: homeVal } : {}),
     newDropPriority: Number(productData.newDropPriority) || 0,
     salePriority: Number(productData.salePriority) || 0,
-    isFeatured: Boolean(productData.isFeatured || productData.featured),
-    featured: Boolean(productData.isFeatured || productData.featured),
     isDrop: Boolean(productData.showInNewDrops),
     image: images[0] || '',
     images,

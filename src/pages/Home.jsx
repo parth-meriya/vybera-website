@@ -35,82 +35,6 @@ import { getShoppableVideos, DEFAULT_SHOPPABLE_VIDEOS } from '../firebase/shoppa
 import CountdownTimer from '../components/ui/CountdownTimer';
 import SEO from '../components/SEO';
 
-// Curated fallback streetwear products if Firestore has none yet
-const FALLBACK_PRODUCTS = [
-  {
-    id: 'prod_raw_obsidian',
-    name: 'Raw Obsidian Heavyweight Oversized Tee',
-    price: 999,
-    compareAtPrice: 1499,
-    category: 'Oversized',
-    isDrop: true,
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    image: '/Design/7th%20boy/ChatGPT%20Image%20May%204,%202026,%2010_07_57%20AM.png',
-    images: ['/Design/7th%20boy/ChatGPT%20Image%20May%204,%202026,%2010_07_57%20AM.png'],
-    inStock: true,
-  },
-  {
-    id: 'prod_burgundy_shadow',
-    name: 'Burgundy Shadow Boxy Cut Tee',
-    price: 1099,
-    compareAtPrice: 1699,
-    category: 'Oversized',
-    isDrop: true,
-    sizes: ['M', 'L', 'XL'],
-    image: '/Design/6th%20girl/ChatGPT%20Image%20May%204,%202026,%2009_39_33%20AM.png',
-    images: ['/Design/6th%20girl/ChatGPT%20Image%20May%204,%202026,%2009_39_33%20AM.png'],
-    inStock: true,
-  },
-  {
-    id: 'prod_vintage_sage',
-    name: 'Sage Dust Drop-Shoulder Tee',
-    price: 899,
-    compareAtPrice: 1299,
-    category: 'Oversized',
-    isDrop: false,
-    sizes: ['S', 'M', 'L', 'XL'],
-    image: '/Design/8th%20boy/ChatGPT%20Image%20May%204,%202026,%2011_13_19%20PM.png',
-    images: ['/Design/8th%20boy/ChatGPT%20Image%20May%204,%202026,%2011_13_19%20PM.png'],
-    inStock: true,
-  },
-  {
-    id: 'prod_couple_duality',
-    name: 'Duality Couple Edition Tee',
-    price: 1899,
-    compareAtPrice: 2499,
-    category: 'Couple',
-    isDrop: true,
-    sizes: ['S', 'M', 'L', 'XL'],
-    image: '/Design/couple/ChatGPT%20Image%20May%204,%202026,%2010_42_48%20AM.png',
-    images: ['/Design/couple/ChatGPT%20Image%20May%204,%202026,%2010_42_48%20AM.png'],
-    inStock: true,
-  },
-  {
-    id: 'prod_monochrome_core',
-    name: 'Core Heavyweight Oversized Tee — Bone White',
-    price: 899,
-    compareAtPrice: 1399,
-    category: 'Oversized',
-    isDrop: false,
-    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    image: '/Design/5th%20boy/ChatGPT%20Image%20May%204,%202026,%2009_33_04%20AM.png',
-    images: ['/Design/5th%20boy/ChatGPT%20Image%20May%204,%202026,%2009_33_04%20AM.png'],
-    inStock: true,
-  },
-  {
-    id: 'prod_rebel_typography',
-    name: 'Vybera Studio Graphic Oversized Tee',
-    price: 999,
-    compareAtPrice: 1599,
-    category: 'Oversized',
-    isDrop: true,
-    sizes: ['M', 'L', 'XL'],
-    image: '/Design/Third%20Girl%20typography/ChatGPT%20Image%20May%204,%202026,%2009_14_58%20AM.png',
-    images: ['/Design/Third%20Girl%20typography/ChatGPT%20Image%20May%204,%202026,%2009_14_58%20AM.png'],
-    inStock: true,
-  },
-];
-
 const POPULAR_COLLECTIONS = [
   { name: 'Oversized', label: 'Oversized', icon: '🔥' },
   { name: 'Anime', label: 'Anime', icon: '⚡' },
@@ -129,6 +53,7 @@ const Home = () => {
   const [drops, setDrops] = useState([]);
   const [saleProducts, setSaleProducts] = useState([]);
   const [collections, setCollections] = useState([]);
+  const [homeProducts, setHomeProducts] = useState([]);
   const [bestsellers, setBestsellers] = useState([]);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,30 +78,34 @@ const Home = () => {
     const unsubscribe = listenToProducts(
       (allProds) => {
         if (allProds && allProds.length > 0) {
-          // Drops: strictly active drops or newest live products
+          // Drops: strictly active drops
           const dropList = allProds
             .filter((p) => isProductNewDropActive(p))
             .sort((a, b) => (Number(b.newDropPriority) || 0) - (Number(a.newDropPriority) || 0));
-          setDrops(dropList.length > 0 ? dropList.slice(0, 4) : allProds.slice(0, 4));
+          setDrops(dropList.slice(0, 4));
 
           // Sale: strictly active sale products
           const saleList = allProds
             .filter((p) => isProductSaleActive(p))
             .sort((a, b) => (Number(b.salePriority) || 0) - (Number(a.salePriority) || 0));
-          setSaleProducts(saleList.length > 0 ? saleList.slice(0, 4) : allProds.filter(p => p.salePrice || (p.compareAtPrice && p.compareAtPrice > p.price)).slice(0, 4));
+          setSaleProducts(saleList.slice(0, 4));
 
           // Collections: products assigned to collections
           const colList = allProds.filter((p) => p.showInCollections !== false);
-          setCollections(colList.length > 0 ? colList.slice(0, 4) : allProds.slice(0, 4));
+          setCollections(colList.slice(0, 4));
 
-          // Bestsellers / Featured
-          const featList = allProds.filter((p) => p.isFeatured || p.featured);
-          setBestsellers(featList.length > 0 ? featList.slice(0, 6) : allProds.slice(0, 6));
+          // Home Section: products assigned to show on home
+          const homeList = allProds
+            .filter((p) => p.showOnHome !== false && (p.showOnHome === true || p.isFeatured || p.featured))
+            .sort((a, b) => (Number(b.newDropPriority || b.salePriority || 0)) - (Number(a.newDropPriority || a.salePriority || 0)));
+          setHomeProducts(homeList.slice(0, 6));
+          setBestsellers(homeList.slice(0, 6));
         } else {
           // If Firestore is empty (e.g. all products deleted by admin), clear all sections
           setDrops([]);
           setSaleProducts([]);
           setCollections([]);
+          setHomeProducts([]);
           setBestsellers([]);
         }
         setLoading(false);
@@ -403,11 +332,19 @@ const Home = () => {
           </div>
 
           {/* Product Grid: 2 columns on mobile, 4 columns on desktop */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {drops.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {drops.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {drops.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border border-dashed border-[#D4BEA5] p-8 bg-[#FAF5ED]">
+              <p className="text-xs uppercase tracking-widest text-[#75665C] font-semibold">
+                New drops arriving soon — stay tuned.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -448,11 +385,19 @@ const Home = () => {
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {saleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {saleProducts.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {saleProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border border-dashed border-[#D4BEA5] p-8 bg-[#FAF5ED]/50">
+              <p className="text-xs uppercase tracking-widest text-[#75665C] font-semibold">
+                Special sale offers coming soon.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -503,11 +448,19 @@ const Home = () => {
           </div>
 
           {/* Product Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {collections.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {collections.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {collections.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border border-dashed border-[#D4BEA5] p-8 bg-[#FAF5ED]">
+              <p className="text-xs uppercase tracking-widest text-[#75665C] font-semibold">
+                Collections updating shortly.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -585,18 +538,26 @@ const Home = () => {
       </section>
 
       {/* ══════════════════════════════════════════════════════════════
-          SECTION 4 — BEST SELLERS (4–6 Products)
+          SECTION 4 — FEATURED ON HOME (Manually Curated Home Showcase)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="section-pad bg-[#FAF5ED]">
-        <div className="max-w-7xl mx-auto">
+      <section className="section-pad bg-[#FAF5ED] relative overflow-hidden">
+        {/* Background Streetwear Watermark */}
+        <div className="absolute -bottom-8 right-0 select-none pointer-events-none text-[#E8D2B5]/25 font-display font-black text-[13vw] leading-none uppercase tracking-tighter z-0">
+          HOME
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-4 border-b border-[#E5DACD]">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#75665C] mb-1">
-                COMMUNITY FAVORITES
-              </p>
+              <div className="flex items-center gap-2 text-[#590907] mb-1">
+                <Sparkles size={14} className="text-[#590907]" />
+                <span className="text-[10px] font-bold tracking-[0.3em] uppercase">
+                  MANUALLY CURATED • HOME PICKS
+                </span>
+              </div>
               <h2 className="font-display font-black text-3xl md:text-5xl tracking-tight uppercase text-[#30231F]">
-                BEST SELLERS
+                FEATURED ON HOME
               </h2>
             </div>
             <Link
@@ -611,12 +572,20 @@ const Home = () => {
             </Link>
           </div>
 
-          {/* Clean 4-6 product cards with size selector, wishlist, and quick add */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-            {bestsellers.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {/* Clean product cards */}
+          {homeProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+              {homeProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border border-dashed border-[#D4BEA5] p-8 bg-[#FAF5ED]">
+              <p className="text-xs uppercase tracking-widest text-[#75665C] font-semibold">
+                No products currently featured for Home. Admin can assign items via Product Display Settings.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

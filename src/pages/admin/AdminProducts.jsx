@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, X, Upload, Image, Sliders, Flame, Tag, Layers, Search, Sparkles, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Upload, Image, Sliders, Flame, Tag, Layers, Search, Sparkles, RefreshCw, Home } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, bulkUpdateProducts } from '../../firebase/products';
 import { getSections } from '../../firebase/sections';
 import { isProductSaleActive, isProductNewDropActive } from '../../utils/pricing';
@@ -16,6 +16,7 @@ const emptyForm = {
   showInCollections: true,
   showInNewDrops: false,
   showInSale: false,
+  showOnHome: true,
   newDropPriority: 0,
   salePriority: 0,
   salePrice: '',
@@ -149,10 +150,11 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
         showInCollections: form.showInCollections !== undefined ? Boolean(form.showInCollections) : true,
         showInNewDrops: Boolean(form.showInNewDrops),
         showInSale: Boolean(form.showInSale),
+        showOnHome: form.showOnHome !== undefined ? Boolean(form.showOnHome) : Boolean(form.featured || form.isFeatured),
         newDropPriority: Number(form.newDropPriority) || 0,
         salePriority: Number(form.salePriority) || 0,
-        isFeatured: Boolean(form.featured || form.isFeatured),
-        featured: Boolean(form.featured || form.isFeatured),
+        isFeatured: Boolean(form.featured || form.isFeatured || form.showOnHome),
+        featured: Boolean(form.featured || form.isFeatured || form.showOnHome),
         isDrop: Boolean(form.showInNewDrops),
         images: existingImages 
       };
@@ -475,9 +477,25 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
               </span>
             </div>
 
-            {/* Three Master Checkboxes */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* 1. Show in Collections */}
+            {/* Four Master Checkboxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* 1. Show in Home */}
+              <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
+                form.showOnHome ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
+              }`}>
+                <input
+                  type="checkbox"
+                  checked={form.showOnHome !== false}
+                  onChange={e => setForm(f => ({ ...f, showOnHome: e.target.checked, isFeatured: e.target.checked, featured: e.target.checked }))}
+                  className="mt-0.5 w-4 h-4 accent-[#590907]"
+                />
+                <div>
+                  <span className="font-bold text-xs uppercase tracking-wider block">Home Page</span>
+                  <span className="text-[10px] text-[#75665C] block">Featured on Home Screen</span>
+                </div>
+              </label>
+
+              {/* 2. Show in Collections */}
               <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
                 form.showInCollections ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
               }`}>
@@ -493,7 +511,7 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
                 </div>
               </label>
 
-              {/* 2. Show in New Drops */}
+              {/* 3. Show in New Drops */}
               <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
                 form.showInNewDrops ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
               }`}>
@@ -509,7 +527,7 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
                 </div>
               </label>
 
-              {/* 3. Show in Sale */}
+              {/* 4. Show in Sale */}
               <label className={`flex items-start gap-3 p-3 border rounded-xs cursor-pointer transition-all ${
                 form.showInSale ? 'border-[#590907] bg-[#E8D2B5]/40 text-[#30231F]' : 'border-[#D4BEA5] bg-white text-[#75665C]'
               }`}>
@@ -897,9 +915,22 @@ const AdminProducts = () => {
 
   const handleToggleSection = async (product, field) => {
     try {
-      const nextVal = !product[field];
+      let currentVal;
+      if (field === 'showInCollections') {
+        currentVal = product.showInCollections !== false;
+      } else if (field === 'showOnHome') {
+        currentVal = product.showOnHome !== false && Boolean(product.showOnHome || product.isFeatured || product.featured);
+      } else {
+        currentVal = Boolean(product[field]);
+      }
+      const nextVal = !currentVal;
       const payload = { [field]: nextVal };
       if (field === 'showInNewDrops') payload.isDrop = nextVal;
+      if (field === 'showOnHome') {
+        payload.showOnHome = nextVal;
+        payload.featured = nextVal;
+        payload.isFeatured = nextVal;
+      }
       await updateProduct(product.id, payload);
       toast.success(`Updated ${product.name} display settings.`, { className: 'toast-vybera' });
       fetchProducts();
@@ -982,6 +1013,7 @@ const AdminProducts = () => {
   };
 
     // Analytics calculations
+  const homeProductsCount = products.filter(p => p.showOnHome !== false && (p.showOnHome || p.isFeatured || p.featured)).length;
   const newDropsCount = products.filter(p => isProductNewDropActive(p)).length;
   const saleProductsCount = products.filter(p => p.showInSale === true || (p.salePrice && Number(p.salePrice) > 0)).length;
   const activeSaleCount = products.filter(p => isProductSaleActive(p)).length;
@@ -990,6 +1022,7 @@ const AdminProducts = () => {
   // Filter products based on search, category and section tab
   const displayedProducts = products.filter(p => {
     // 1. Section tab filter
+    if (sectionTab === 'home' && p.showOnHome === false && !p.isFeatured && !p.featured) return false;
     if (sectionTab === 'drops' && !isProductNewDropActive(p)) return false;
     if (sectionTab === 'sale' && !isProductSaleActive(p) && !p.showInSale) return false;
     if (sectionTab === 'collections' && p.showInCollections === false) return false;
@@ -1061,8 +1094,8 @@ const AdminProducts = () => {
         </div>
       </div>
 
-      {/* ── 7. Admin Dashboard Analytics Cards (4 Metrics) ──────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── 7. Admin Dashboard Analytics Cards (5 Metrics) ──────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Total Products */}
         <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 shadow-xs">
           <div className="flex items-center justify-between mb-2">
@@ -1071,6 +1104,21 @@ const AdminProducts = () => {
           </div>
           <p className="font-display font-bold text-3xl text-[#30231F]">{products.length}</p>
           <p className="text-[10px] text-[#75665C] mt-1">Full inventory database</p>
+        </div>
+
+        {/* Home Section */}
+        <div
+          onClick={() => setSectionTab('home')}
+          className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 shadow-xs cursor-pointer hover:border-rose-900 transition-all group"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-rose-900 flex items-center gap-1.5">
+              <Home size={12} className="text-rose-800" /> Home Section
+            </span>
+            <span className="w-2 h-2 rounded-full bg-rose-900" />
+          </div>
+          <p className="font-display font-bold text-3xl text-rose-950">{homeProductsCount}</p>
+          <p className="text-[10px] text-[#75665C] mt-1 group-hover:text-rose-900">Featured on Home Page</p>
         </div>
 
         {/* New Drops */}
@@ -1135,6 +1183,17 @@ const AdminProducts = () => {
             }`}
           >
             All Products ({products.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setSectionTab('home')}
+            className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider rounded-xs transition-all flex items-center gap-1.5 ${
+              sectionTab === 'home'
+                ? 'bg-[#590907] text-white shadow-xs'
+                : 'text-[#75665C] hover:text-[#590907]'
+            }`}
+          >
+            <Home size={12} /> Home ({homeProductsCount})
           </button>
           <button
             type="button"
@@ -1229,6 +1288,7 @@ const AdminProducts = () => {
                 const isSale = isProductSaleActive(p);
                 const isDrop = isProductNewDropActive(p);
                 const isColl = p.showInCollections !== false;
+                const isHome = p.showOnHome !== false && (p.showOnHome || p.isFeatured || p.featured);
                 const regPrice = Number(p.price || 0);
                 const sPrice = Number(p.salePrice || 0);
                 const discount = regPrice > sPrice && sPrice > 0 ? Math.round(((regPrice - sPrice) / regPrice) * 100) : 0;
@@ -1269,6 +1329,11 @@ const AdminProducts = () => {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {isHome && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 bg-rose-100 text-rose-900 border border-rose-300">
+                            Home
+                          </span>
+                        )}
                         {isColl && (
                           <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F]">
                             Collections
@@ -1284,7 +1349,7 @@ const AdminProducts = () => {
                             Sale
                           </span>
                         )}
-                        {!isColl && !isDrop && !isSale && (
+                        {!isColl && !isDrop && !isSale && !isHome && (
                           <span className="text-[9px] text-[#75665C] italic">Hidden</span>
                         )}
                       </div>
@@ -1302,6 +1367,20 @@ const AdminProducts = () => {
                     {/* Quick Section Toggles */}
                     <td className="px-3 py-3 text-center">
                       <div className="inline-flex items-center gap-1 border border-[#D4BEA5] p-1 bg-white rounded-xs">
+                        {/* Toggle Home */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSection(p, 'showOnHome')}
+                          className={`px-2 py-1 text-[9px] font-bold uppercase transition-all rounded-xs ${
+                            isHome
+                              ? 'bg-rose-900 text-white shadow-xs'
+                              : 'text-[#75665C] hover:bg-[#E8D2B5]/50'
+                          }`}
+                          title="Click to toggle Home section visibility"
+                        >
+                          Home
+                        </button>
+
                         {/* Toggle Drops */}
                         <button
                           type="button"
