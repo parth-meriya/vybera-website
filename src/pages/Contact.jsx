@@ -56,7 +56,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-vy-black pt-24 pb-12">
+    <div className="min-h-screen bg-[#F3E7D8] pt-24 pb-12">
       <SEO
         title="Contact Us"
         description="Get in touch with VYBERA for support, order inquiries, or custom design consultations. We're here to help."
@@ -72,11 +72,11 @@ const Contact = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12 text-center"
         >
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-2">Support</p>
-          <h1 className="font-display font-bold text-4xl md:text-5xl tracking-wider text-vy-white mb-4">
+          <p className="text-[#75665C] text-xs tracking-widest uppercase font-bold mb-2">Support</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl tracking-wider text-[#30231F] mb-4">
             Contact Us
           </h1>
-          <p className="text-vy-grey text-sm max-w-lg mx-auto leading-relaxed">
+          <p className="text-[#75665C] text-sm max-w-lg mx-auto leading-relaxed font-medium">
             Have questions about an order, our products, or need custom streetwear consultation? We're here to help.
           </p>
         </motion.div>
@@ -90,65 +90,65 @@ const Contact = () => {
             className="space-y-10"
           >
             <div>
-              <h2 className="text-vy-white text-xl font-bold tracking-wider mb-6 pb-2 border-b border-vy-border inline-block">Get In Touch</h2>
+              <h2 className="text-[#30231F] text-xl font-bold tracking-wider mb-6 pb-2 border-b border-[#D4BEA5] inline-block">Get In Touch</h2>
               <div className="space-y-6">
                 <div className="flex gap-4 items-start">
-                  <div className="p-3 bg-vy-card border border-vy-border text-vy-white flex-shrink-0">
+                  <div className="p-3 bg-[#FAF5ED] border border-[#D4BEA5] text-[#590907] rounded-xl flex-shrink-0 shadow-sm">
                     <Mail size={20} />
                   </div>
                   <div>
-                    <h3 className="text-vy-white text-sm font-semibold tracking-widest uppercase mb-1">Email</h3>
-                    <p className="text-vy-grey text-sm">vybera@gmail.com</p>
-                    <p className="text-vy-grey/60 text-xs mt-1">We aim to reply within 24 hours.</p>
+                    <h3 className="text-[#30231F] text-sm font-bold tracking-widest uppercase mb-1">Email</h3>
+                    <p className="text-[#75665C] text-sm font-medium">vybera@gmail.com</p>
+                    <p className="text-[#75665C]/80 text-xs mt-1">We aim to reply within 24 hours.</p>
                   </div>
                 </div>
 
                 <div className="flex gap-4 items-start">
-                  <div className="p-3 bg-vy-card border border-vy-border text-vy-white flex-shrink-0">
+                  <div className="p-3 bg-[#FAF5ED] border border-[#D4BEA5] text-[#590907] rounded-xl flex-shrink-0 shadow-sm">
                     <Phone size={20} />
                   </div>
                   <div>
-                    <h3 className="text-vy-white text-sm font-semibold tracking-widest uppercase mb-1">Phone</h3>
-                    <p className="text-vy-grey text-sm">+91 7574097366</p>
-                    <p className="text-vy-grey/60 text-xs mt-1">Mon-Fri, 10am - 6pm</p>
+                    <h3 className="text-[#30231F] text-sm font-bold tracking-widest uppercase mb-1">Phone</h3>
+                    <p className="text-[#75665C] text-sm font-medium">+91 7574097366</p>
+                    <p className="text-[#75665C]/80 text-xs mt-1">Mon-Fri, 10am - 6pm</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border border-vy-border bg-vy-card">
+            <div className="p-6 border border-[#D4BEA5] bg-[#FAF5ED] rounded-2xl shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                <MessageSquare className="text-vy-white" size={18} />
-                <h3 className="text-vy-white text-sm font-semibold tracking-widest uppercase">FAQ & Returns</h3>
+                <MessageSquare className="text-[#590907]" size={18} />
+                <h3 className="text-[#30231F] text-sm font-bold tracking-widest uppercase">FAQ & Returns</h3>
               </div>
-              <p className="text-vy-grey text-xs leading-relaxed">
+              <p className="text-[#75665C] text-xs leading-relaxed font-medium">
                 Check out our FAQ page for quick answers regarding shipping times, exchange policies, and custom design guidelines.
               </p>
             </div>
 
             {/* Track Ticket */}
-            <div className="p-6 border border-vy-border bg-vy-card">
-              <h3 className="text-vy-white text-sm font-semibold tracking-widest uppercase mb-4">Track Ticket Status</h3>
+            <div className="p-6 border border-[#D4BEA5] bg-[#FAF5ED] rounded-2xl shadow-sm">
+              <h3 className="text-[#30231F] text-sm font-bold tracking-widest uppercase mb-4">Track Ticket Status</h3>
               <form onSubmit={handleTrack} className="flex gap-2">
                 <input
                   value={trackId}
                   onChange={(e) => setTrackId(e.target.value)}
                   placeholder="Enter Ticket ID"
-                  className="vy-input flex-1 text-xs"
+                  className="flex-1 bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-[#590907]"
                 />
-                <button type="submit" disabled={trackLoading} className="btn-outline px-4 py-2 text-xs">
+                <button type="submit" disabled={trackLoading} className="btn-primary px-4 py-2 text-xs">
                   {trackLoading ? '...' : <Search size={14} />}
                 </button>
               </form>
               {trackResult && (
-                <div className="mt-4 p-3 bg-vy-dark border border-vy-border/50 flex items-center justify-between">
-                  <span className="text-vy-grey text-xs tracking-widest uppercase">Status:</span>
+                <div className="mt-4 p-3 bg-white border border-[#D4BEA5] rounded-xl flex items-center justify-between">
+                  <span className="text-[#75665C] text-xs font-semibold tracking-widest uppercase">Status:</span>
                   {trackResult === 'resolved' ? (
-                    <span className="flex items-center gap-1.5 text-green-400 text-xs font-bold uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5 text-emerald-700 text-xs font-bold uppercase tracking-widest">
                       <CheckCircle size={12} /> Resolved
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1.5 text-yellow-400 text-xs font-bold uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5 text-amber-800 text-xs font-bold uppercase tracking-widest">
                       <Clock size={12} /> Pending
                     </span>
                   )}
@@ -162,40 +162,40 @@ const Contact = () => {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-vy-card border border-vy-border p-8 md:p-10"
+            className="bg-[#FAF5ED] border border-[#D4BEA5] p-8 md:p-10 rounded-2xl shadow-sm"
           >
-            <h2 className="text-vy-white text-xl font-bold tracking-wider mb-6">Send a Message</h2>
+            <h2 className="text-[#30231F] text-xl font-bold tracking-wider mb-6">Send a Message</h2>
             
             {submittedId && (
-              <div className="mb-6 p-4 border border-green-500/30 bg-green-500/10 text-center">
-                <p className="text-green-400 text-sm font-semibold mb-1">Message successfully sent!</p>
-                <p className="text-vy-grey text-xs">Your Tracking Ticket ID is:</p>
-                <p className="text-vy-white font-mono text-sm mt-1 p-2 bg-vy-dark border border-vy-border select-all">{submittedId}</p>
-                <p className="text-vy-grey text-[10px] mt-2">Save this ID to track your request status on the left.</p>
+              <div className="mb-6 p-4 border border-emerald-300 bg-emerald-50 rounded-xl text-center">
+                <p className="text-emerald-800 text-sm font-bold mb-1">Message successfully sent!</p>
+                <p className="text-[#75665C] text-xs">Your Tracking Ticket ID is:</p>
+                <p className="text-[#590907] font-mono font-bold text-sm mt-1 p-2 bg-white border border-[#D4BEA5] rounded select-all">{submittedId}</p>
+                <p className="text-[#75665C] text-[10px] mt-2">Save this ID to track your request status on the left.</p>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Name *</label>
+                  <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Name *</label>
                   <input
                     name="name"
                     value={form.name}
                     onChange={onChange}
-                    className="vy-input w-full"
+                    className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]"
                     placeholder="John Doe"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Email *</label>
+                  <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Email *</label>
                   <input
                     type="email"
                     name="email"
                     value={form.email}
                     onChange={onChange}
-                    className="vy-input w-full"
+                    className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]"
                     placeholder="john@example.com"
                     required
                   />
@@ -203,24 +203,24 @@ const Contact = () => {
               </div>
 
               <div>
-                <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Subject</label>
+                <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Subject</label>
                 <input
                   name="subject"
                   value={form.subject}
                   onChange={onChange}
-                  className="vy-input w-full"
+                  className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]"
                   placeholder="Order Issue / Custom Design"
                 />
               </div>
 
               <div>
-                <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Message *</label>
+                <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Message *</label>
                 <textarea
                   name="message"
                   value={form.message}
                   onChange={onChange}
                   rows={5}
-                  className="vy-input w-full resize-none"
+                  className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg p-4 text-sm focus:outline-none focus:border-[#590907] resize-none"
                   placeholder="How can we help you?"
                   required
                 />
@@ -229,9 +229,9 @@ const Contact = () => {
               <motion.button
                 type="submit"
                 disabled={loading}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="btn-primary w-full flex items-center justify-center gap-3 py-4"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="btn-primary w-full flex items-center justify-center gap-3 py-3.5"
               >
                 {loading ? 'Sending...' : (
                   <>

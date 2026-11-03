@@ -52,15 +52,15 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-vy-black text-vy-white pt-24 pb-16 font-sans flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#F3E7D8] text-[#30231F] pt-24 pb-16 font-sans flex flex-col md:flex-row">
       
       {/* Mobile Menu Toggle */}
-      <div className="md:hidden flex justify-between items-center px-6 pb-6 border-b border-vy-border">
+      <div className="md:hidden flex justify-between items-center px-6 pb-6 border-b border-[#D4BEA5]">
         <div className="flex items-center gap-4">
           <BackButton />
-          <h1 className="font-display font-bold text-xl tracking-widest uppercase">My Profile</h1>
+          <h1 className="font-display font-bold text-xl tracking-widest uppercase text-[#30231F]">My Profile</h1>
         </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-vy-white hover:text-vy-accent transition-colors">
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#30231F] hover:text-[#590907] transition-colors">
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
@@ -69,17 +69,17 @@ const DashboardLayout = () => {
       <motion.aside 
         initial={false}
         animate={{ height: isMobileMenuOpen ? 'auto' : 0, opacity: isMobileMenuOpen ? 1 : 0 }}
-        className={`md:!h-auto md:!opacity-100 overflow-hidden md:overflow-visible md:w-64 shrink-0 px-6 md:px-8 py-4 md:py-8 border-r-0 md:border-r border-vy-border ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}
+        className={`md:!h-auto md:!opacity-100 overflow-hidden md:overflow-visible md:w-64 shrink-0 px-6 md:px-8 py-4 md:py-8 border-r-0 md:border-r border-[#D4BEA5] ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}
       >
         <div className="hidden md:block mb-8">
           <div className="mb-6">
             <BackButton />
           </div>
-          <p className="text-vy-grey text-[10px] tracking-widest uppercase mb-2">Welcome Back</p>
-          <p className="font-display font-bold text-lg truncate">{user?.displayName || 'VYBERA Member'}</p>
+          <p className="text-[#75665C] text-[10px] tracking-widest uppercase mb-1 font-semibold">Welcome Back</p>
+          <p className="font-display font-bold text-lg text-[#30231F] truncate">{user?.displayName || 'VYBERA Member'}</p>
         </div>
 
-        <nav className="space-y-2">
+        <nav className="space-y-1.5">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
@@ -89,8 +89,8 @@ const DashboardLayout = () => {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-none text-xs tracking-widest uppercase transition-all duration-300 border-l-2 ${
                   isActive 
-                    ? 'border-vy-accent bg-vy-border/20 text-vy-white font-bold' 
-                    : 'border-transparent text-vy-grey hover:bg-vy-border/10 hover:text-vy-white hover:border-vy-grey'
+                    ? 'border-[#590907] bg-[#590907] text-white font-bold' 
+                    : 'border-transparent text-[#30231F] hover:bg-[#FAF5ED] hover:text-[#590907] hover:border-[#590907] font-semibold'
                 }`
               }
             >
@@ -99,10 +99,10 @@ const DashboardLayout = () => {
             </NavLink>
           ))}
           
-          <div className="pt-8 mt-4 border-t border-vy-border">
+          <div className="pt-8 mt-4 border-t border-[#D4BEA5]">
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-none text-xs tracking-widest uppercase text-vy-grey hover:text-red-400 hover:bg-red-400/10 transition-colors border-l-2 border-transparent hover:border-red-400"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-none text-xs tracking-widest uppercase text-[#75665C] hover:text-rose-700 hover:bg-rose-50 transition-colors border-l-2 border-transparent hover:border-rose-400 font-semibold"
             >
               <LogOut size={16} />
               Logout

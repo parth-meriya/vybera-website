@@ -55,20 +55,20 @@ const AdminSidebar = () => {
   };
 
   return (
-    <aside className="w-60 flex-shrink-0 bg-vy-dark border-r border-vy-border min-h-screen flex flex-col">
-      <div className="p-4 border-b border-vy-border">
+    <aside className="w-64 flex-shrink-0 bg-[#E8D2B5] border-r border-[#D4BEA5] min-h-screen flex flex-col shadow-sm">
+      <div className="p-4 border-b border-[#D4BEA5]">
         <BackButton />
       </div>
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-vy-border">
-        <Link to="/" className="font-display font-bold text-lg tracking-[0.3em] text-vy-white hover:opacity-80 transition-opacity">
+      <div className="h-16 flex items-center px-6 border-b border-[#D4BEA5] bg-[#E8D2B5]">
+        <Link to="/" className="font-display font-bold text-xl tracking-[0.3em] text-[#590907] hover:opacity-80 transition-opacity">
           VYBERA
         </Link>
-        <span className="ml-2 text-[10px] text-vy-accent tracking-widest uppercase border border-vy-accent/30 px-1.5 py-0.5">Admin</span>
+        <span className="ml-2 text-[10px] text-[#590907] tracking-widest uppercase font-bold border border-[#590907]/40 bg-[#FAF5ED] px-1.5 py-0.5 rounded-sm shadow-xs">Admin</span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -78,19 +78,19 @@ const AdminSidebar = () => {
               `admin-nav-link ${isActive ? 'active' : ''}`
             }
           >
-            <Icon size={15} />
-            {label}
+            <Icon size={16} className="shrink-0" />
+            <span className="truncate">{label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-vy-border">
+      <div className="p-4 border-t border-[#D4BEA5] bg-[#E8D2B5]">
         <button
           onClick={handleLogout}
-          className="admin-nav-link w-full text-red-400 hover:text-red-300 hover:bg-red-500/5"
+          className="admin-nav-link w-full text-rose-700 hover:text-rose-900 hover:bg-rose-500/15 font-semibold"
         >
-          <LogOut size={15} />
+          <LogOut size={16} className="shrink-0 text-rose-700" />
           Logout
         </button>
       </div>

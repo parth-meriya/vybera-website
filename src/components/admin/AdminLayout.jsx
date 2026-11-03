@@ -7,7 +7,7 @@ const AdminLayout = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-vy-black flex items-center justify-center">
+      <div className="admin-theme min-h-screen bg-[#F3E7D8] flex items-center justify-center">
         <div className="spinner" />
       </div>
     );
@@ -18,9 +18,9 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-vy-black">
+    <div className="admin-theme flex min-h-screen bg-[#F3E7D8] text-[#30231F]">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-[#F3E7D8]">
         <Outlet />
       </main>
     </div>

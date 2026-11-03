@@ -178,7 +178,7 @@ const ProductCard = ({ product }) => {
               <button
                 type="button"
                 onClick={handleQuickAdd}
-                className="w-full bg-vy-burgundy text-[#FAF5ED] text-[10px] font-bold tracking-[0.2em] uppercase py-3 flex items-center justify-center gap-2 hover:bg-vy-burgundy-hover transition-colors shadow-lg"
+                className="w-full bg-vy-burgundy text-[#FFFFFF] text-[10px] font-bold tracking-[0.2em] uppercase py-3 flex items-center justify-center gap-2 hover:bg-vy-burgundy-hover transition-colors shadow-lg"
               >
                 {adding ? (
                   <>
@@ -192,7 +192,7 @@ const ProductCard = ({ product }) => {
               </button>
             </div>
           ) : (
-            <div className="absolute inset-x-3 bottom-3 bg-white/95 text-vy-text-muted text-[10px] font-bold tracking-widest uppercase py-2.5 text-center border border-vy-border-light shadow-sm">
+            <div className="absolute inset-x-3 bottom-3 bg-white/95 text-vy-text-secondary text-[10px] font-bold tracking-widest uppercase py-2.5 text-center border border-vy-border shadow-sm">
               Out of Stock
             </div>
           )}
@@ -201,7 +201,7 @@ const ProductCard = ({ product }) => {
         {/* Product Details */}
         <div className="p-4 flex flex-col flex-1 justify-between bg-[#FAF5ED]">
           <div>
-            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-vy-sage mb-1">
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#75665C] mb-1">
               {product.category || 'OVERSIZED T-SHIRT'}
             </p>
             <h3 className="text-vy-text text-sm font-semibold tracking-wide truncate group-hover:text-vy-burgundy transition-colors">
@@ -215,14 +215,14 @@ const ProductCard = ({ product }) => {
                 ₹{pricing.price.toLocaleString()}
               </span>
               {pricing.compareAtPrice && pricing.compareAtPrice > pricing.price && (
-                <span className="text-vy-sage text-xs line-through">
+                <span className="text-[#75665C] text-xs line-through font-medium">
                   ₹{pricing.compareAtPrice.toLocaleString()}
                 </span>
               )}
             </div>
 
             {/* Mobile sizes indicator */}
-            <div className="flex md:hidden items-center gap-1 text-[9px] font-bold text-vy-text-muted uppercase">
+            <div className="flex md:hidden items-center gap-1 text-[9px] font-bold text-[#75665C] uppercase">
               {availableSizes.slice(0, 3).join(' • ')}
               {availableSizes.length > 3 && '+'}
             </div>
@@ -236,7 +236,7 @@ const ProductCard = ({ product }) => {
           <button
             type="button"
             onClick={handleQuickAdd}
-            className="w-full bg-vy-burgundy text-[#FAF5ED] text-[10px] font-bold tracking-[0.18em] uppercase py-2.5 flex items-center justify-center gap-2 active:bg-vy-burgundy-hover"
+            className="w-full bg-vy-burgundy text-[#FFFFFF] text-[10px] font-bold tracking-[0.18em] uppercase py-2.5 flex items-center justify-center gap-2 active:bg-vy-burgundy-hover"
           >
             <ShoppingBag size={12} />
             Quick Add

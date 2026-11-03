@@ -161,13 +161,13 @@ const ProductModal = ({ product, onClose, onSaved, dynamicCategories = [] }) => 
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.95, y: 20 }}
         onClick={e => e.stopPropagation()}
-        className="bg-vy-dark border border-vy-border w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-[#FAF5ED] border border-[#D4BEA5] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-sm shadow-xl"
       >
-        <div className="flex items-center justify-between p-6 border-b border-vy-border">
-          <h2 className="text-vy-white font-semibold tracking-wider">
+        <div className="flex items-center justify-between p-6 border-b border-[#D4BEA5]">
+          <h2 className="text-[#30231F] font-bold text-lg tracking-wider">
             {product?.id ? 'Edit Product' : 'Add Product'}
           </h2>
-          <button onClick={onClose} className="text-vy-grey hover:text-vy-white transition-colors">
+          <button onClick={onClose} className="text-[#75665C] hover:text-[#30231F] transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -714,11 +714,11 @@ const AdminProducts = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#D4BEA5]">
         <div>
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-          <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Products</h1>
+          <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
+          <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">Products</h1>
         </div>
         <div className="flex gap-3">
           <AnimatePresence>
@@ -729,7 +729,7 @@ const AdminProducts = () => {
                 exit={{ opacity: 0, x: 20 }}
                 onClick={handleBulkDelete}
                 disabled={bulkDeleting}
-                className="btn-outline border-red-500/50 text-red-400 hover:bg-red-500/10 flex items-center gap-2 text-xs"
+                className="btn-outline border-rose-300 text-rose-800 bg-rose-50 hover:bg-rose-100 flex items-center gap-2 text-xs font-bold"
               >
                 {bulkDeleting ? 'Deleting...' : `Delete Selected (${selectedIds.length})`}
               </motion.button>
@@ -738,12 +738,12 @@ const AdminProducts = () => {
           {products.length > 0 && (
             <button
               onClick={() => setShowBulkModal(true)}
-              className="btn-outline border-vy-border text-vy-white hover:bg-vy-white/[0.05] flex items-center gap-2 text-xs"
+              className="btn-secondary flex items-center gap-2 text-xs font-bold"
             >
               <Sliders size={13} /> Bulk Edit
             </button>
           )}
-          <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs">
+          <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs font-bold">
             <Plus size={13} /> Add Product
           </button>
         </div>
@@ -752,57 +752,57 @@ const AdminProducts = () => {
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : (
-        <div className="bg-vy-card border border-vy-border overflow-hidden">
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm overflow-hidden rounded-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-vy-border">
-                <th className="px-4 py-3 w-10">
+              <tr className="border-b-2 border-[#D4BEA5] bg-[#FAF5ED]">
+                <th className="px-4 py-3.5 w-10">
                   <input
                     type="checkbox"
                     checked={products.length > 0 && selectedIds.length === products.length}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 accent-vy-white rounded-none cursor-pointer"
+                    className="w-4 h-4 accent-[#590907] rounded-none cursor-pointer"
                   />
                 </th>
                 {['Image', 'Name', 'Price', 'Category', 'Stock', 'Sizes', 'Featured', 'Drop', 'Actions'].map(h => (
-                  <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
+                  <th key={h} className="text-[#75665C] text-xs tracking-widest uppercase text-left px-4 py-3.5 font-bold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {products.map(p => (
-                <tr key={p.id} className={`border-b border-vy-border/50 hover:bg-vy-white/[0.02] transition-colors ${selectedIds.includes(p.id) ? 'bg-vy-white/[0.03]' : ''}`}>
+                <tr key={p.id} className={`border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors ${selectedIds.includes(p.id) ? 'bg-[#E8D2B5]/40' : ''}`}>
                   <td className="px-4 py-4">
                     <input
                       type="checkbox"
                       checked={selectedIds.includes(p.id)}
                       onChange={() => toggleSelectOne(p.id)}
-                      className="w-4 h-4 accent-vy-white rounded-none cursor-pointer"
+                      className="w-4 h-4 accent-[#590907] rounded-none cursor-pointer"
                     />
                   </td>
                   <td className="px-4 py-4">
-                    <img src={p.images?.[0] || p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-cover bg-vy-dark" />
+                    <img src={p.images?.[0] || p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-cover bg-[#E8D2B5] border border-[#D4BEA5] rounded-xs" />
                   </td>
-                  <td className="px-4 py-3 text-vy-white font-medium max-w-xs truncate">{p.name}</td>
-                  <td className="px-4 py-3 text-vy-white font-semibold">₹{p.price?.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-[#30231F] font-bold max-w-xs truncate">{p.name}</td>
+                  <td className="px-4 py-3 text-[#590907] font-bold">₹{p.price?.toLocaleString()}</td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-vy-grey capitalize px-2 py-1 border border-vy-border/50 bg-vy-border/10">
+                    <span className="text-xs text-[#30231F] font-semibold capitalize px-2 py-0.5 border border-[#D4BEA5] bg-[#E8D2B5] rounded-xs">
                       {p.category || 'normal'}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs ${p.inStock !== false ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-xs font-semibold ${p.inStock !== false ? 'text-emerald-900 bg-emerald-100 border border-emerald-300' : 'text-rose-900 bg-rose-100 border border-rose-300'}`}>
                       {p.inStock !== false ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-vy-grey text-xs">{p.sizes?.join(', ') || '—'}</td>
+                  <td className="px-4 py-3 text-[#75665C] text-xs font-medium">{p.sizes?.join(', ') || '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs ${p.featured ? 'text-green-400' : 'text-vy-border'}`}>
+                    <span className={`text-xs font-bold ${p.featured ? 'text-emerald-800' : 'text-[#75665C]'}`}>
                       {p.featured ? '✓' : '—'}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs ${p.isDrop ? 'text-blue-400' : 'text-vy-border'}`}>
+                    <span className={`text-xs font-bold ${p.isDrop ? 'text-blue-800' : 'text-[#75665C]'}`}>
                       {p.isDrop ? '✓' : '—'}
                     </span>
                   </td>
@@ -810,17 +810,17 @@ const AdminProducts = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setModal(p)}
-                        className="p-1.5 text-vy-grey hover:text-vy-white transition-colors"
+                        className="p-1.5 text-[#590907] hover:bg-[#E8D2B5] rounded-xs transition-colors"
                         title="Edit"
                       >
-                        <Edit2 size={13} />
+                        <Edit2 size={14} />
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(p)}
-                        className="p-1.5 text-vy-grey hover:text-red-400 transition-colors"
+                        className="p-1.5 text-rose-700 hover:bg-rose-100 rounded-xs transition-colors"
                         title="Delete"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -829,8 +829,8 @@ const AdminProducts = () => {
             </tbody>
           </table>
           {products.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-vy-grey text-sm tracking-widest uppercase">No products yet</p>
+            <div className="text-center py-16 text-[#75665C]">
+              <p className="text-sm tracking-widest uppercase">No products yet</p>
             </div>
           )}
         </div>

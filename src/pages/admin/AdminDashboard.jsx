@@ -7,20 +7,20 @@ import { getAllOrders, updateOrderStatus } from '../../firebase/orders';
 import { getAllUsers } from '../../firebase/users';
 import toast from 'react-hot-toast';
 
-const StatCard = ({ icon: Icon, label, value, sub, color }) => (
+const StatCard = ({ icon: Icon, label, value, sub, color, isCurrency }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-vy-card border border-vy-border p-6"
+    className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm"
   >
     <div className="flex items-start justify-between mb-4">
-      <div className={`p-2 rounded-none ${color}`}>
-        <Icon size={18} />
+      <div className={`p-2.5 rounded-sm ${color}`}>
+        <Icon size={20} />
       </div>
     </div>
-    <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">{label}</p>
-    <p className="text-vy-white font-bold text-3xl font-display">{value}</p>
-    {sub && <p className="text-vy-grey text-xs mt-1">{sub}</p>}
+    <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">{label}</p>
+    <p className={`font-bold text-3xl font-display ${isCurrency ? 'text-[#590907]' : 'text-[#30231F]'}`}>{value}</p>
+    {sub && <p className="text-[#75665C] text-xs mt-1 font-medium">{sub}</p>}
   </motion.div>
 );
 
@@ -86,64 +86,69 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between pb-6 border-b border-[#D4BEA5]">
         <div>
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-          <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Dashboard</h1>
+          <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
+          <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">Dashboard</h1>
         </div>
         <Link to="/admin/products" className="btn-primary flex items-center gap-2 text-xs">
-          <Plus size={13} /> Add Product
+          <Plus size={14} /> Add Product
         </Link>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={Package} label="Products" value={products.length} color="text-blue-400" />
-        <StatCard icon={ShoppingCart} label="Orders" value={orders.length} sub={`${orders.filter(o=>(o.status?.toLowerCase() || 'pending') === 'pending').length} pending`} color="text-yellow-400" />
-        <StatCard icon={Users} label="Users" value={users.length} color="text-green-400" />
-        <StatCard icon={DollarSign} label="Revenue" value={`₹${revenue.toLocaleString()}`} color="text-purple-400" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        <StatCard icon={Package} label="Products" value={products.length} color="bg-blue-50 text-blue-800 border border-blue-200" />
+        <StatCard icon={ShoppingCart} label="Orders" value={orders.length} sub={`${orders.filter(o=>(o.status?.toLowerCase() || 'pending') === 'pending').length} pending`} color="bg-amber-50 text-amber-800 border border-amber-200" />
+        <StatCard icon={Users} label="Users" value={users.length} color="bg-emerald-50 text-emerald-800 border border-emerald-200" />
+        <StatCard icon={DollarSign} label="Revenue" value={`₹${revenue.toLocaleString()}`} isCurrency={true} color="bg-rose-50 text-[#590907] border border-rose-200" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Orders */}
-        <div className="lg:col-span-2 bg-vy-card border border-vy-border p-6">
+        <div className="lg:col-span-2 bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider">Recent Orders</h2>
-            <Link to="/admin/orders" className="text-vy-grey text-xs hover:text-vy-white transition-colors tracking-widest uppercase">View All</Link>
+            <h2 className="text-[#30231F] font-bold text-sm tracking-wider uppercase">Recent Orders</h2>
+            <Link to="/admin/orders" className="text-[#590907] text-xs hover:underline font-semibold tracking-widest uppercase">View All</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-vy-border">
+                <tr className="border-b-2 border-[#D4BEA5]">
                   {['Order ID', 'Customer', 'Total', 'Status', 'Date'].map(h => (
-                    <th key={h} className="text-vy-grey text-left text-xs tracking-widest uppercase pb-3 font-normal pr-4">{h}</th>
+                    <th key={h} className="text-[#75665C] text-left text-xs font-semibold tracking-widest uppercase pb-3 pr-4">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {orders.slice(0, 6).map(order => (
-                  <tr key={order.id} className="border-b border-vy-border/50 group">
-                    <td className="py-3 pr-4 text-vy-grey text-xs font-mono flex items-center gap-2">
-                      {order.id.slice(0, 8)}...
-                      <button onClick={() => copyToClipboard(order.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-vy-border hover:text-vy-white">
-                        {copiedId === order.id ? <Check size={10} /> : <Copy size={10} />}
+                  <tr key={order.id} className="border-b border-[#D4BEA5] group hover:bg-[#E8D2B5]/30 transition-colors">
+                    <td className="py-3 pr-4 text-[#590907] text-xs font-mono font-bold flex items-center gap-2">
+                      #{order.id.slice(0, 8)}
+                      <button onClick={() => copyToClipboard(order.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#75665C] hover:text-[#30231F]">
+                        {copiedId === order.id ? <Check size={11} className="text-emerald-700" /> : <Copy size={11} />}
                       </button>
                     </td>
-                    <td className="py-3 pr-4 text-vy-white text-xs">{order.address?.name || order.userEmail}</td>
-                    <td className="py-3 pr-4 text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</td>
+                    <td className="py-3 pr-4 text-[#30231F] text-xs font-medium">{order.address?.name || order.userEmail || 'Customer'}</td>
+                    <td className="py-3 pr-4 text-[#590907] text-xs font-bold">₹{order.total?.toLocaleString()}</td>
                     <td className="py-3 pr-4">
                       <select
                         value={order.status?.toLowerCase() || 'pending'}
                         onChange={e => handleStatusChange(order.id, e.target.value)}
-                        className={`text-[10px] uppercase font-bold tracking-widest bg-transparent border-0 outline-none cursor-pointer ${statusClass[order.status?.toLowerCase() || 'pending']}`}
+                        className={`text-[11px] uppercase font-bold tracking-wider px-2 py-1 rounded-sm border cursor-pointer outline-none ${
+                          (order.status?.toLowerCase() || 'pending') === 'delivered' ? 'bg-emerald-100 text-emerald-900 border-emerald-300' :
+                          (order.status?.toLowerCase() || 'pending') === 'shipped' ? 'bg-purple-100 text-purple-900 border-purple-300' :
+                          (order.status?.toLowerCase() || 'pending') === 'cancelled' ? 'bg-rose-100 text-rose-900 border-rose-300' :
+                          'bg-amber-100 text-amber-900 border-amber-300'
+                        }`}
                       >
-                        {STATUS_OPTIONS.map(s => <option key={s} value={s} className="bg-vy-dark text-vy-white uppercase">{s}</option>)}
+                        {STATUS_OPTIONS.map(s => <option key={s} value={s} className="bg-[#FAF5ED] text-[#30231F] font-medium uppercase">{s}</option>)}
                       </select>
                     </td>
-                    <td className="py-3 text-vy-grey text-xs">
-                      {order.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
+                    <td className="py-3 text-[#75665C] text-xs font-medium">
+                      {order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || 'Recently'}
                     </td>
                   </tr>
                 ))}
@@ -153,35 +158,35 @@ const AdminDashboard = () => {
         </div>
 
         {/* Best Sellers Side Panel */}
-        <div className="bg-vy-card border border-vy-border p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <TrendingUp size={16} className="text-vy-accent" />
-            <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm">Best Sellers</h2>
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-6 pb-3 border-b border-[#D4BEA5]">
+            <TrendingUp size={18} className="text-[#590907]" />
+            <h2 className="text-[#30231F] font-bold tracking-widest uppercase text-sm">Best Sellers</h2>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {bestSellers.length === 0 ? (
-              <p className="text-vy-grey text-xs">No data yet.</p>
+              <p className="text-[#75665C] text-xs py-4 text-center">No sales data recorded yet.</p>
             ) : (
               bestSellers.map((item, i) => (
-                <div key={i} className="flex items-center gap-4 group">
-                  <div className="relative w-10 h-12 bg-vy-dark border border-vy-border overflow-hidden shrink-0">
-                    <img src={item.image || 'https://placehold.co/40x50/141414/888888?text=VY'} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div key={i} className="flex items-center gap-4 group p-2 hover:bg-[#E8D2B5]/30 rounded-sm transition-colors">
+                  <div className="relative w-12 h-14 bg-[#E8D2B5] border border-[#D4BEA5] overflow-hidden shrink-0 rounded-xs">
+                    <img src={item.image || 'https://placehold.co/40x50/141414/888888?text=VY'} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-vy-white text-[10px] font-medium truncate uppercase tracking-wider">{item.name}</p>
-                    <p className="text-vy-grey text-[9px] uppercase tracking-[0.2em]">{item.qty} Sales</p>
+                    <p className="text-[#30231F] text-xs font-bold truncate uppercase tracking-wider">{item.name}</p>
+                    <p className="text-[#75665C] text-[10px] uppercase tracking-[0.15em] font-medium mt-0.5">{item.qty} Sold</p>
                   </div>
-                  <div className={`w-1 h-8 ${i === 0 ? 'bg-vy-accent' : 'bg-vy-border'} transition-all`} />
+                  <div className={`w-1 h-8 ${i === 0 ? 'bg-[#590907]' : 'bg-[#D4BEA5]'} transition-all`} />
                 </div>
               ))
             )}
           </div>
 
-          <div className="mt-10 p-4 border border-vy-border bg-vy-black/20">
-            <p className="text-vy-grey text-[9px] uppercase tracking-[0.2em] mb-2 font-bold">Quick Insights</p>
-            <p className="text-vy-white text-[11px] leading-relaxed">
-              Your average order value is <span className="text-vy-accent font-bold">₹{Math.round(revenue / (orders.filter(o=>o.status!=='cancelled').length || 1)).toLocaleString()}</span>. 
+          <div className="mt-8 p-4 border border-[#D4BEA5] bg-[#E8D2B5]/30 rounded-sm">
+            <p className="text-[#75665C] text-[10px] uppercase tracking-[0.2em] mb-1.5 font-bold">Quick Insights</p>
+            <p className="text-[#30231F] text-xs leading-relaxed">
+              Your average order value is <span className="text-[#590907] font-bold">₹{Math.round(revenue / (orders.filter(o=>o.status!=='cancelled').length || 1)).toLocaleString()}</span>. 
               {bestSellers[0] && ` ${bestSellers[0].name} is currently your most popular drop.`}
             </p>
           </div>

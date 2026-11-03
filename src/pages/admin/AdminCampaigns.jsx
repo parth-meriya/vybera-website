@@ -257,29 +257,44 @@ const AdminCampaigns = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="font-display font-bold text-2xl text-vy-white tracking-widest uppercase">Secret Campaigns</h1>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <p className="text-[#75665C] text-xs tracking-widest uppercase mb-1">Admin</p>
+          <h1 className="font-display font-bold text-2xl text-[#30231F] tracking-widest uppercase">Secret Campaigns</h1>
+        </div>
         
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2 sm:gap-4">
           <button 
             onClick={() => setActiveTab('campaigns')}
-            className={`btn-primary px-4 py-2 text-xs ${activeTab === 'campaigns' ? '' : 'bg-vy-card text-vy-grey'}`}
+            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+              activeTab === 'campaigns' 
+                ? 'bg-[#590907] text-white' 
+                : 'bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F] hover:bg-[#F3E7D8]'
+            }`}
           >
             Campaigns
           </button>
           <button 
             onClick={() => setActiveTab('analytics')}
-            className={`btn-primary px-4 py-2 text-xs flex items-center gap-2 ${activeTab === 'analytics' ? '' : 'bg-vy-card text-vy-grey'}`}
+            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors ${
+              activeTab === 'analytics' 
+                ? 'bg-[#590907] text-white' 
+                : 'bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F] hover:bg-[#F3E7D8]'
+            }`}
           >
             <BarChart3 size={14} /> Analytics
           </button>
           <button 
             onClick={() => setActiveTab('free_tees')}
-            className={`btn-primary px-4 py-2 text-xs flex items-center gap-2 ${activeTab === 'free_tees' ? '' : 'bg-vy-card text-vy-grey'}`}
+            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors ${
+              activeTab === 'free_tees' 
+                ? 'bg-[#590907] text-white' 
+                : 'bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F] hover:bg-[#F3E7D8]'
+            }`}
           >
             <Gift size={14} /> Free Tees
             {rewardTxs.filter(t => t.status === 'pending').length > 0 && (
-              <span className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px]">
+              <span className="bg-[#590907] text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
                 {rewardTxs.filter(t => t.status === 'pending').length}
               </span>
             )}
@@ -303,14 +318,14 @@ const AdminCampaigns = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map(c => (
-              <div key={c.id} className="bg-vy-card border border-vy-border p-5 relative group">
+              <div key={c.id} className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 relative group shadow-sm">
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <button onClick={() => { setCurrentCampaign(c); setIsEditing(true); }} className="text-vy-grey hover:text-vy-white"><Edit2 size={16} /></button>
-                  <button onClick={() => deleteCampaign(c.id)} className="text-vy-grey hover:text-red-400"><Trash2 size={16} /></button>
+                  <button onClick={() => { setCurrentCampaign(c); setIsEditing(true); }} className="text-[#75665C] hover:text-[#590907] p-1"><Edit2 size={16} /></button>
+                  <button onClick={() => deleteCampaign(c.id)} className="text-[#75665C] hover:text-red-700 p-1"><Trash2 size={16} /></button>
                 </div>
                 
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="bg-vy-white p-2 rounded-sm hidden">
+                  <div className="bg-white p-2 rounded-sm hidden">
                     {/* Hidden SVG for download */}
                     <QRCodeSVG 
                       id={`qr-${c.id}`}
@@ -321,7 +336,7 @@ const AdminCampaigns = () => {
                     />
                   </div>
                   
-                  <div className="bg-vy-white p-1">
+                  <div className="bg-white p-1 border border-[#D4BEA5]">
                      <QRCodeSVG 
                       value={`${window.location.origin}/campaign/${c.id}?token=${c.token}`} 
                       size={64}
@@ -330,33 +345,33 @@ const AdminCampaigns = () => {
                   </div>
                   
                   <div>
-                    <h3 className="text-vy-white font-bold tracking-widest uppercase">{c.id}</h3>
+                    <h3 className="text-[#30231F] font-bold tracking-widest uppercase text-base">{c.id}</h3>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className={`w-2 h-2 rounded-full ${c.active ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span className="text-[10px] text-vy-grey uppercase">{c.active ? 'Active' : 'Paused'}</span>
+                      <span className={`w-2.5 h-2.5 rounded-full ${c.active ? 'bg-emerald-600' : 'bg-rose-600'}`} />
+                      <span className="text-[11px] font-bold text-[#75665C] uppercase">{c.active ? 'Active' : 'Paused'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs text-vy-grey mb-4 bg-vy-black p-3 rounded-sm">
+                <div className="grid grid-cols-2 gap-2 text-xs mb-4 bg-[#F3E7D8] border border-[#D4BEA5]/60 p-3">
                   <div>
-                    <p className="uppercase text-[10px] opacity-70">Total Spins</p>
-                    <p className="text-vy-white font-bold text-lg">{c.totalSpins || 0}</p>
+                    <p className="uppercase text-[10px] tracking-wider text-[#75665C] font-semibold">Total Spins</p>
+                    <p className="text-[#30231F] font-bold text-lg">{c.totalSpins || 0}</p>
                   </div>
                   <div>
-                    <p className="uppercase text-[10px] opacity-70">Limit</p>
-                    <p className="text-vy-white font-bold text-lg">{c.usageLimit > 0 ? c.usageLimit : '∞'}</p>
+                    <p className="uppercase text-[10px] tracking-wider text-[#75665C] font-semibold">Limit</p>
+                    <p className="text-[#30231F] font-bold text-lg">{c.usageLimit > 0 ? c.usageLimit : '∞'}</p>
                   </div>
                 </div>
 
-                <div className="flex gap-2 border-t border-vy-border pt-4">
-                  <button onClick={() => toggleActive(c)} className="flex-1 border border-vy-border py-2 text-xs uppercase hover:bg-vy-border/20 transition-colors">
+                <div className="flex gap-2 border-t border-[#D4BEA5] pt-4">
+                  <button onClick={() => toggleActive(c)} className="flex-1 border border-[#D4BEA5] py-2 text-xs uppercase font-bold text-[#30231F] hover:bg-[#F3E7D8] transition-colors">
                     {c.active ? 'Pause' : 'Activate'}
                   </button>
-                  <button onClick={() => downloadQR(c.id)} className="flex-1 bg-vy-white text-vy-black font-bold py-2 text-xs flex items-center justify-center gap-2 hover:bg-vy-accent transition-colors">
+                  <button onClick={() => downloadQR(c.id)} className="flex-1 bg-[#590907] text-white font-bold py-2 text-xs flex items-center justify-center gap-2 hover:bg-[#430605] transition-colors">
                     <Download size={14} /> QR
                   </button>
-                  <button onClick={() => copyLink(c.id, c.token)} className="flex-1 border border-vy-border py-2 text-xs flex items-center justify-center gap-2 hover:bg-vy-border/20 transition-colors">
+                  <button onClick={() => copyLink(c.id, c.token)} className="flex-1 border border-[#D4BEA5] py-2 text-xs font-bold text-[#30231F] flex items-center justify-center gap-2 hover:bg-[#F3E7D8] transition-colors">
                     <LinkIcon size={14} /> Link
                   </button>
                 </div>
@@ -369,7 +384,7 @@ const AdminCampaigns = () => {
       {activeTab === 'analytics' && (
         <div>
           {analyticsLoading ? (
-            <div className="p-12 text-vy-grey flex items-center justify-center gap-2">
+            <div className="p-12 text-[#75665C] flex items-center justify-center gap-2">
               <RefreshCw className="animate-spin" size={20} /> Loading analytics...
             </div>
           ) : analyticsData ? (
@@ -378,7 +393,7 @@ const AdminCampaigns = () => {
               <div className="mb-6 flex justify-end gap-3">
                 <button
                   onClick={handleExportCSV}
-                  className="btn-primary bg-vy-card border border-vy-border text-vy-grey hover:text-vy-white flex items-center gap-2 text-xs px-4 py-2"
+                  className="bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F] hover:bg-[#F3E7D8] font-bold flex items-center gap-2 text-xs px-4 py-2 transition-colors"
                 >
                   <Download size={14} /> Export CSV
                 </button>
@@ -392,61 +407,61 @@ const AdminCampaigns = () => {
 
               {/* Summary Stat Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
-                  <QrCode size={48} className="absolute top-3 right-3 text-vy-border/30" />
-                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Total Spins</p>
-                  <p className="text-3xl font-bold text-vy-white font-display">{analyticsData.totals.totalSpins.toLocaleString()}</p>
+                <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 relative overflow-hidden shadow-sm">
+                  <QrCode size={48} className="absolute top-3 right-3 text-[#D4BEA5]/40" />
+                  <p className="text-[10px] uppercase tracking-widest text-[#75665C] font-semibold mb-1">Total Spins</p>
+                  <p className="text-3xl font-bold text-[#30231F] font-display">{analyticsData.totals.totalSpins.toLocaleString()}</p>
                 </div>
-                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
-                  <Users size={48} className="absolute top-3 right-3 text-vy-border/30" />
-                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Unique Users</p>
-                  <p className="text-3xl font-bold text-vy-white font-display">{analyticsData.totals.uniqueUsers.toLocaleString()}</p>
+                <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 relative overflow-hidden shadow-sm">
+                  <Users size={48} className="absolute top-3 right-3 text-[#D4BEA5]/40" />
+                  <p className="text-[10px] uppercase tracking-widest text-[#75665C] font-semibold mb-1">Unique Users</p>
+                  <p className="text-3xl font-bold text-[#30231F] font-display">{analyticsData.totals.uniqueUsers.toLocaleString()}</p>
                 </div>
-                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
-                  <Check size={48} className="absolute top-3 right-3 text-vy-border/30" />
-                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Coupons Used</p>
-                  <p className="text-3xl font-bold text-vy-gold font-display">{analyticsData.totals.couponsUsed.toLocaleString()}</p>
+                <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 relative overflow-hidden shadow-sm">
+                  <Check size={48} className="absolute top-3 right-3 text-[#D4BEA5]/40" />
+                  <p className="text-[10px] uppercase tracking-widest text-[#75665C] font-semibold mb-1">Coupons Used</p>
+                  <p className="text-3xl font-bold text-[#590907] font-display">{analyticsData.totals.couponsUsed.toLocaleString()}</p>
                 </div>
-                <div className="bg-vy-card border border-vy-border p-5 relative overflow-hidden">
-                  <TrendingUp size={48} className="absolute top-3 right-3 text-vy-border/30" />
-                  <p className="text-[10px] uppercase tracking-widest text-vy-grey mb-1">Campaign Revenue</p>
-                  <p className="text-3xl font-bold text-vy-gold font-display">₹{analyticsData.totals.revenue.toLocaleString()}</p>
+                <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 relative overflow-hidden shadow-sm">
+                  <TrendingUp size={48} className="absolute top-3 right-3 text-[#D4BEA5]/40" />
+                  <p className="text-[10px] uppercase tracking-widest text-[#75665C] font-semibold mb-1">Campaign Revenue</p>
+                  <p className="text-3xl font-bold text-[#590907] font-display">₹{analyticsData.totals.revenue.toLocaleString()}</p>
                 </div>
               </div>
 
               {/* Per-Campaign Breakdown Table */}
-              <div className="bg-vy-card border border-vy-border overflow-hidden">
-                <div className="p-4 border-b border-vy-border">
-                  <h3 className="font-display font-bold text-sm text-vy-white tracking-widest uppercase">Per-Campaign Breakdown</h3>
+              <div className="bg-[#FAF5ED] border border-[#D4BEA5] overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-[#D4BEA5]">
+                  <h3 className="font-display font-bold text-sm text-[#30231F] tracking-widest uppercase">Per-Campaign Breakdown</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
-                    <thead className="bg-vy-black border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">
+                    <thead className="bg-[#FAF5ED] border-b border-[#D4BEA5] text-xs uppercase tracking-widest text-[#75665C]">
                       <tr>
-                        <th className="p-4 font-normal">Campaign</th>
-                        <th className="p-4 font-normal text-right">Spins</th>
-                        <th className="p-4 font-normal text-right">Users</th>
-                        <th className="p-4 font-normal text-right">Coupons Generated</th>
-                        <th className="p-4 font-normal text-right">Coupons Used</th>
-                        <th className="p-4 font-normal text-right">Orders</th>
-                        <th className="p-4 font-normal text-right">Revenue</th>
+                        <th className="p-4 font-semibold">Campaign</th>
+                        <th className="p-4 font-semibold text-right">Spins</th>
+                        <th className="p-4 font-semibold text-right">Users</th>
+                        <th className="p-4 font-semibold text-right">Coupons Generated</th>
+                        <th className="p-4 font-semibold text-right">Coupons Used</th>
+                        <th className="p-4 font-semibold text-right">Orders</th>
+                        <th className="p-4 font-semibold text-right">Revenue</th>
                       </tr>
                     </thead>
                     <tbody className="text-sm">
                       {analyticsData.perCampaign.map(row => (
-                        <tr key={row.campaignId} className="border-b border-vy-border/50 hover:bg-vy-black/50">
-                          <td className="p-4 text-vy-white font-bold uppercase tracking-wider text-xs">{row.campaignId}</td>
-                          <td className="p-4 text-vy-white text-right">{row.totalSpins.toLocaleString()}</td>
-                          <td className="p-4 text-vy-white text-right">{row.uniqueUsers.toLocaleString()}</td>
-                          <td className="p-4 text-vy-white text-right">{row.couponsGenerated.toLocaleString()}</td>
-                          <td className="p-4 text-vy-gold text-right">{row.couponsUsed.toLocaleString()}</td>
-                          <td className="p-4 text-vy-white text-right">{row.orders.toLocaleString()}</td>
-                          <td className="p-4 text-vy-gold text-right font-bold">₹{row.revenue.toLocaleString()}</td>
+                        <tr key={row.campaignId} className="border-b border-[#D4BEA5] hover:bg-[#F3E7D8]/60 transition-colors">
+                          <td className="p-4 text-[#30231F] font-bold uppercase tracking-wider text-xs">{row.campaignId}</td>
+                          <td className="p-4 text-[#30231F] text-right font-medium">{row.totalSpins.toLocaleString()}</td>
+                          <td className="p-4 text-[#30231F] text-right font-medium">{row.uniqueUsers.toLocaleString()}</td>
+                          <td className="p-4 text-[#30231F] text-right font-medium">{row.couponsGenerated.toLocaleString()}</td>
+                          <td className="p-4 text-[#590907] text-right font-bold">{row.couponsUsed.toLocaleString()}</td>
+                          <td className="p-4 text-[#30231F] text-right font-medium">{row.orders.toLocaleString()}</td>
+                          <td className="p-4 text-[#590907] text-right font-bold">₹{row.revenue.toLocaleString()}</td>
                         </tr>
                       ))}
                       {analyticsData.perCampaign.length === 0 && (
                         <tr>
-                          <td colSpan="7" className="p-8 text-center text-vy-grey">No campaign data found.</td>
+                          <td colSpan="7" className="p-8 text-center text-[#75665C]">No campaign data found.</td>
                         </tr>
                       )}
                     </tbody>
@@ -455,7 +470,7 @@ const AdminCampaigns = () => {
               </div>
             </>
           ) : (
-            <div className="p-12 text-vy-grey text-center">No analytics data loaded.</div>
+            <div className="p-12 text-[#75665C] text-center">No analytics data loaded.</div>
           )}
         </div>
       )}
@@ -465,38 +480,38 @@ const AdminCampaigns = () => {
           <div className="flex justify-end">
             <button
               onClick={handleExportFreeTeesCSV}
-              className="btn-primary flex items-center gap-2 text-xs px-4 py-2"
+              className="bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F] hover:bg-[#F3E7D8] font-bold flex items-center gap-2 text-xs px-4 py-2 transition-colors"
             >
               <Download size={14} /> Export Winners CSV
             </button>
           </div>
-          <div className="bg-vy-card border border-vy-border overflow-hidden">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] overflow-hidden shadow-sm">
           <table className="w-full text-left">
-            <thead className="bg-vy-black border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">
+            <thead className="bg-[#FAF5ED] border-b border-[#D4BEA5] text-xs uppercase tracking-widest text-[#75665C]">
               <tr>
-                <th className="p-4 font-normal">Date</th>
-                <th className="p-4 font-normal">User</th>
-                <th className="p-4 font-normal">Campaign</th>
-                <th className="p-4 font-normal">Status</th>
-                <th className="p-4 font-normal">Action</th>
+                <th className="p-4 font-semibold">Date</th>
+                <th className="p-4 font-semibold">User</th>
+                <th className="p-4 font-semibold">Campaign</th>
+                <th className="p-4 font-semibold">Status</th>
+                <th className="p-4 font-semibold">Action</th>
               </tr>
             </thead>
             <tbody className="text-sm">
               {rewardTxs.map(tx => (
-                <tr key={tx.id} className="border-b border-vy-border/50 hover:bg-vy-black/50">
-                  <td className="p-4 text-vy-grey">{tx.timestamp?.toDate().toLocaleString()}</td>
+                <tr key={tx.id} className="border-b border-[#D4BEA5] hover:bg-[#F3E7D8]/60 transition-colors">
+                  <td className="p-4 text-[#75665C] text-xs">{tx.timestamp?.toDate ? tx.timestamp.toDate().toLocaleString() : new Date(tx.timestamp).toLocaleString()}</td>
                   <td className="p-4">
-                    <p className="text-vy-white">{tx.email}</p>
-                    <p className="text-vy-grey text-xs">{tx.phone}</p>
+                    <p className="text-[#30231F] font-bold">{tx.email}</p>
+                    <p className="text-[#75665C] text-xs">{tx.phone}</p>
                   </td>
-                  <td className="p-4 text-vy-white uppercase text-xs">{tx.campaignId}</td>
+                  <td className="p-4 text-[#30231F] uppercase text-xs font-semibold">{tx.campaignId}</td>
                   <td className="p-4">
-                    <span className={`text-[10px] px-2 py-1 uppercase tracking-widest border ${
-                      tx.status === 'pending' ? 'bg-vy-yellow/10 text-vy-yellow border-vy-yellow/20' :
-                      tx.status === 'approved' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                      tx.status === 'shipped' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                      'bg-red-500/10 text-red-400 border-red-500/20'
-                    }`}>
+                    <span className={
+                      tx.status === 'pending' ? 'badge-pending' :
+                      tx.status === 'approved' ? 'badge-confirmed' :
+                      tx.status === 'shipped' ? 'badge-shipped' :
+                      'badge-cancelled'
+                    }>
                       {tx.status}
                     </span>
                   </td>
@@ -504,7 +519,7 @@ const AdminCampaigns = () => {
                     <select 
                       value={tx.status}
                       onChange={(e) => updateTeeStatus(tx.id, e.target.value)}
-                      className="bg-vy-black border border-vy-border text-vy-white text-xs px-2 py-1 uppercase"
+                      className="bg-white border border-[#D4BEA5] text-[#30231F] text-xs px-2.5 py-1 uppercase rounded font-semibold cursor-pointer"
                     >
                       <option value="pending">Pending</option>
                       <option value="approved">Approve</option>
@@ -516,7 +531,7 @@ const AdminCampaigns = () => {
               ))}
               {rewardTxs.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-vy-grey">No free tee rewards found.</td>
+                  <td colSpan="5" className="p-8 text-center text-[#75665C]">No free tee rewards found.</td>
                 </tr>
               )}
             </tbody>
@@ -528,26 +543,26 @@ const AdminCampaigns = () => {
       {/* Editor Modal */}
       <AnimatePresence>
         {isEditing && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div 
               key="campaign-modal"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-vy-card border border-vy-border w-full max-w-lg overflow-hidden"
+              className="bg-[#FAF5ED] border border-[#D4BEA5] w-full max-w-lg overflow-hidden shadow-xl"
             >
-              <div className="flex justify-between items-center p-6 border-b border-vy-border">
-                <h3 className="font-display font-bold tracking-widest uppercase text-vy-white text-lg">
+              <div className="flex justify-between items-center p-6 border-b border-[#D4BEA5]">
+                <h3 className="font-display font-bold tracking-widest uppercase text-[#30231F] text-lg">
                   {currentCampaign.id ? 'Edit Campaign' : 'New Campaign'}
                 </h3>
-                <button onClick={() => setIsEditing(false)} className="text-vy-grey hover:text-vy-white">
+                <button onClick={() => setIsEditing(false)} className="text-[#75665C] hover:text-[#590907] p-1">
                   <X size={20} />
                 </button>
               </div>
 
               <form onSubmit={handleSave} className="p-6 space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Campaign ID (URL Slug)</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">Campaign ID (URL Slug)</label>
                   <input
                     required
                     disabled={!currentCampaign.isNew}
@@ -559,18 +574,18 @@ const AdminCampaigns = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Secret Token</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">Secret Token</label>
                   <input
                     value={currentCampaign.token || ''}
                     onChange={e => setCurrentCampaign({ ...currentCampaign, token: e.target.value })}
                     className="vy-input"
                     placeholder="Auto-generated if empty"
                   />
-                  <p className="text-[10px] text-vy-grey mt-1">Users need this token in the URL to access the page.</p>
+                  <p className="text-[10px] text-[#75665C] mt-1">Users need this token in the URL to access the page.</p>
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Banner Image URL (Optional)</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">Banner Image URL (Optional)</label>
                   <input
                     value={currentCampaign.bannerUrl || ''}
                     onChange={e => setCurrentCampaign({ ...currentCampaign, bannerUrl: e.target.value })}
@@ -580,7 +595,7 @@ const AdminCampaigns = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Total Spin Limit (Optional)</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">Total Spin Limit (Optional)</label>
                   <input
                     type="number"
                     value={currentCampaign.usageLimit || ''}
@@ -588,11 +603,11 @@ const AdminCampaigns = () => {
                     className="vy-input"
                     placeholder="e.g. 100 (0 for unlimited)"
                   />
-                  <p className="text-[10px] text-vy-grey mt-1">Once this many spins are reached, the campaign will stop accepting spins.</p>
+                  <p className="text-[10px] text-[#75665C] mt-1">Once this many spins are reached, the campaign will stop accepting spins.</p>
                 </div>
 
-                <div className="pt-4 border-t border-vy-border flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 border border-vy-border text-xs uppercase tracking-widest hover:bg-vy-border/20 transition-colors">
+                <div className="pt-4 border-t border-[#D4BEA5] flex justify-end gap-3">
+                  <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 border border-[#D4BEA5] text-xs uppercase tracking-widest font-bold text-[#30231F] hover:bg-[#F3E7D8] transition-colors">
                     Cancel
                   </button>
                   <button type="submit" className="btn-primary px-6 py-2 text-xs flex items-center gap-2">

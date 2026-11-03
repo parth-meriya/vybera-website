@@ -59,15 +59,15 @@ const AdminReviews = () => {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 p-6">
       <div>
-        <h1 className="text-xl font-bold tracking-wider text-vy-white mb-2">Product Reviews</h1>
-        <p className="text-xs text-vy-grey tracking-widest uppercase">Monitor and moderate customer reviews</p>
+        <h1 className="text-2xl font-bold tracking-wider text-[#30231F] mb-1 font-display">Product Reviews</h1>
+        <p className="text-xs text-[#75665C] tracking-widest uppercase font-semibold">Monitor and moderate customer reviews</p>
       </div>
 
-      <div className="bg-vy-card border border-vy-border overflow-x-auto">
-        <table className="w-full text-left text-sm text-vy-light">
-          <thead className="bg-vy-dark border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] overflow-x-auto shadow-sm">
+        <table className="w-full text-left text-sm text-[#30231F]">
+          <thead className="bg-[#FAF5ED] border-b border-[#D4BEA5] text-xs uppercase tracking-widest text-[#75665C]">
             <tr>
               <th className="px-6 py-4 font-semibold">User</th>
               <th className="px-6 py-4 font-semibold">Product ID</th>
@@ -78,31 +78,31 @@ const AdminReviews = () => {
               <th className="px-6 py-4 font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-vy-border">
+          <tbody className="divide-y divide-[#D4BEA5]">
             {reviews.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-12 text-center text-vy-grey text-xs tracking-widest uppercase">
+                <td colSpan="7" className="px-6 py-12 text-center text-[#75665C] text-xs tracking-widest uppercase">
                   No reviews found
                 </td>
               </tr>
             ) : (
               reviews.map(review => (
-                <tr key={review.id} className="hover:bg-vy-border/20 transition-colors">
+                <tr key={review.id} className="hover:bg-[#F3E7D8]/60 transition-colors">
                   <td className="px-6 py-4">
-                    <p className="font-semibold text-vy-white">{review.userName}</p>
-                    <p className="text-[10px] text-vy-grey uppercase">{review.createdAt?.toDate?.().toLocaleDateString() || 'Just now'}</p>
+                    <p className="font-bold text-[#30231F]">{review.userName}</p>
+                    <p className="text-[11px] text-[#75665C] uppercase">{review.createdAt?.toDate?.().toLocaleDateString() || 'Just now'}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-mono text-xs text-vy-grey bg-vy-dark px-2 border border-vy-border">...{review.productId.slice(-6)}</span>
+                    <span className="font-mono text-xs text-[#590907] font-bold bg-white px-2 py-0.5 border border-[#D4BEA5]">...{review.productId.slice(-6)}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1 text-yellow-400">
+                    <div className="flex items-center gap-1 text-amber-800 font-bold">
                       <span>{review.rating}</span>
-                      <Star size={12} className="fill-current" />
+                      <Star size={13} className="fill-current text-amber-500" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="line-clamp-2 text-xs leading-relaxed" title={review.reviewText}>
+                    <p className="line-clamp-2 text-xs leading-relaxed text-[#30231F]" title={review.reviewText}>
                       {review.reviewText}
                     </p>
                   </td>
@@ -110,23 +110,23 @@ const AdminReviews = () => {
                     {review.imageUrls?.length > 0 ? (
                       <div className="flex -space-x-2 relative z-0">
                         {review.imageUrls.map((url, i) => (
-                          <div key={i} className="w-8 h-8 rounded-full border-2 border-vy-card bg-vy-dark overflow-hidden flex-shrink-0 cursor-zoom-in" onClick={() => window.open(url, '_blank')}>
+                          <div key={i} className="w-8 h-8 rounded-full border-2 border-[#FAF5ED] bg-white overflow-hidden flex-shrink-0 cursor-zoom-in" onClick={() => window.open(url, '_blank')}>
                             <img src={url} alt="review snap" className="w-full h-full object-cover" />
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-vy-grey text-xs">—</span>
+                      <span className="text-[#75665C] text-xs">—</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border ${
+                    <span className={
                       review.status === 'approved' 
-                        ? 'border-green-500/30 bg-green-500/10 text-green-400'
+                        ? 'badge-confirmed'
                         : review.status === 'rejected'
-                        ? 'border-red-500/30 bg-red-500/10 text-red-400'
-                        : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
-                    }`}>
+                        ? 'badge-cancelled'
+                        : 'badge-pending'
+                    }>
                       {review.status || 'pending'}
                     </span>
                   </td>
@@ -135,7 +135,7 @@ const AdminReviews = () => {
                       {review.status !== 'approved' && (
                         <button
                           onClick={() => handleApprove(review.id)}
-                          className="px-2 py-1 bg-green-500/20 border border-green-500/30 text-green-400 text-[10px] tracking-widest font-bold uppercase hover:bg-green-500/30 transition-colors"
+                          className="px-2.5 py-1 bg-emerald-700 text-white text-[10px] tracking-widest font-bold uppercase hover:bg-emerald-800 transition-colors rounded"
                           title="Approve Review"
                         >
                           Approve
@@ -144,7 +144,7 @@ const AdminReviews = () => {
                       {review.status !== 'rejected' && (
                         <button
                           onClick={() => handleReject(review.id)}
-                          className="px-2 py-1 bg-red-500/20 border border-red-500/30 text-red-400 text-[10px] tracking-widest font-bold uppercase hover:bg-red-500/30 transition-colors"
+                          className="px-2.5 py-1 bg-rose-700 text-white text-[10px] tracking-widest font-bold uppercase hover:bg-rose-800 transition-colors rounded"
                           title="Reject Review"
                         >
                           Reject
@@ -152,7 +152,7 @@ const AdminReviews = () => {
                       )}
                       <button
                         onClick={() => handleDelete(review.id)}
-                        className="text-vy-grey hover:text-red-400 transition-colors bg-vy-dark p-2 border border-vy-border hover:border-red-500/30"
+                        className="text-[#75665C] hover:text-rose-700 transition-colors bg-white p-2 border border-[#D4BEA5] hover:border-rose-400"
                         title="Delete Review"
                       >
                         <Trash2 size={14} />

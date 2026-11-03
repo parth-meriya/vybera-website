@@ -231,18 +231,18 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-        <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">
-          Customers <span className="text-vy-grey font-normal text-lg">({filteredUsers.length}{filteredUsers.length !== users.length ? ` / ${users.length}` : ''})</span>
+    <div className="p-8 space-y-6">
+      <div className="mb-6 pb-4 border-b border-[#D4BEA5]">
+        <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
+        <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">
+          Customers <span className="text-[#75665C] font-normal text-lg">({filteredUsers.length}{filteredUsers.length !== users.length ? ` / ${users.length}` : ''})</span>
         </h1>
       </div>
 
       {/* Search & Filters */}
       <div className="mb-6 flex flex-wrap gap-4 items-center">
         <div className="relative flex-1 min-w-[280px] max-w-md">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-vy-grey" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#75665C]" />
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
@@ -286,12 +286,12 @@ const AdminUsers = () => {
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : (
-        <div className="bg-vy-card border border-vy-border">
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm overflow-hidden rounded-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-vy-border">
-                {['Name', 'Email', 'Mobile', 'Role', 'Joined', 'Contact'].map(h => (
-                  <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
+              <tr className="border-b-2 border-[#D4BEA5] bg-[#FAF5ED]">
+                {['Customer', 'Email', 'Phone', 'Role', 'Joined', 'Contact'].map(h => (
+                  <th key={h} className="text-[#75665C] text-xs font-bold tracking-widest uppercase text-left px-4 py-3.5">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -302,7 +302,7 @@ const AdminUsers = () => {
                 return (
                   <tr 
                     key={user.id} 
-                    className={`border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors cursor-pointer ${isDetailOpen ? 'bg-vy-border/10' : ''}`} 
+                    className={`border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors cursor-pointer ${isDetailOpen ? 'bg-[#E8D2B5]/40' : ''}`} 
                     onClick={() => {
                       fetchUserDetail(uid);
                       setDrawerTab('overview');
@@ -310,34 +310,34 @@ const AdminUsers = () => {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-vy-border/30 flex items-center justify-center shrink-0">
-                          <User size={12} className="text-vy-grey" />
+                        <div className="w-8 h-8 rounded-full bg-[#E8D2B5] border border-[#D4BEA5] flex items-center justify-center shrink-0">
+                          <User size={13} className="text-[#590907]" />
                         </div>
-                        <span className="text-vy-white text-xs font-medium">{user.name || '—'}</span>
+                        <span className="text-[#30231F] text-xs font-bold">{user.name || '—'}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
-                        <Mail size={11} className="text-vy-border shrink-0" />
-                        <span className="text-vy-grey text-xs">{user.email}</span>
+                        <Mail size={12} className="text-[#75665C] shrink-0" />
+                        <span className="text-[#75665C] text-xs font-medium">{user.email}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       {user.phoneNumber ? (
                         <div className="flex items-center gap-1.5">
-                          <Phone size={11} className="text-vy-border shrink-0" />
-                          <span className="text-vy-light text-xs font-mono">+91 {user.phoneNumber}</span>
+                          <Phone size={12} className="text-[#75665C] shrink-0" />
+                          <span className="text-[#590907] text-xs font-mono font-bold">+91 {user.phoneNumber}</span>
                         </div>
                       ) : (
-                        <span className="text-vy-border text-xs">—</span>
+                        <span className="text-[#75665C] text-xs">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 border ${user.role === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-500/10' : 'text-vy-grey border-vy-border'}`}>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-xs font-bold border ${user.role === 'admin' ? 'text-purple-900 border-purple-300 bg-purple-100' : 'text-[#30231F] border-[#D4BEA5] bg-[#E8D2B5]'}`}>
                         {user.role || 'user'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-vy-grey text-xs">
+                    <td className="px-4 py-3 text-[#75665C] text-xs font-medium">
                       {user.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}
                     </td>
                     <td className="px-4 py-3">
@@ -346,7 +346,7 @@ const AdminUsers = () => {
                         {user.phoneNumber && (
                           <button
                             onClick={() => handleWhatsApp(user.phoneNumber, user.name)}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-wider uppercase hover:bg-green-500/20 transition-all"
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-100 border border-emerald-300 text-emerald-950 text-[10px] font-bold tracking-wider uppercase hover:bg-emerald-200 transition-all rounded-xs"
                             title="Message on WhatsApp"
                           >
                             <MessageCircle size={12} /> WhatsApp
@@ -362,7 +362,7 @@ const AdminUsers = () => {
                               customerPhone: user.phoneNumber || ''
                             }));
                           }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-vy-accent/10 border border-vy-accent/30 text-vy-accent text-[10px] font-bold tracking-wider uppercase hover:bg-vy-accent/20 transition-all"
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#FAF5ED] border border-[#D4BEA5] text-[#590907] text-[10px] font-bold tracking-wider uppercase hover:bg-[#E8D2B5] transition-all rounded-xs"
                           title="Add Manual Order"
                         >
                           <Plus size={12} /> Add Order
@@ -431,26 +431,26 @@ const AdminUsers = () => {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-                className="relative w-full max-w-2xl bg-vy-card border-l border-vy-border h-full flex flex-col z-10 shadow-2xl"
+                className="relative w-full max-w-2xl bg-[#FAF5ED] border-l border-[#D4BEA5] h-full flex flex-col z-10 shadow-2xl"
               >
                 {/* Header */}
-                <div className="p-6 border-b border-vy-border flex items-center justify-between sticky top-0 bg-vy-card z-10">
+                <div className="p-6 border-b border-[#D4BEA5] flex items-center justify-between sticky top-0 bg-[#FAF5ED] z-10">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-vy-border/20 flex items-center justify-center">
-                      <User size={18} className="text-vy-accent" />
+                    <div className="w-10 h-10 rounded-full bg-[#E8D2B5] border border-[#D4BEA5] flex items-center justify-center">
+                      <User size={18} className="text-[#590907]" />
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-lg text-vy-white tracking-wider uppercase truncate max-w-xs">{selectedUser.name || 'Customer'}</h3>
-                      <p className="text-vy-grey text-[10px] tracking-widest uppercase">ID: {selectedUserId.slice(0, 8)}...</p>
+                      <h3 className="font-display font-bold text-lg text-[#30231F] tracking-wider uppercase truncate max-w-xs">{selectedUser.name || 'Customer'}</h3>
+                      <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase">ID: {selectedUserId.slice(0, 8)}...</p>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedUserId(null)} className="text-vy-grey hover:text-vy-white transition-colors">
+                  <button onClick={() => setSelectedUserId(null)} className="text-[#75665C] hover:text-[#30231F] transition-colors">
                     <X size={20} />
                   </button>
                 </div>
 
                 {/* Tab select bar */}
-                <div className="flex border-b border-vy-border bg-vy-black/40">
+                <div className="flex border-b border-[#D4BEA5] bg-[#E8D2B5]/40">
                   {[
                     { id: 'overview', label: 'Overview', icon: User },
                     { id: 'orders', label: 'Orders', icon: ShoppingBag },
@@ -463,13 +463,13 @@ const AdminUsers = () => {
                       <button
                         key={tab.id}
                         onClick={() => setDrawerTab(tab.id)}
-                        className={`flex-1 py-3.5 text-center text-[10px] uppercase tracking-widest font-bold border-b-2 flex items-center justify-center gap-1.5 transition-all ${
+                        className={`flex-1 py-3.5 text-center text-xs uppercase tracking-widest font-bold border-b-2 flex items-center justify-center gap-1.5 transition-all ${
                           isActive 
-                            ? 'border-vy-accent text-vy-accent bg-vy-accent/5' 
-                            : 'border-transparent text-vy-grey hover:text-vy-white hover:bg-vy-border/5'
+                            ? 'border-[#590907] text-[#590907] bg-[#FAF5ED]' 
+                            : 'border-transparent text-[#75665C] hover:text-[#30231F] hover:bg-[#FAF5ED]/50'
                         }`}
                       >
-                        <Icon size={12} />
+                        <Icon size={13} />
                         {tab.label}
                       </button>
                     );
@@ -477,11 +477,11 @@ const AdminUsers = () => {
                 </div>
 
                 {/* Drawer Body - Scrollable content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#FAF5ED]">
                   {detailLoading ? (
                     <div className="h-64 flex flex-col justify-center items-center gap-3">
                       <div className="spinner" />
-                      <span className="text-vy-grey text-xs uppercase tracking-widest">Loading Customer History...</span>
+                      <span className="text-[#75665C] text-xs uppercase tracking-widest font-semibold">Loading Customer History...</span>
                     </div>
                   ) : (
                     <>
@@ -489,19 +489,19 @@ const AdminUsers = () => {
                       {drawerTab === 'overview' && (
                         <div className="space-y-6">
                           {/* Metadata Grid */}
-                          <div className="grid grid-cols-2 gap-4 bg-vy-black/40 border border-vy-border p-4">
+                          <div className="grid grid-cols-2 gap-4 bg-[#E8D2B5]/30 border border-[#D4BEA5] p-4 rounded-sm">
                             <div>
-                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Email</p>
-                              <p className="text-vy-white text-xs font-semibold">{selectedUser.email || '—'}</p>
+                              <p className="text-[#75665C] text-[10px] tracking-widest uppercase font-bold mb-1">Email</p>
+                              <p className="text-[#30231F] text-xs font-bold">{selectedUser.email || '—'}</p>
                             </div>
                             <div>
-                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Mobile Phone</p>
+                              <p className="text-[#75665C] text-[10px] tracking-widest uppercase font-bold mb-1">Mobile Phone</p>
                               <div className="flex items-center gap-2">
-                                <p className="text-vy-white text-xs font-semibold font-mono">{selectedUser.phoneNumber ? `+91 ${selectedUser.phoneNumber}` : '—'}</p>
+                                <p className="text-[#590907] text-xs font-bold font-mono">{selectedUser.phoneNumber ? `+91 ${selectedUser.phoneNumber}` : '—'}</p>
                                 {selectedUser.phoneNumber && (
                                   <button
                                     onClick={() => handleWhatsAppVerification(selectedUser.phoneNumber, selectedUser.name)}
-                                    className="text-[9px] text-green-400 hover:text-green-300 transition-colors uppercase tracking-widest underline ml-1"
+                                    className="text-[10px] text-emerald-800 hover:underline uppercase font-bold tracking-widest ml-1"
                                     title="Send WhatsApp Verification Link"
                                   >
                                     Verify
@@ -510,12 +510,12 @@ const AdminUsers = () => {
                               </div>
                             </div>
                             <div>
-                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Date Joined</p>
-                              <p className="text-vy-white text-xs">{selectedUser.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</p>
+                              <p className="text-[#75665C] text-[10px] tracking-widest uppercase font-bold mb-1">Date Joined</p>
+                              <p className="text-[#30231F] text-xs font-semibold">{selectedUser.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</p>
                             </div>
                             <div>
-                              <p className="text-vy-grey text-[9px] tracking-widest uppercase mb-1">Role Privileges</p>
-                              <span className={`text-[10px] px-2 py-0.5 border ${selectedUser.role === 'admin' ? 'text-purple-400 border-purple-500/30 bg-purple-500/10' : 'text-vy-grey border-vy-border'}`}>
+                              <p className="text-[#75665C] text-[10px] tracking-widest uppercase font-bold mb-1">Role Privileges</p>
+                              <span className={`text-[10px] px-2.5 py-0.5 rounded-xs font-bold border ${selectedUser.role === 'admin' ? 'text-purple-900 border-purple-300 bg-purple-100' : 'text-[#30231F] border-[#D4BEA5] bg-[#E8D2B5]'}`}>
                                 {selectedUser.role || 'user'}
                               </span>
                             </div>
@@ -523,33 +523,33 @@ const AdminUsers = () => {
 
                           {/* Stats Grid */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-vy-card border border-vy-border p-4 text-center">
-                              <Wallet size={20} className="text-vy-accent mx-auto mb-1" />
-                              <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Wallet Balance</span>
-                              <span className="text-xl font-bold text-vy-white font-display mt-1 block">{selectedUser.rewardPoints || 0} pts</span>
+                            <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-4 text-center rounded-sm shadow-xs">
+                              <Wallet size={22} className="text-[#590907] mx-auto mb-1" />
+                              <span className="text-[10px] text-[#75665C] uppercase tracking-widest block font-semibold">Wallet Balance</span>
+                              <span className="text-xl font-bold text-[#590907] font-display mt-1 block">{selectedUser.rewardPoints || 0} pts</span>
                             </div>
-                            <div className="bg-vy-card border border-vy-border p-4 text-center">
-                              <Users size={20} className="text-vy-gold mx-auto mb-1" />
-                              <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Referrals Invited</span>
-                              <span className="text-xl font-bold text-vy-white font-display mt-1 block">{referralCount} Users</span>
+                            <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-4 text-center rounded-sm shadow-xs">
+                              <Users size={22} className="text-[#590907] mx-auto mb-1" />
+                              <span className="text-[10px] text-[#75665C] uppercase tracking-widest block font-semibold">Referrals Invited</span>
+                              <span className="text-xl font-bold text-[#30231F] font-display mt-1 block">{referralCount} Users</span>
                             </div>
-                            <div className="bg-vy-card border border-vy-border p-4 text-center">
-                              <ShoppingBag size={20} className="text-blue-400 mx-auto mb-1" />
-                              <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Total Purchases</span>
-                              <span className="text-xl font-bold text-vy-white font-display mt-1 block">{userDetail.orders.length} Orders</span>
+                            <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-4 text-center rounded-sm shadow-xs">
+                              <ShoppingBag size={22} className="text-[#590907] mx-auto mb-1" />
+                              <span className="text-[10px] text-[#75665C] uppercase tracking-widest block font-semibold">Total Purchases</span>
+                              <span className="text-xl font-bold text-[#30231F] font-display mt-1 block">{userDetail.orders.length} Orders</span>
                             </div>
                           </div>
 
                           {/* Actions Panel */}
-                          <div className="bg-vy-black/20 border border-vy-border p-4 space-y-3">
-                            <h4 className="text-vy-white text-[10px] tracking-widest uppercase font-bold">Contact & Quick Actions</h4>
+                          <div className="bg-[#E8D2B5]/30 border border-[#D4BEA5] p-4 space-y-3 rounded-sm">
+                            <h4 className="text-[#30231F] text-xs tracking-widest uppercase font-bold">Contact & Quick Actions</h4>
                             <div className="flex flex-wrap gap-2.5">
                               {selectedUser.phoneNumber && (
                                 <button
                                   onClick={() => handleWhatsApp(selectedUser.phoneNumber, selectedUser.name)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-wider uppercase hover:bg-green-500/20 transition-all"
+                                  className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs font-bold tracking-wider uppercase hover:bg-emerald-200 transition-all rounded-sm shadow-xs"
                                 >
-                                  <MessageCircle size={13} /> WhatsApp Chat
+                                  <MessageCircle size={14} /> WhatsApp Chat
                                 </button>
                               )}
                               <button
@@ -561,9 +561,9 @@ const AdminUsers = () => {
                                     customerPhone: selectedUser.phoneNumber || ''
                                   }));
                                 }}
-                                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-vy-accent/10 border border-vy-accent/30 text-vy-accent text-[10px] font-bold tracking-wider uppercase hover:bg-vy-accent/20 transition-all"
+                                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#FAF5ED] border border-[#D4BEA5] text-[#590907] text-xs font-bold tracking-wider uppercase hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs"
                               >
-                                <Plus size={13} /> Add Manual Order
+                                <Plus size={14} /> Add Manual Order
                               </button>
                             </div>
                           </div>

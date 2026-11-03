@@ -108,28 +108,28 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-vy-black flex items-center justify-center px-6 relative">
+    <div className="min-h-screen bg-[#F3E7D8] flex items-center justify-center px-6 py-12 relative">
       <BackButton className="absolute top-6 left-6 md:top-10 md:left-10" />
       
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md bg-[#FAF5ED] border border-[#D4BEA5] p-8 md:p-10 shadow-sm"
       >
-        <div className="text-center mb-10">
-          <Link to="/" className="font-display font-bold text-2xl tracking-[0.4em] text-vy-white">
+        <div className="text-center mb-8">
+          <Link to="/" className="font-display font-bold text-2xl tracking-[0.4em] text-[#590907]">
             VYBERA
           </Link>
-          <h1 className="font-display font-bold text-xl tracking-wider text-vy-white mt-6 mb-2">
+          <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F] mt-5 mb-2">
             Welcome Back
           </h1>
-          <p className="text-vy-grey text-sm">Sign in to your account</p>
+          <p className="text-[#75665C] text-sm font-medium">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Email</label>
+            <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">Email</label>
             <input
               id="login-email"
               name="email"
@@ -144,10 +144,10 @@ const Login = () => {
           </div>
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-vy-grey text-xs tracking-widest uppercase">Password</label>
+              <label className="text-[#75665C] text-xs tracking-widest uppercase font-semibold">Password</label>
               <Link
                 to="/forgot-password"
-                className="text-vy-grey text-xs hover:text-vy-white transition-colors"
+                className="text-[#590907] text-xs hover:underline font-bold transition-colors"
               >
                 Forgot password?
               </Link>
@@ -167,7 +167,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPass(s => !s)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-vy-grey hover:text-vy-white transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#75665C] hover:text-[#590907] transition-colors"
                 aria-label={showPass ? 'Hide password' : 'Show password'}
               >
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -182,7 +182,7 @@ const Login = () => {
             disabled={loading}
             className="btn-primary w-full flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
           >
-            {loading ? <div className="w-4 h-4 border border-vy-black/30 border-t-vy-black rounded-full animate-spin" /> : 'Sign In'}
+            {loading ? <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" /> : 'Sign In'}
           </motion.button>
         </form>
 
@@ -191,15 +191,15 @@ const Login = () => {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5 text-center"
+            className="mt-4 p-4 border border-amber-300 bg-amber-50 text-center"
           >
-            <p className="text-yellow-400 text-xs mb-3">
+            <p className="text-amber-900 text-xs mb-3 font-medium">
               Your email isn't verified yet. Didn't get the email?
             </p>
             <button
               onClick={handleResendVerification}
               disabled={resending}
-              className="text-yellow-400 hover:text-yellow-300 text-xs font-medium flex items-center gap-1.5 mx-auto transition-colors disabled:opacity-60"
+              className="text-[#590907] hover:underline text-xs font-bold flex items-center gap-1.5 mx-auto transition-colors disabled:opacity-60"
             >
               <RefreshCw size={12} className={resending ? 'animate-spin' : ''} />
               {resending ? 'Sending...' : 'Resend Verification Email'}
@@ -208,16 +208,16 @@ const Login = () => {
         )}
 
         <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-vy-border" />
-          <span className="text-vy-grey text-xs tracking-wide">or</span>
-          <div className="flex-1 h-px bg-vy-border" />
+          <div className="flex-1 h-px bg-[#D4BEA5]" />
+          <span className="text-[#75665C] text-xs tracking-wide font-semibold">or</span>
+          <div className="flex-1 h-px bg-[#D4BEA5]" />
         </div>
 
         <button
           id="google-signin-btn"
           onClick={handleGoogle}
           disabled={loading}
-          className="btn-outline w-full flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full bg-white border border-[#D4BEA5] text-[#30231F] font-bold text-xs py-3 flex items-center justify-center gap-2 hover:bg-[#F3E7D8] transition-colors disabled:opacity-60"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -228,9 +228,9 @@ const Login = () => {
           Continue with Google
         </button>
 
-        <p className="text-center text-vy-grey text-sm mt-8">
+        <p className="text-center text-[#75665C] text-sm mt-8 font-medium">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-vy-white hover:underline">Sign Up</Link>
+          <Link to="/signup" className="text-[#590907] font-bold hover:underline">Sign Up</Link>
         </p>
       </motion.div>
     </div>

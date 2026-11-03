@@ -64,12 +64,12 @@ const OrderSuccess = () => {
   // Loading state while verifying redirect payment
   if (verifying) {
     return (
-      <div className="min-h-screen bg-vy-black flex flex-col items-center justify-center gap-6 px-6 text-center py-20">
-        <Loader2 size={48} className="text-vy-accent animate-spin" />
-        <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white">
+      <div className="min-h-screen bg-[#F3E7D8] flex flex-col items-center justify-center gap-6 px-6 text-center py-20">
+        <Loader2 size={48} className="text-[#590907] animate-spin" />
+        <h2 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">
           Verifying Payment...
         </h2>
-        <p className="text-vy-grey text-sm max-w-sm">
+        <p className="text-[#75665C] text-sm max-w-sm font-medium">
           Please wait while we confirm your payment. Do not close this page.
         </p>
       </div>
@@ -79,27 +79,27 @@ const OrderSuccess = () => {
   // Error state
   if (verifyError) {
     return (
-      <div className="min-h-screen bg-vy-black flex flex-col items-center justify-center gap-6 px-6 text-center py-20">
-        <div className="w-20 h-20 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center">
-          <AlertCircle size={40} className="text-red-400" />
+      <div className="min-h-screen bg-[#F3E7D8] flex flex-col items-center justify-center gap-6 px-6 text-center py-20">
+        <div className="w-20 h-20 bg-rose-50 border border-rose-200 rounded-full flex items-center justify-center shadow-sm">
+          <AlertCircle size={40} className="text-rose-700" />
         </div>
-        <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white">
+        <h2 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">
           Verification Issue
         </h2>
-        <p className="text-vy-grey text-sm max-w-sm leading-relaxed">
+        <p className="text-[#75665C] text-sm max-w-sm leading-relaxed font-medium">
           {verifyError}. If money was deducted, please don't worry — contact our support and we'll resolve it.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
-          <Link to="/dashboard/orders" className="btn-primary flex items-center justify-center gap-3 py-4 text-xs font-bold">
+          <Link to="/dashboard/orders" className="btn-primary flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-wider">
             <ShoppingBag size={16} /> VIEW MY ORDERS
           </Link>
           <a
             href={`https://wa.me/917043568477?text=${whatsappMsg}`}
             target="_blank"
             rel="noreferrer"
-            className="btn-outline flex items-center justify-center gap-3 py-4 text-xs font-bold border-green-500/30 text-green-400 hover:bg-green-500/10"
+            className="border border-[#D4BEA5] bg-white hover:bg-[#FAF5ED] text-[#30231F] flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm"
           >
-            <MessageCircle size={16} /> WHATSAPP SUPPORT
+            <MessageCircle size={16} className="text-emerald-700" /> WHATSAPP SUPPORT
           </a>
         </div>
       </div>
@@ -107,14 +107,14 @@ const OrderSuccess = () => {
   }
 
   return (
-    <div className="min-h-screen bg-vy-black flex flex-col items-center justify-center gap-8 px-6 text-center py-20">
+    <div className="min-h-screen bg-[#F3E7D8] flex flex-col items-center justify-center gap-8 px-6 text-center py-20">
       <motion.div
         initial={{ scale: 0, rotate: -20 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-        className="w-20 h-20 bg-green-500/10 border border-green-500/30 rounded-full flex items-center justify-center mb-2"
+        className="w-20 h-20 bg-emerald-50 border border-emerald-300 rounded-full flex items-center justify-center mb-2 shadow-sm"
       >
-        <CheckCircle size={40} className="text-green-400" />
+        <CheckCircle size={40} className="text-emerald-700" />
       </motion.div>
 
       <div className="space-y-4">
@@ -122,7 +122,7 @@ const OrderSuccess = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="font-display font-bold text-4xl md:text-5xl tracking-wider text-vy-white"
+          className="font-display font-black text-4xl md:text-5xl tracking-wider text-[#30231F]"
         >
           ORDER CONFIRMED
         </motion.h1>
@@ -131,7 +131,7 @@ const OrderSuccess = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
-          className="text-vy-grey text-sm max-w-sm mx-auto leading-relaxed"
+          className="text-[#75665C] text-sm max-w-sm mx-auto leading-relaxed font-medium"
         >
           Your payment was successful and your order is being processed. 
           You can track your status in your account.
@@ -146,7 +146,7 @@ const OrderSuccess = () => {
       >
         <Link 
           to="/dashboard/orders" 
-          className="btn-primary flex items-center justify-center gap-3 py-4 text-xs font-bold"
+          className="btn-primary flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-wider"
         >
           <ShoppingBag size={16} /> VIEW MY ORDERS
         </Link>
@@ -154,9 +154,9 @@ const OrderSuccess = () => {
           href={`https://wa.me/917043568477?text=${whatsappMsg}`}
           target="_blank"
           rel="noreferrer"
-          className="btn-outline flex items-center justify-center gap-3 py-4 text-xs font-bold border-green-500/30 text-green-400 hover:bg-green-500/10"
+          className="border border-[#D4BEA5] bg-white hover:bg-[#FAF5ED] text-[#30231F] flex items-center justify-center gap-3 py-4 text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm"
         >
-          <MessageCircle size={16} /> WHATSAPP SUPPORT
+          <MessageCircle size={16} className="text-emerald-700" /> WHATSAPP SUPPORT
         </a>
       </motion.div>
 
@@ -164,9 +164,9 @@ const OrderSuccess = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
-        className="pt-8 border-t border-vy-border w-full max-w-md"
+        className="pt-8 border-t border-[#D4BEA5] w-full max-w-md"
       >
-        <Link to="/shop" className="text-vy-grey hover:text-vy-white text-[10px] uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-2 transition-all group">
+        <Link to="/shop" className="text-[#75665C] hover:text-[#590907] text-[10px] uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-2 transition-all group">
           Back to Shop <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
         </Link>
       </motion.div>

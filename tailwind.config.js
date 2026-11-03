@@ -17,22 +17,41 @@ export default {
         'vy-burgundy': '#590907',       // Deep Burgundy (Primary CTA & Sale)
         'vy-burgundy-hover': '#430605',
         'vy-burgundy-light': '#7A1310',
-        'vy-cream': '#F3E7D8',          // Secondary Cream
+        'vy-cream': '#F3E7D8',          // Secondary Background
         'vy-card-bg': '#FAF5ED',        // Card Background
-        'vy-text': '#30231F',           // Primary Text (Deep Espresso)
-        'vy-text-muted': '#7A6E69',     // Muted Text
-        'vy-border-light': '#E5DACD',   // Elegant border
+        
+        // ── Text Tokens ────────────────────────────────────────
+        'vy-text': '#30231F',           // Primary Dark Text
+        'vy-text-secondary': '#75665C', // Secondary Dark Text
+        'vy-text-muted': '#75665C',     // Muted Text
+        'vy-text-light': '#FAF5ED',     // Primary Light Text (on dark surfaces)
+        'vy-text-light-secondary': '#D4BEA5', // Secondary Light Text (on dark surfaces)
+        
+        // ── Dark Surface Tokens ────────────────────────────────
+        'vy-dark-bg': '#241916',        // Dark Background (intentional dark sections)
+        'vy-dark-card': '#30231F',      // Dark Card
+        
+        'vy-border-light': '#D4BEA5',   // Border
+        'vy-border': '#D4BEA5',
         'vy-sand': '#DFD3C3',
 
         // ── Extended & Legacy Compatibility ────────────────────
-        'vy-black': '#1E1614',
+        'vy-black': '#241916',
         'vy-dark': '#FAF5ED',
         'vy-card': '#FAF5ED',
-        'vy-border': '#D8CBBF',
-        'vy-grey': '#A5A79B',
+        'vy-grey': '#75665C',
         'vy-light': '#E8D2B5',
         'vy-white': '#FFFFFF',
         'vy-accent': '#590907',
+
+        // ── Admin Theme Colors ─────────────────────────────────
+        'admin-burgundy': '#590907',
+        'admin-bg': '#F3E7D8',
+        'admin-card': '#FAF5ED',
+        'admin-sidebar': '#E8D2B5',
+        'admin-text': '#30231F',
+        'admin-text-secondary': '#75665C',
+        'admin-border': '#D4BEA5',
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease forwards',

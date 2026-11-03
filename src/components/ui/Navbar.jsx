@@ -218,7 +218,7 @@ const Navbar = () => {
                       <div>
                         {/* User Header */}
                         <div className="px-4 py-2 border-b border-vy-border-light/70 mb-1">
-                          <p className="text-[10px] uppercase font-bold tracking-widest text-vy-sage">
+                          <p className="text-[10px] uppercase font-bold tracking-widest text-[#75665C]">
                             Account
                           </p>
                           <p className="text-xs font-semibold text-vy-text truncate">
@@ -234,7 +234,7 @@ const Navbar = () => {
                             onClick={() => setUserMenuOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-vy-text hover:text-vy-burgundy hover:bg-vy-cream/60 transition-colors"
                           >
-                            <Icon size={14} className="text-vy-sage" />
+                            <Icon size={14} className="text-[#75665C]" />
                             {label}
                           </Link>
                         ))}
@@ -266,7 +266,7 @@ const Navbar = () => {
                         <Link
                           to="/login"
                           onClick={() => setUserMenuOpen(false)}
-                          className="block text-center py-2 bg-vy-burgundy text-[#FAF5ED] text-xs font-bold tracking-widest uppercase hover:bg-vy-burgundy-hover"
+                          className="block text-center py-2 bg-vy-burgundy text-[#FFFFFF] text-xs font-bold tracking-widest uppercase hover:bg-vy-burgundy-hover"
                         >
                           Sign In
                         </Link>
@@ -313,7 +313,7 @@ const Navbar = () => {
           >
             {/* Primary Nav Links */}
             <div className="space-y-6 pt-4">
-              <p className="text-[10px] tracking-[0.3em] font-bold uppercase text-vy-sage">
+              <p className="text-[10px] tracking-[0.3em] font-bold uppercase text-[#75665C]">
                 Navigation
               </p>
               <div className="space-y-4">
@@ -336,14 +336,14 @@ const Navbar = () => {
                       {link.isSale && <Flame size={20} className="text-vy-burgundy" />}
                       {link.label}
                     </span>
-                    <ChevronRight size={18} className="text-vy-sage" />
+                    <ChevronRight size={18} className="text-[#75665C]" />
                   </NavLink>
                 ))}
               </div>
 
               {/* Quick Account Links in Profile Drawer */}
               <div className="pt-6 border-t border-vy-border-light space-y-3">
-                <p className="text-[10px] tracking-[0.3em] font-bold uppercase text-vy-sage">
+                <p className="text-[10px] tracking-[0.3em] font-bold uppercase text-[#75665C]">
                   My Profile & Preferences
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -391,7 +391,7 @@ const Navbar = () => {
                 </div>
               )}
 
-              <p className="text-[10px] text-center tracking-[0.25em] uppercase text-vy-sage pt-2">
+              <p className="text-[10px] text-center tracking-[0.25em] uppercase text-[#75665C] pt-2">
                 VYBERA — THE ERA OF VIBES
               </p>
             </div>

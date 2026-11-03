@@ -39,20 +39,20 @@ const AdminSupport = () => {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-          <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Support Messages</h1>
+          <p className="text-[#75665C] text-xs tracking-widest uppercase mb-1">Admin</p>
+          <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">Support Messages</h1>
         </div>
-        <div className="text-vy-grey text-xs">
-          <span className="text-vy-white font-semibold">Total:</span> {queries.length}
+        <div className="text-[#75665C] text-xs">
+          <span className="text-[#30231F] font-semibold">Total:</span> <span className="font-bold text-[#590907]">{queries.length}</span>
         </div>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : queries.length === 0 ? (
-        <div className="bg-vy-card border border-vy-border p-12 text-center text-vy-grey">
-          <MessageSquare size={32} className="mx-auto mb-4 opacity-50" />
-          <p className="tracking-widest uppercase text-sm">No support messages yet.</p>
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-12 text-center text-[#75665C] shadow-sm">
+          <MessageSquare size={32} className="mx-auto mb-4 opacity-50 text-[#75665C]" />
+          <p className="tracking-widest uppercase text-sm font-semibold">No support messages yet.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -60,8 +60,8 @@ const AdminSupport = () => {
             <motion.div
               layout
               key={q.id}
-              className={`bg-vy-card border p-6 transition-colors ${
-                q.status === 'resolved' ? 'border-vy-border/40 opacity-75' : 'border-vy-border'
+              className={`bg-[#FAF5ED] border p-6 transition-colors shadow-sm ${
+                q.status === 'resolved' ? 'border-[#D4BEA5]/60 opacity-80' : 'border-[#D4BEA5]'
               }`}
             >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -70,29 +70,29 @@ const AdminSupport = () => {
                 <div className="space-y-4 flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     {q.status === 'resolved' ? (
-                      <span className="flex items-center gap-1.5 px-2 py-1 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] uppercase tracking-widest font-bold">
-                        <CheckCircle size={10} /> Resolved
+                      <span className="badge-confirmed flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded">
+                        <CheckCircle size={11} /> Resolved
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5 px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] uppercase tracking-widest font-bold">
-                        <Clock size={10} /> Pending
+                      <span className="badge-pending flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-widest font-bold rounded">
+                        <Clock size={11} /> Pending
                       </span>
                     )}
-                    <span className="text-vy-grey text-xs">
+                    <span className="text-[#75665C] text-xs">
                       {q.createdAt?.toDate ? q.createdAt.toDate().toLocaleString() : 'Just now'}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-vy-white font-semibold text-base">{q.subject || 'No Subject'}</h3>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-vy-grey mt-1">
-                      <p><span className="text-vy-white/70">From:</span> {q.name}</p>
-                      <p><span className="text-vy-white/70">Email:</span> <a href={`mailto:${q.email}`} className="text-blue-400 hover:underline">{q.email}</a></p>
+                    <h3 className="text-[#30231F] font-bold text-base">{q.subject || 'No Subject'}</h3>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#75665C] mt-1">
+                      <p><span className="text-[#30231F] font-semibold">From:</span> {q.name}</p>
+                      <p><span className="text-[#30231F] font-semibold">Email:</span> <a href={`mailto:${q.email}`} className="text-[#590907] font-semibold hover:underline">{q.email}</a></p>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-vy-dark border border-vy-border/50 rounded-sm">
-                    <p className="text-vy-white text-sm whitespace-pre-wrap leading-relaxed">{q.message}</p>
+                  <div className="p-4 bg-[#F3E7D8]/60 border border-[#D4BEA5] rounded-none">
+                    <p className="text-[#30231F] text-sm whitespace-pre-wrap leading-relaxed">{q.message}</p>
                   </div>
                 </div>
 
@@ -100,7 +100,7 @@ const AdminSupport = () => {
                 <div className="flex-shrink-0 flex md:flex-col gap-3">
                   <button
                     onClick={() => handleStatusChange(q.id, q.status)}
-                    className="btn-outline text-xs px-4 py-2"
+                    className="border border-[#D4BEA5] text-[#30231F] bg-white hover:bg-[#F3E7D8] font-bold text-xs px-4 py-2 transition-colors"
                   >
                     Mark as {q.status === 'pending' ? 'Resolved' : 'Pending'}
                   </button>

@@ -132,8 +132,8 @@ const Addresses = () => {
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="font-display font-bold text-3xl tracking-wider mb-2">Address Book</h2>
-          <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Manage your delivery addresses</p>
+          <h2 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-2">Address Book</h2>
+          <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Manage your delivery addresses</p>
         </div>
         {!showForm && (
           <button 
@@ -156,46 +156,46 @@ const Addresses = () => {
             initial={{ opacity: 0, height: 0 }} 
             animate={{ opacity: 1, height: 'auto' }} 
             exit={{ opacity: 0, height: 0 }}
-            className="bg-vy-card border border-vy-border p-6 md:p-8"
+            className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 md:p-8 shadow-sm"
           >
-            <h3 className="text-vy-white text-sm tracking-widest uppercase font-bold mb-6">
+            <h3 className="text-[#30231F] text-base tracking-widest uppercase font-bold mb-6">
               {editingId ? 'Edit Address' : 'Add New Address'}
             </h3>
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] text-vy-grey uppercase tracking-widest mb-1">Full Name</label>
-                  <input name="name" value={form.name} onChange={handleChange} className="vy-input w-full" required />
+                  <label className="block text-xs text-[#75665C] uppercase tracking-widest font-bold mb-1.5">Full Name</label>
+                  <input name="name" value={form.name} onChange={handleChange} className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:border-[#590907] focus:outline-none" required />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-vy-grey uppercase tracking-widest mb-1">Phone Number</label>
-                  <input name="phone" value={form.phone} onChange={handleChange} className="vy-input w-full" required />
+                  <label className="block text-xs text-[#75665C] uppercase tracking-widest font-bold mb-1.5">Phone Number</label>
+                  <input name="phone" value={form.phone} onChange={handleChange} className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:border-[#590907] focus:outline-none" required />
                 </div>
               </div>
               <div>
-                <label className="block text-[10px] text-vy-grey uppercase tracking-widest mb-1">Street Address</label>
-                <input name="address" value={form.address} onChange={handleChange} className="vy-input w-full" placeholder="House/Flat No., Street Name, Landmark" required />
+                <label className="block text-xs text-[#75665C] uppercase tracking-widest font-bold mb-1.5">Street Address</label>
+                <input name="address" value={form.address} onChange={handleChange} className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:border-[#590907] focus:outline-none" placeholder="House/Flat No., Street Name, Landmark" required />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="col-span-1">
-                  <label className="block text-[10px] text-vy-grey uppercase tracking-widest mb-1">City</label>
-                  <input name="city" value={form.city} onChange={handleChange} className="vy-input w-full" required />
+                  <label className="block text-xs text-[#75665C] uppercase tracking-widest font-bold mb-1.5">City</label>
+                  <input name="city" value={form.city} onChange={handleChange} className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:border-[#590907] focus:outline-none" required />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-[10px] text-vy-grey uppercase tracking-widest mb-1">State</label>
-                  <input name="state" value={form.state} onChange={handleChange} className="vy-input w-full" required />
+                  <label className="block text-xs text-[#75665C] uppercase tracking-widest font-bold mb-1.5">State</label>
+                  <input name="state" value={form.state} onChange={handleChange} className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:border-[#590907] focus:outline-none" required />
                 </div>
                 <div className="col-span-1">
-                  <label className="block text-[10px] text-vy-grey uppercase tracking-widest mb-1">Pincode</label>
-                  <input name="pincode" value={form.pincode} onChange={handleChange} className="vy-input w-full" required />
+                  <label className="block text-xs text-[#75665C] uppercase tracking-widest font-bold mb-1.5">Pincode</label>
+                  <input name="pincode" value={form.pincode} onChange={handleChange} className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:border-[#590907] focus:outline-none" required />
                 </div>
               </div>
               <div className="pt-2">
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`w-5 h-5 border flex items-center justify-center transition-colors ${form.isDefault ? 'bg-vy-white border-vy-white' : 'border-vy-border group-hover:border-vy-grey'}`}>
-                    {form.isDefault && <CheckCircle size={14} className="text-vy-black" />}
+                  <div className={`w-5 h-5 border rounded flex items-center justify-center transition-colors ${form.isDefault ? 'bg-[#590907] border-[#590907]' : 'border-[#D4BEA5] bg-white group-hover:border-[#75665C]'}`}>
+                    {form.isDefault && <CheckCircle size={14} className="text-white" />}
                   </div>
-                  <span className="text-xs text-vy-light tracking-wider">Set as default address</span>
+                  <span className="text-xs text-[#30231F] font-medium tracking-wider">Set as default address</span>
                   <input type="checkbox" name="isDefault" checked={form.isDefault} onChange={handleChange} className="hidden" />
                 </label>
               </div>
@@ -203,7 +203,7 @@ const Addresses = () => {
                 <button type="submit" className="btn-primary text-xs py-3 px-8 uppercase tracking-widest">
                   Save Address
                 </button>
-                <button type="button" onClick={() => setShowForm(false)} className="btn-outline text-xs py-3 px-8 uppercase tracking-widest">
+                <button type="button" onClick={() => setShowForm(false)} className="border border-[#D4BEA5] bg-white text-[#30231F] rounded-lg py-3 px-8 text-xs font-bold uppercase tracking-widest hover:bg-[#F3E7D8]/40 transition-colors">
                   Cancel
                 </button>
               </div>
@@ -212,36 +212,38 @@ const Addresses = () => {
         ) : (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {addresses.length === 0 ? (
-              <div className="col-span-1 md:col-span-2 bg-vy-card border border-vy-border p-12 text-center flex flex-col items-center">
-                <MapPin size={48} className="text-vy-border mb-4" />
-                <p className="text-vy-white text-lg font-bold mb-2">No addresses saved</p>
-                <p className="text-vy-grey text-xs">Add your address for faster checkout.</p>
+              <div className="col-span-1 md:col-span-2 bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-12 text-center flex flex-col items-center shadow-sm">
+                <div className="w-16 h-16 rounded-full bg-[#E8D2B5]/40 flex items-center justify-center mb-4">
+                  <MapPin size={32} className="text-[#590907]" />
+                </div>
+                <p className="text-[#30231F] text-lg font-bold mb-2">No addresses saved</p>
+                <p className="text-[#75665C] text-xs">Add your address for faster checkout.</p>
               </div>
             ) : (
               addresses.map((addr) => (
-                <div key={addr.id} className={`bg-vy-card border p-6 relative overflow-hidden transition-colors ${addr.isDefault ? 'border-vy-accent' : 'border-vy-border'}`}>
+                <div key={addr.id} className={`bg-[#FAF5ED] border rounded-xl p-6 relative overflow-hidden transition-all shadow-sm ${addr.isDefault ? 'border-[#590907] ring-1 ring-[#590907]/20' : 'border-[#D4BEA5]'}`}>
                   {addr.isDefault && (
-                    <div className="absolute top-0 right-0 bg-vy-accent text-vy-black text-[9px] font-bold tracking-widest uppercase px-3 py-1">
+                    <div className="absolute top-0 right-0 bg-[#590907] text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-bl">
                       Default
                     </div>
                   )}
-                  <h3 className="text-vy-white font-bold text-sm tracking-widest mb-1">{addr.name}</h3>
-                  <p className="text-vy-grey text-xs mb-4">{addr.phone}</p>
+                  <h3 className="text-[#30231F] font-bold text-sm tracking-widest mb-1">{addr.name}</h3>
+                  <p className="text-[#75665C] text-xs mb-4 font-medium">{addr.phone}</p>
                   
-                  <div className="space-y-1 mb-6 text-sm text-vy-light">
+                  <div className="space-y-1 mb-6 text-sm text-[#30231F]">
                     <p>{addr.address}</p>
                     <p>{addr.city}, {addr.state} - {addr.pincode}</p>
                   </div>
 
-                  <div className="flex gap-4 pt-4 border-t border-vy-border/50">
-                    <button onClick={() => startEdit(addr)} className="text-vy-grey hover:text-vy-white text-xs uppercase tracking-widest flex items-center gap-1.5 transition-colors">
+                  <div className="flex gap-4 pt-4 border-t border-[#D4BEA5]">
+                    <button onClick={() => startEdit(addr)} className="text-[#75665C] hover:text-[#590907] text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5 transition-colors">
                       <Edit2 size={12} /> Edit
                     </button>
-                    <button onClick={() => handleDelete(addr.id)} className="text-vy-grey hover:text-red-400 text-xs uppercase tracking-widest flex items-center gap-1.5 transition-colors">
+                    <button onClick={() => handleDelete(addr.id)} className="text-[#75665C] hover:text-[#590907] text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5 transition-colors">
                       <Trash2 size={12} /> Delete
                     </button>
                     {!addr.isDefault && (
-                      <button onClick={() => setAsDefault(addr.id)} className="ml-auto text-vy-accent hover:text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors">
+                      <button onClick={() => setAsDefault(addr.id)} className="ml-auto text-[#590907] hover:underline text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors">
                         <Star size={12} /> Set Default
                       </button>
                     )}

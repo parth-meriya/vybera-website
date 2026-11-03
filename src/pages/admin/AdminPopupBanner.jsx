@@ -304,9 +304,9 @@ const AdminPopupBanner = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-          <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white flex items-center gap-3">
-            <Megaphone size={22} className="text-vy-accent" />
+          <p className="text-[#75665C] text-xs tracking-widest uppercase font-bold mb-1">Admin</p>
+          <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F] flex items-center gap-3">
+            <Megaphone size={22} className="text-[#590907]" />
             Popup Banners
           </h1>
         </div>
@@ -319,10 +319,10 @@ const AdminPopupBanner = () => {
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : popups.length === 0 ? (
-        <div className="bg-vy-card border border-vy-border p-16 text-center">
-          <Megaphone size={48} className="text-vy-border mx-auto mb-4" />
-          <h2 className="text-vy-white font-semibold tracking-wider mb-2">No Popup Banners</h2>
-          <p className="text-vy-grey text-sm mb-6">Create a popup to show announcements after user login.</p>
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-16 text-center shadow-sm">
+          <Megaphone size={48} className="text-[#D4BEA5] mx-auto mb-4" />
+          <h2 className="text-[#30231F] font-bold tracking-wider mb-2">No Popup Banners</h2>
+          <p className="text-[#75665C] text-sm mb-6">Create a popup to show announcements after user login.</p>
           <button onClick={() => openEditor()} className="btn-primary text-xs">
             Create First Banner
           </button>
@@ -334,12 +334,12 @@ const AdminPopupBanner = () => {
               key={popup.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`bg-vy-card border overflow-hidden transition-all ${
-                popup.isActive ? 'border-green-500/30' : 'border-vy-border opacity-60'
+              className={`bg-[#FAF5ED] border rounded-xl overflow-hidden shadow-sm transition-all ${
+                popup.isActive ? 'border-[#590907]' : 'border-[#D4BEA5] opacity-75'
               }`}
             >
               {/* Image Preview */}
-              <div className="relative aspect-[3/2] bg-vy-black overflow-hidden group">
+              <div className="relative aspect-[3/2] bg-[#F3E7D8] overflow-hidden group">
                 <img
                   src={popup.imageUrl || PLACEHOLDER}
                   alt={popup.title || 'Banner'}
@@ -348,10 +348,10 @@ const AdminPopupBanner = () => {
                   onError={(e) => { e.target.src = PLACEHOLDER; }}
                 />
                 {/* Status Badge */}
-                <div className={`absolute top-3 left-3 px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase border ${
+                <div className={`absolute top-3 left-3 px-2.5 py-1 text-[9px] font-bold tracking-widest uppercase border rounded ${
                   popup.isActive
-                    ? 'bg-green-500/20 border-green-500/30 text-green-400'
-                    : 'bg-red-500/20 border-red-500/30 text-red-400'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                    : 'bg-rose-50 border-rose-300 text-rose-800'
                 }`}>
                   {popup.isActive ? 'ACTIVE' : 'DISABLED'}
                 </div>
@@ -359,43 +359,43 @@ const AdminPopupBanner = () => {
 
               {/* Info */}
               <div className="p-4">
-                <h3 className="text-vy-white text-sm font-semibold tracking-wider mb-1 truncate">
+                <h3 className="text-[#30231F] text-sm font-bold tracking-wider mb-1 truncate">
                   {popup.title || 'Untitled Banner'}
                 </h3>
                 {popup.buttonText && (
-                  <div className="flex items-center gap-1.5 text-vy-grey text-xs mb-2">
-                    <ExternalLink size={10} />
+                  <div className="flex items-center gap-1.5 text-[#75665C] text-xs mb-2 font-medium">
+                    <ExternalLink size={10} className="text-[#590907]" />
                     <span className="truncate">{popup.buttonText}</span>
                   </div>
                 )}
-                <p className="text-vy-border text-[10px] tracking-wider">
+                <p className="text-[#75665C] text-[10px] tracking-wider font-medium">
                   Created: {popup.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}
                 </p>
               </div>
 
               {/* Actions */}
-              <div className="flex border-t border-vy-border">
+              <div className="flex border-t border-[#D4BEA5]">
                 <button
                   onClick={() => handleToggle(popup)}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold tracking-widest uppercase transition-all ${
                     popup.isActive
-                      ? 'text-yellow-400 hover:bg-yellow-500/10'
-                      : 'text-green-400 hover:bg-green-500/10'
+                      ? 'text-amber-800 hover:bg-amber-50'
+                      : 'text-emerald-700 hover:bg-emerald-50'
                   }`}
                 >
                   {popup.isActive ? <><EyeOff size={12} /> Disable</> : <><Eye size={12} /> Enable</>}
                 </button>
-                <div className="w-px bg-vy-border" />
+                <div className="w-px bg-[#D4BEA5]" />
                 <button
                   onClick={() => openEditor(popup)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-vy-grey text-[10px] font-bold tracking-widest uppercase hover:text-vy-white hover:bg-vy-border/20 transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[#30231F] text-[10px] font-bold tracking-widest uppercase hover:text-[#590907] hover:bg-[#F3E7D8]/40 transition-all"
                 >
                   Edit
                 </button>
-                <div className="w-px bg-vy-border" />
+                <div className="w-px bg-[#D4BEA5]" />
                 <button
                   onClick={() => setDeleteConfirm(popup)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-red-400/60 text-[10px] font-bold tracking-widest uppercase hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-rose-700 text-[10px] font-bold tracking-widest uppercase hover:text-rose-900 hover:bg-rose-50 transition-all"
                 >
                   <Trash2 size={12} /> Delete
                 </button>
@@ -412,7 +412,7 @@ const AdminPopupBanner = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={closeEditor}
           >
             <motion.div
@@ -420,15 +420,15 @@ const AdminPopupBanner = () => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={e => e.stopPropagation()}
-              className="bg-vy-dark border border-vy-border w-full max-w-xl max-h-[90vh] overflow-y-auto"
+              className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-vy-border">
-                <h2 className="text-vy-white font-semibold tracking-wider flex items-center gap-2">
-                  <Megaphone size={16} className="text-vy-accent" />
+              <div className="flex items-center justify-between p-6 border-b border-[#D4BEA5]">
+                <h2 className="text-[#30231F] font-bold tracking-wider flex items-center gap-2">
+                  <Megaphone size={16} className="text-[#590907]" />
                   {editing?.id ? 'Edit Popup Banner' : 'New Popup Banner'}
                 </h2>
-                <button onClick={closeEditor} className="text-vy-grey hover:text-vy-white transition-colors">
+                <button onClick={closeEditor} className="text-[#75665C] hover:text-[#30231F] transition-colors">
                   <X size={18} />
                 </button>
               </div>
@@ -436,11 +436,11 @@ const AdminPopupBanner = () => {
               <div className="p-6 space-y-5">
                 {/* Image Upload */}
                 <div>
-                  <label className="text-vy-grey text-xs tracking-widest uppercase block mb-3">Banner Image *</label>
+                  <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-3">Banner Image *</label>
 
                   {/* Preview */}
                   {imagePreview ? (
-                    <div className="relative aspect-[3/2] bg-vy-black border border-vy-border overflow-hidden mb-3 group">
+                    <div className="relative aspect-[3/2] bg-white border border-[#D4BEA5] rounded-xl overflow-hidden mb-3 group shadow-sm">
                       <img
                         src={imagePreview}
                         alt="Preview"
@@ -627,12 +627,12 @@ const AdminPopupBanner = () => {
                   )}
 
                   {/* ⚡ Quick Pick from Local — INSTANT, zero upload */}
-                  <div className="mt-4 border border-vy-border/50 bg-vy-black/30 p-3">
+                  <div className="mt-4 border border-[#D4BEA5] bg-[#F3E7D8]/60 rounded-xl p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <Zap size={12} className="text-yellow-400" />
-                      <span className="text-yellow-400 text-[10px] font-bold tracking-widest uppercase">Quick Pick — Instant (No Upload)</span>
+                      <Zap size={14} className="text-amber-700" />
+                      <span className="text-amber-900 text-[10px] font-bold tracking-widest uppercase">Quick Pick — Instant (No Upload)</span>
                     </div>
-                    <p className="text-vy-grey text-[10px] mb-3">Click any image from <code className="text-vy-accent">/public/popbanner/</code> — saves path directly, zero buffering.</p>
+                    <p className="text-[#75665C] text-[10px] mb-3">Click any image from <code className="text-[#590907] font-semibold">/public/popbanner/</code> — saves path directly, zero buffering.</p>
                     <div className="flex flex-wrap gap-2">
                       {[
                         '/popbanner/banner1.webp',
@@ -646,8 +646,8 @@ const AdminPopupBanner = () => {
                           key={path}
                           type="button"
                           onClick={() => pickLocalImage(path)}
-                          className={`relative h-16 w-24 border overflow-hidden transition-all hover:scale-105 ${
-                            imagePreview === path ? 'border-green-400 ring-1 ring-green-400/50' : 'border-vy-border hover:border-vy-accent/50'
+                          className={`relative h-16 w-24 border rounded-lg overflow-hidden transition-all hover:scale-105 shadow-sm ${
+                            imagePreview === path ? 'border-[#590907] ring-2 ring-[#590907]' : 'border-[#D4BEA5] hover:border-[#590907]'
                           }`}
                         >
                           <img
@@ -657,8 +657,8 @@ const AdminPopupBanner = () => {
                             onError={(e) => { e.target.parentElement.style.display = 'none'; }}
                           />
                           {imagePreview === path && (
-                            <div className="absolute inset-0 bg-green-400/10 flex items-center justify-center">
-                              <span className="text-green-400 text-[8px] font-bold">✓</span>
+                            <div className="absolute inset-0 bg-[#590907]/20 flex items-center justify-center">
+                              <span className="text-white text-xs font-bold">✓</span>
                             </div>
                           )}
                         </button>
@@ -668,7 +668,7 @@ const AdminPopupBanner = () => {
                     <div className="mt-2 flex gap-2">
                       <input
                         id="local-path-input"
-                        className="vy-input text-xs flex-1"
+                        className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-3 py-1.5 text-xs focus:outline-none"
                         placeholder="/popbanner/your-image.png"
                       />
                       <button
@@ -680,21 +680,18 @@ const AdminPopupBanner = () => {
                             document.getElementById('local-path-input').value = '';
                           }
                         }}
-                        className="btn-outline px-3 py-1.5 text-[10px] flex items-center gap-1"
+                        className="btn-primary px-3 py-1.5 text-[10px] flex items-center gap-1"
                       >
                         <Zap size={10} /> Use
                       </button>
                     </div>
-                    <p className="text-vy-border text-[9px] mt-2 flex items-center gap-1">
-                      <FolderOpen size={9} /> Drop images into <code>public/popbanner/</code> folder, then type the filename above
-                    </p>
                   </div>
 
                   {/* Alternative: paste any URL */}
                   <div className="mt-3 flex gap-2">
                     <input
                       id="popup-url-input"
-                      className="vy-input text-xs flex-1"
+                      className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-3 py-2 text-xs focus:outline-none"
                       placeholder="Or paste any image URL"
                     />
                     <button
@@ -706,7 +703,7 @@ const AdminPopupBanner = () => {
                           document.getElementById('popup-url-input').value = '';
                         }
                       }}
-                      className="btn-outline px-3 py-2 text-xs"
+                      className="border border-[#D4BEA5] bg-white text-[#30231F] rounded-lg px-3 py-2 text-xs font-semibold hover:bg-[#F3E7D8]/40"
                     >
                       Use URL
                     </button>
@@ -715,11 +712,11 @@ const AdminPopupBanner = () => {
 
                 {/* Title */}
                 <div>
-                  <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Title (optional)</label>
+                  <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-1.5">Title (optional)</label>
                   <input
                     value={form.title}
                     onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                    className="vy-input"
+                    className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#590907]"
                     placeholder="e.g. Summer Sale — Up to 50% Off"
                   />
                 </div>
@@ -727,20 +724,20 @@ const AdminPopupBanner = () => {
                 {/* Button */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Button Text</label>
+                    <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-1.5">Button Text</label>
                     <input
                       value={form.buttonText}
                       onChange={e => setForm(f => ({ ...f, buttonText: e.target.value }))}
-                      className="vy-input"
+                      className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#590907]"
                       placeholder="Shop Now"
                     />
                   </div>
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Button Link</label>
+                    <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-1.5">Button Link</label>
                     <input
                       value={form.buttonLink}
                       onChange={e => setForm(f => ({ ...f, buttonLink: e.target.value }))}
-                      className="vy-input"
+                      className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#590907]"
                       placeholder="/shop or https://..."
                     />
                   </div>
@@ -755,21 +752,21 @@ const AdminPopupBanner = () => {
                       onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-5 bg-vy-border rounded-full peer-checked:bg-green-500/50 transition-colors" />
-                    <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-vy-grey rounded-full peer-checked:translate-x-5 peer-checked:bg-green-400 transition-all duration-200" />
+                    <div className="w-10 h-5 bg-[#D4BEA5] rounded-full peer-checked:bg-emerald-600 transition-colors" />
+                    <div className="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full peer-checked:translate-x-5 transition-all duration-200" />
                   </div>
-                  <span className="text-vy-grey text-xs tracking-widest uppercase group-hover:text-vy-white transition-colors">
+                  <span className="text-[#30231F] text-xs font-semibold tracking-widest uppercase">
                     {form.isActive ? 'Active — will show after login' : 'Disabled — hidden from users'}
                   </span>
                 </label>
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={closeEditor} className="btn-ghost flex-1">Cancel</button>
+                  <button type="button" onClick={closeEditor} className="border border-[#D4BEA5] bg-white rounded-lg text-[#30231F] text-xs font-bold uppercase tracking-widest py-3 flex-1 hover:bg-[#F3E7D8]/40">Cancel</button>
                   <button
                     onClick={handleSave}
                     disabled={saving || compressing}
-                    className="btn-primary flex-1 disabled:opacity-60 flex items-center justify-center gap-2"
+                    className="btn-primary flex-1 disabled:opacity-60 flex items-center justify-center gap-2 text-xs py-3 uppercase tracking-widest font-bold"
                   >
                     {saving ? (
                       <span className="flex items-center gap-2">
@@ -791,22 +788,22 @@ const AdminPopupBanner = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
-              className="bg-vy-dark border border-vy-border p-8 max-w-sm w-full text-center"
+              className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-8 max-w-sm w-full text-center shadow-xl"
             >
-              <h3 className="text-vy-white font-semibold mb-2 tracking-wider">Delete Popup Banner?</h3>
-              <p className="text-vy-grey text-sm mb-6">
+              <h3 className="text-[#30231F] font-bold text-lg mb-2 tracking-wider">Delete Popup Banner?</h3>
+              <p className="text-[#75665C] text-sm mb-6 font-medium">
                 "{deleteConfirm.title || 'Untitled'}" will be permanently removed along with its image.
               </p>
               <div className="flex gap-3">
-                <button onClick={() => setDeleteConfirm(null)} className="btn-ghost flex-1">Cancel</button>
+                <button onClick={() => setDeleteConfirm(null)} className="border border-[#D4BEA5] bg-white text-[#30231F] rounded-lg py-2.5 flex-1 font-bold text-xs uppercase tracking-wider hover:bg-[#F3E7D8]/40">Cancel</button>
                 <button
                   onClick={() => handleDelete(deleteConfirm)}
-                  className="flex-1 px-6 py-3 bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-medium tracking-widest uppercase hover:bg-red-500/30 transition-colors"
+                  className="flex-1 py-2.5 bg-rose-700 text-white rounded-lg text-xs font-bold tracking-widest uppercase hover:bg-rose-800 transition-colors shadow-sm"
                 >
                   Delete
                 </button>

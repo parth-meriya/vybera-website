@@ -52,92 +52,92 @@ const Rewards = () => {
 
   const getTierColor = (tier) => {
     switch (tier) {
-      case 'Platinum': return 'text-slate-300 border-slate-300';
-      case 'Gold': return 'text-yellow-400 border-yellow-400';
-      case 'Silver': return 'text-gray-300 border-gray-300';
-      default: return 'text-vy-accent border-vy-accent';
+      case 'Platinum': return 'text-slate-700 border-slate-400 bg-slate-100';
+      case 'Gold': return 'text-amber-800 border-amber-400 bg-amber-50';
+      case 'Silver': return 'text-slate-600 border-slate-300 bg-slate-50';
+      default: return 'text-[#590907] border-[#590907] bg-[#590907]/10';
     }
   };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">VYBERA Rewards</h2>
-        <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Your loyalty, recognized.</p>
+        <h2 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-2">VYBERA Rewards</h2>
+        <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Your loyalty, recognized.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Main Balance Card */}
-        <div className="bg-vy-card border border-vy-border p-6 col-span-1 md:col-span-2 relative overflow-hidden flex flex-col justify-center">
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-vy-accent/5 rounded-full pointer-events-none" />
-          <Award size={120} className="absolute -bottom-10 -right-4 text-vy-border/20 pointer-events-none" />
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 col-span-1 md:col-span-2 relative overflow-hidden flex flex-col justify-center shadow-sm">
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#590907]/5 rounded-full pointer-events-none" />
+          <Award size={120} className="absolute -bottom-10 -right-4 text-[#D4BEA5]/40 pointer-events-none" />
           
           <div className="flex items-center gap-4 mb-6">
-             <span className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest border ${getTierColor(getTier())}`}>
+             <span className={`px-3 py-1 text-[9px] font-bold uppercase tracking-widest border rounded ${getTierColor(getTier())}`}>
                {getTier()} Tier
              </span>
-             <span className="text-[10px] text-vy-grey tracking-widest uppercase flex items-center gap-1">
+             <span className="text-[10px] text-[#75665C] tracking-widest uppercase font-semibold flex items-center gap-1">
                 <Info size={12}/> 1 Point = ₹1
              </span>
           </div>
 
-          <p className="text-vy-grey text-xs uppercase tracking-widest mb-1">Available Balance</p>
+          <p className="text-[#75665C] text-xs uppercase tracking-widest mb-1 font-bold">Available Balance</p>
           <div className="flex items-baseline gap-2 mb-2">
-            <span className="font-display text-5xl font-bold">{currentPoints}</span>
-            <span className="text-vy-accent font-bold tracking-widest uppercase">PTS</span>
+            <span className="font-display text-5xl font-black text-[#590907]">{currentPoints}</span>
+            <span className="text-[#590907] font-bold tracking-widest uppercase text-sm">PTS</span>
           </div>
-          <p className="text-sm text-vy-white">Equivalent Value: <span className="font-bold">₹{currentPoints}</span></p>
+          <p className="text-sm text-[#75665C]">Equivalent Value: <span className="font-bold text-[#30231F]">₹{currentPoints}</span></p>
         </div>
 
         {/* Lifetime Stats */}
         <div className="space-y-6 flex flex-col">
-          <div className="bg-vy-card border border-vy-border p-6 flex-1 flex flex-col justify-center">
-             <span className="text-[10px] text-vy-grey uppercase tracking-widest mb-2 flex items-center gap-2">
-               <ArrowUpRight size={14} className="text-green-400" /> Total Earned
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-xl p-6 flex-1 flex flex-col justify-center shadow-sm">
+             <span className="text-[10px] text-[#75665C] uppercase tracking-widest mb-2 flex items-center gap-2 font-bold">
+               <ArrowUpRight size={14} className="text-emerald-700" /> Total Earned
              </span>
-             <span className="font-display text-3xl font-bold">{totalEarned}</span>
+             <span className="font-display text-3xl font-black text-[#30231F]">{totalEarned}</span>
           </div>
-          <div className="bg-vy-card border border-vy-border p-6 flex-1 flex flex-col justify-center">
-             <span className="text-[10px] text-vy-grey uppercase tracking-widest mb-2 flex items-center gap-2">
-               <ArrowDownLeft size={14} className="text-vy-accent" /> Total Redeemed
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-xl p-6 flex-1 flex flex-col justify-center shadow-sm">
+             <span className="text-[10px] text-[#75665C] uppercase tracking-widest mb-2 flex items-center gap-2 font-bold">
+               <ArrowDownLeft size={14} className="text-[#590907]" /> Total Redeemed
              </span>
-             <span className="font-display text-3xl font-bold">{totalRedeemed}</span>
+             <span className="font-display text-3xl font-black text-[#30231F]">{totalRedeemed}</span>
           </div>
         </div>
       </div>
 
       {/* Transaction History */}
       <div>
-        <h3 className="text-sm font-bold tracking-widest uppercase text-vy-white mb-6 border-b border-vy-border pb-4">Reward History</h3>
+        <h3 className="text-sm font-bold tracking-widest uppercase text-[#30231F] mb-6 border-b border-[#D4BEA5] pb-4">Reward History</h3>
         
         {transactions.length === 0 ? (
-          <div className="text-center py-12 bg-vy-card border border-vy-border border-dashed">
-            <Award size={32} className="text-vy-border mx-auto mb-4 opacity-50" />
-            <p className="text-vy-grey tracking-widest text-xs uppercase">No reward transactions yet.</p>
+          <div className="text-center py-12 bg-[#FAF5ED] border border-[#D4BEA5] border-dashed rounded-xl">
+            <Award size={32} className="text-[#D4BEA5] mx-auto mb-4" />
+            <p className="text-[#75665C] tracking-widest text-xs uppercase font-semibold">No reward transactions yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {transactions.map(tx => {
               const isEarn = tx.type === 'EARN' || tx.type === 'REFUND_RESTORE' || tx.type === 'MANUAL_ADD';
               return (
-                <div key={tx.id} className="bg-vy-card border border-vy-border p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={tx.id} className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-vy-black border ${isEarn ? 'border-green-500/30 text-green-400' : 'border-vy-accent/30 text-vy-accent'}`}>
+                    <div className={`w-10 h-10 shrink-0 flex items-center justify-center rounded-full ${isEarn ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-red-50 border border-red-200 text-[#590907]'}`}>
                       {isEarn ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
                     </div>
                     <div>
-                      <p className="text-sm text-vy-white font-medium">{tx.description}</p>
-                      <p className="text-[10px] text-vy-grey tracking-widest uppercase mt-1">
+                      <p className="text-sm text-[#30231F] font-bold">{tx.description}</p>
+                      <p className="text-[10px] text-[#75665C] tracking-widest uppercase mt-1 font-medium">
                         {tx.timestamp?.toDate?.().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
                   <div className="text-right whitespace-nowrap">
-                    <p className={`font-bold ${isEarn ? 'text-green-400' : 'text-vy-accent'}`}>
+                    <p className={`font-black font-mono ${isEarn ? 'text-emerald-700' : 'text-[#590907]'}`}>
                       {isEarn ? '+' : '-'}{tx.points} PTS
                     </p>
-                    <p className="text-[9px] text-vy-border uppercase tracking-widest mt-1">
+                    <p className="text-[9px] text-[#75665C] uppercase tracking-widest mt-1 font-semibold">
                       {tx.type.replace(/_/g, ' ')}
                     </p>
                   </div>

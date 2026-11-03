@@ -93,8 +93,8 @@ const AdminSections = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-          <h1 className="font-display font-bold text-2xl text-vy-white tracking-widest uppercase">Sections & Categories</h1>
+          <p className="text-[#75665C] text-xs tracking-widest uppercase mb-1">Admin</p>
+          <h1 className="font-display font-bold text-2xl text-[#30231F] tracking-widest uppercase">Sections & Categories</h1>
         </div>
         
         <button 
@@ -108,27 +108,27 @@ const AdminSections = () => {
         </button>
       </div>
 
-      <div className="bg-vy-card border border-vy-border overflow-hidden">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] overflow-hidden shadow-sm">
         <table className="w-full text-left">
-          <thead className="bg-vy-black border-b border-vy-border text-xs uppercase tracking-widest text-vy-grey">
+          <thead className="bg-[#FAF5ED] border-b border-[#D4BEA5] text-xs uppercase tracking-widest text-[#75665C]">
             <tr>
-              <th className="p-4 font-normal w-16 text-center">Order</th>
-              <th className="p-4 font-normal">Label</th>
-              <th className="p-4 font-normal">Slug (URL)</th>
-              <th className="p-4 font-normal">Type</th>
-              <th className="p-4 font-normal">Visibility</th>
-              <th className="p-4 font-normal text-right">Actions</th>
+              <th className="p-4 font-semibold w-16 text-center">Order</th>
+              <th className="p-4 font-semibold">Label</th>
+              <th className="p-4 font-semibold">Slug (URL)</th>
+              <th className="p-4 font-semibold">Type</th>
+              <th className="p-4 font-semibold">Visibility</th>
+              <th className="p-4 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="text-sm">
             {sections.map((sec, i) => (
-              <tr key={sec.id} className="border-b border-vy-border/50 hover:bg-vy-black/50">
-                <td className="p-4 text-center text-vy-grey text-xs">{sec.order || i + 1}</td>
-                <td className="p-4 text-vy-white font-bold">{sec.label}</td>
-                <td className="p-4 text-vy-grey text-xs">/{sec.isSystem ? sec.slug : `collections/${sec.slug}`}</td>
+              <tr key={sec.id} className="border-b border-[#D4BEA5] hover:bg-[#F3E7D8]/60 transition-colors">
+                <td className="p-4 text-center text-[#75665C] text-xs font-mono font-bold">{sec.order || i + 1}</td>
+                <td className="p-4 text-[#30231F] font-bold">{sec.label}</td>
+                <td className="p-4 text-[#75665C] text-xs font-mono">/{sec.isSystem ? sec.slug : `collections/${sec.slug}`}</td>
                 <td className="p-4">
-                  <span className={`text-[10px] px-2 py-1 uppercase tracking-widest border ${
-                    sec.isSystem ? 'bg-vy-white/5 text-vy-grey border-vy-white/10' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  <span className={`text-[10px] px-2.5 py-1 uppercase tracking-widest font-bold border rounded ${
+                    sec.isSystem ? 'bg-white text-[#75665C] border-[#D4BEA5]' : 'badge-processing'
                   }`}>
                     {sec.isSystem ? 'System' : 'Custom'}
                   </span>
@@ -136,21 +136,21 @@ const AdminSections = () => {
                 <td className="p-4">
                   <button 
                     onClick={() => toggleVisibility(sec)}
-                    className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-sm border transition-colors ${
+                    className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded transition-colors ${
                       sec.visible 
-                        ? 'border-green-500/30 text-green-400 bg-green-500/10 hover:bg-green-500/20' 
-                        : 'border-red-500/30 text-red-400 bg-red-500/10 hover:bg-red-500/20'
+                        ? 'badge-confirmed' 
+                        : 'badge-cancelled'
                     }`}
                   >
-                    {sec.visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                    {sec.visible ? <Eye size={13} /> : <EyeOff size={13} />}
                     {sec.visible ? 'Visible' : 'Hidden'}
                   </button>
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex justify-end gap-3">
-                    <button onClick={() => { setCurrentSection(sec); setIsEditing(true); }} className="text-vy-grey hover:text-vy-white"><Edit2 size={16} /></button>
+                    <button onClick={() => { setCurrentSection(sec); setIsEditing(true); }} className="text-[#75665C] hover:text-[#590907] p-1"><Edit2 size={16} /></button>
                     {!sec.isSystem && (
-                      <button onClick={() => handleDelete(sec.id)} className="text-vy-grey hover:text-red-400"><Trash2 size={16} /></button>
+                      <button onClick={() => handleDelete(sec.id)} className="text-[#75665C] hover:text-rose-700 p-1"><Trash2 size={16} /></button>
                     )}
                   </div>
                 </td>
@@ -158,7 +158,7 @@ const AdminSections = () => {
             ))}
             {sections.length === 0 && (
               <tr>
-                <td colSpan="6" className="p-8 text-center text-vy-grey">No sections found. Click "New Section" to add one.</td>
+                <td colSpan="6" className="p-8 text-center text-[#75665C]">No sections found. Click "New Section" to add one.</td>
               </tr>
             )}
           </tbody>
@@ -168,26 +168,26 @@ const AdminSections = () => {
       {/* Editor Modal */}
       <AnimatePresence>
         {isEditing && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div 
               key="section-modal"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-vy-card border border-vy-border w-full max-w-md overflow-hidden"
+              className="bg-[#FAF5ED] border border-[#D4BEA5] w-full max-w-md overflow-hidden shadow-xl"
             >
-              <div className="flex justify-between items-center p-6 border-b border-vy-border">
-                <h3 className="font-display font-bold tracking-widest uppercase text-vy-white text-lg">
+              <div className="flex justify-between items-center p-6 border-b border-[#D4BEA5]">
+                <h3 className="font-display font-bold tracking-widest uppercase text-[#30231F] text-lg">
                   {currentSection.isNew ? 'New Section' : 'Edit Section'}
                 </h3>
-                <button onClick={() => setIsEditing(false)} className="text-vy-grey hover:text-vy-white">
+                <button onClick={() => setIsEditing(false)} className="text-[#75665C] hover:text-[#590907] p-1">
                   <X size={20} />
                 </button>
               </div>
 
               <form onSubmit={handleSave} className="p-6 space-y-4">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Display Label</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">Display Label</label>
                   <input
                     required
                     value={currentSection.label || ''}
@@ -205,7 +205,7 @@ const AdminSections = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">URL Slug</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">URL Slug</label>
                   <input
                     required
                     disabled={!currentSection.isNew}
@@ -214,11 +214,11 @@ const AdminSections = () => {
                     className="vy-input disabled:opacity-50"
                     placeholder="e.g. summer-collection"
                   />
-                  {!currentSection.isNew && <p className="text-[10px] text-vy-grey mt-1">Slug cannot be changed after creation.</p>}
+                  {!currentSection.isNew && <p className="text-[10px] text-[#75665C] mt-1">Slug cannot be changed after creation.</p>}
                 </div>
 
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-vy-grey mb-2 block">Sort Order</label>
+                  <label className="text-xs uppercase tracking-widest text-[#75665C] font-semibold mb-2 block">Sort Order</label>
                   <input
                     type="number"
                     value={currentSection.order || ''}
@@ -226,11 +226,11 @@ const AdminSections = () => {
                     className="vy-input"
                     placeholder="e.g. 1"
                   />
-                  <p className="text-[10px] text-vy-grey mt-1">Lower numbers appear first in the navbar.</p>
+                  <p className="text-[10px] text-[#75665C] mt-1">Lower numbers appear first in the navbar.</p>
                 </div>
 
-                <div className="pt-4 border-t border-vy-border flex justify-end gap-3">
-                  <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 border border-vy-border text-xs uppercase tracking-widest hover:bg-vy-border/20 transition-colors">
+                <div className="pt-4 border-t border-[#D4BEA5] flex justify-end gap-3">
+                  <button type="button" onClick={() => setIsEditing(false)} className="px-4 py-2 border border-[#D4BEA5] text-xs uppercase tracking-widest font-bold text-[#30231F] hover:bg-[#F3E7D8] transition-colors">
                     Cancel
                   </button>
                   <button type="submit" className="btn-primary px-6 py-2 text-xs">

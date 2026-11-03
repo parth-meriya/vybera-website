@@ -173,25 +173,25 @@ const Signup = () => {
   // ── Post-signup: show email verification notice ──────────
   if (done) {
     return (
-      <div className="min-h-screen bg-vy-black flex items-center justify-center px-6">
+      <div className="min-h-screen bg-[#F3E7D8] flex items-center justify-center px-6 py-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md text-center"
+          className="w-full max-w-md bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-8 shadow-sm text-center"
         >
-          <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle size={32} className="text-green-400" />
+          <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={32} className="text-emerald-700" />
           </div>
-          <h1 className="font-display font-bold text-xl tracking-wider text-vy-white mb-3">
+          <h1 className="font-display font-bold text-xl tracking-wider text-[#30231F] mb-3">
             Verify Your Email
           </h1>
-          <p className="text-vy-grey text-sm leading-relaxed mb-2">
-            Welcome to VYBERA, <span className="text-vy-white font-medium">{form.name}</span>!
+          <p className="text-[#75665C] text-sm leading-relaxed mb-2">
+            Welcome to VYBERA, <span className="text-[#30231F] font-bold">{form.name}</span>!
           </p>
-          <p className="text-vy-grey text-sm leading-relaxed mb-8">
+          <p className="text-[#75665C] text-sm leading-relaxed mb-8">
             We've sent a verification link to{' '}
-            <span className="text-vy-white font-medium">{form.email}</span>.
+            <span className="text-[#30231F] font-semibold">{form.email}</span>.
             Please check your inbox (and spam folder) and verify your email before signing in.
           </p>
           <Link to="/login" className="btn-primary inline-block">
@@ -203,27 +203,27 @@ const Signup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-vy-black flex items-center justify-center px-6">
+    <div className="min-h-screen bg-[#F3E7D8] flex items-center justify-center px-6 py-12">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-8 shadow-sm"
       >
-        <div className="text-center mb-10">
-          <Link to="/" className="font-display font-bold text-2xl tracking-[0.4em] text-vy-white">
+        <div className="text-center mb-8">
+          <Link to="/" className="font-display font-black text-2xl tracking-[0.4em] text-[#590907]">
             VYBERA
           </Link>
-          <h1 className="font-display font-bold text-xl tracking-wider text-vy-white mt-6 mb-2">
+          <h1 className="font-display font-bold text-xl tracking-wider text-[#30231F] mt-6 mb-2">
             Create Account
           </h1>
-          <p className="text-vy-grey text-sm">Join the next generation of streetwear</p>
+          <p className="text-[#75665C] text-sm">Join the next generation of streetwear</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Full Name</label>
+            <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Full Name</label>
             <input
               id="signup-name"
               name="name"
@@ -233,7 +233,7 @@ const Signup = () => {
               onBlur={onBlur}
               required
               autoComplete="name"
-              className={`vy-input ${fieldErrors.name ? 'border-red-500/60' : ''}`}
+              className={`w-full bg-white border border-[#D4BEA5] text-[#30231F] placeholder-[#75665C]/60 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#590907] focus:ring-1 focus:ring-[#590907] transition-all ${fieldErrors.name ? 'border-red-500/60' : ''}`}
               placeholder="Your name (letters only)"
             />
             <AnimatePresence>
@@ -242,7 +242,7 @@ const Signup = () => {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+                  className="text-red-600 text-xs mt-1.5 flex items-center gap-1 font-medium"
                 >
                   <XCircle size={11} className="shrink-0" /> {fieldErrors.name}
                 </motion.p>
@@ -252,7 +252,7 @@ const Signup = () => {
 
           {/* Email */}
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Email</label>
+            <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Email</label>
             <input
               id="signup-email"
               name="email"
@@ -261,18 +261,18 @@ const Signup = () => {
               onChange={onChange}
               required
               autoComplete="email"
-              className="vy-input"
-              placeholder="you@example.com"
+              className="w-full bg-white border border-[#D4BEA5] text-[#30231F] placeholder-[#75665C]/60 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#590907] focus:ring-1 focus:ring-[#590907] transition-all"
+              placeholder="you@gmail.com"
             />
           </div>
 
           {/* Mobile Number */}
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Mobile Number</label>
-            <div className="relative flex">
-              <div className="flex items-center gap-1.5 px-3 border border-vy-border border-r-0 bg-vy-border/10 text-vy-grey text-sm select-none shrink-0">
-                <Phone size={13} className="text-vy-grey" />
-                <span className="text-xs font-medium tracking-wider">+91</span>
+            <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Mobile Number</label>
+            <div className="relative flex rounded-lg overflow-hidden border border-[#D4BEA5]">
+              <div className="flex items-center gap-1.5 px-3 bg-[#E8D2B5]/30 text-[#30231F] text-sm select-none shrink-0 border-r border-[#D4BEA5]">
+                <Phone size={13} className="text-[#590907]" />
+                <span className="text-xs font-bold tracking-wider">+91</span>
               </div>
               <input
                 id="signup-phone"
@@ -285,7 +285,7 @@ const Signup = () => {
                 required
                 autoComplete="tel"
                 maxLength={10}
-                className={`vy-input flex-1 ${fieldErrors.phone ? 'border-red-500/60' : ''}`}
+                className="w-full bg-white text-[#30231F] placeholder-[#75665C]/60 px-4 py-3 text-sm focus:outline-none"
                 placeholder="9876543210"
               />
             </div>
@@ -295,14 +295,14 @@ const Signup = () => {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+                  className="text-red-600 text-xs mt-1.5 flex items-center gap-1 font-medium"
                 >
                   <XCircle size={11} className="shrink-0" /> {fieldErrors.phone}
                 </motion.p>
               )}
             </AnimatePresence>
             {form.phone && !fieldErrors.phone && isPhoneValid && (
-              <p className="text-green-400 text-xs mt-1.5 flex items-center gap-1">
+              <p className="text-emerald-700 text-xs mt-1.5 flex items-center gap-1 font-medium">
                 <CheckCircle size={11} className="shrink-0" /> Valid mobile number
               </p>
             )}
@@ -310,7 +310,7 @@ const Signup = () => {
 
           {/* Password */}
           <div>
-            <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Password</label>
+            <label className="text-[#75665C] text-xs font-bold tracking-widest uppercase block mb-2">Password</label>
             <div className="relative">
               <input
                 id="signup-password"
@@ -322,13 +322,13 @@ const Signup = () => {
                 onBlur={onBlur}
                 required
                 autoComplete="new-password"
-                className={`vy-input pr-12 ${fieldErrors.password ? 'border-red-500/60' : ''}`}
+                className={`w-full bg-white border border-[#D4BEA5] text-[#30231F] placeholder-[#75665C]/60 rounded-lg px-4 py-3 text-sm pr-12 focus:outline-none focus:border-[#590907] focus:ring-1 focus:ring-[#590907] transition-all ${fieldErrors.password ? 'border-red-500/60' : ''}`}
                 placeholder="Min. 8 characters"
               />
               <button
                 type="button"
                 onClick={() => setShowPass(s => !s)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-vy-grey hover:text-vy-white transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#75665C] hover:text-[#30231F] transition-colors"
                 aria-label={showPass ? 'Hide password' : 'Show password'}
               >
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -342,7 +342,7 @@ const Signup = () => {
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+                  className="text-red-600 text-xs mt-1.5 flex items-center gap-1 font-medium"
                 >
                   <XCircle size={11} className="shrink-0" /> {fieldErrors.password}
                 </motion.p>
@@ -355,13 +355,13 @@ const Signup = () => {
                 {[1, 2, 3, 4, 5, 6].map(i => (
                   <div
                     key={i}
-                    className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                       passwordScore >= i
                         ? passwordScore <= 2 ? 'bg-red-500'
-                        : passwordScore <= 3 ? 'bg-yellow-500'
-                        : passwordScore <= 5 ? 'bg-blue-400'
-                        : 'bg-green-500'
-                        : 'bg-vy-border'
+                        : passwordScore <= 3 ? 'bg-amber-500'
+                        : passwordScore <= 5 ? 'bg-blue-600'
+                        : 'bg-emerald-600'
+                        : 'bg-[#D4BEA5]'
                     }`}
                   />
                 ))}
@@ -380,10 +380,10 @@ const Signup = () => {
                   {requirements.map((req) => {
                     const passed = req.test(form.password, form.email);
                     return (
-                      <li key={req.label} className={`flex items-center gap-2 text-xs transition-colors ${passed ? 'text-green-400' : 'text-vy-grey'}`}>
+                      <li key={req.label} className={`flex items-center gap-2 text-xs transition-colors font-medium ${passed ? 'text-emerald-700' : 'text-[#75665C]'}`}>
                         {passed
-                          ? <CheckCircle size={12} className="shrink-0" />
-                          : <XCircle size={12} className="shrink-0 text-vy-border" />
+                          ? <CheckCircle size={12} className="shrink-0 text-emerald-600" />
+                          : <XCircle size={12} className="shrink-0 text-[#75665C]/40" />
                         }
                         {req.label}
                       </li>
@@ -395,32 +395,32 @@ const Signup = () => {
           </div>
 
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
             type="submit"
             disabled={loading || !isPasswordValid || !isPhoneValid || !isNameValid}
-            className="btn-primary w-full flex items-center justify-center gap-2 mt-2 disabled:opacity-60"
+            className="btn-primary w-full flex items-center justify-center gap-2 mt-4 disabled:opacity-60"
           >
             {loading
-              ? <div className="w-4 h-4 border border-vy-black/30 border-t-vy-black rounded-full animate-spin" />
+              ? <div className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin" />
               : 'Create Account'
             }
           </motion.button>
         </form>
 
         <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-vy-border" />
-          <span className="text-vy-grey text-xs">or</span>
-          <div className="flex-1 h-px bg-vy-border" />
+          <div className="flex-1 h-px bg-[#D4BEA5]" />
+          <span className="text-[#75665C] text-xs uppercase tracking-widest font-semibold">or</span>
+          <div className="flex-1 h-px bg-[#D4BEA5]" />
         </div>
 
         <button
           id="google-signup-btn"
           onClick={handleGoogle}
           disabled={loading}
-          className="btn-outline w-full flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full bg-white hover:bg-[#F3E7D8]/40 text-[#30231F] border border-[#D4BEA5] font-semibold py-3 px-4 rounded-lg shadow-sm flex items-center justify-center gap-3 transition-colors text-sm disabled:opacity-60"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24">
+          <svg width="18" height="18" viewBox="0 0 24 24">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -429,9 +429,9 @@ const Signup = () => {
           Continue with Google
         </button>
 
-        <p className="text-center text-vy-grey text-sm mt-8">
+        <p className="text-center text-[#75665C] text-sm mt-8">
           Already have an account?{' '}
-          <Link to="/login" className="text-vy-white hover:underline">Sign In</Link>
+          <Link to="/login" className="text-[#590907] font-bold hover:underline">Sign In</Link>
         </p>
       </motion.div>
     </div>

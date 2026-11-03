@@ -79,15 +79,17 @@ const Wishlist = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">My Wishlist</h2>
-        <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Saved products for later</p>
+        <h2 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-2">My Wishlist</h2>
+        <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Saved products for later</p>
       </div>
 
       {wishlistItems.length === 0 ? (
-        <div className="bg-vy-card border border-vy-border p-12 text-center flex flex-col items-center">
-          <Heart size={48} className="text-vy-border mb-4" />
-          <p className="text-vy-white text-lg font-bold mb-2">Your wishlist is empty</p>
-          <p className="text-vy-grey text-xs mb-6">Explore our collections and save your favorite items.</p>
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-12 text-center flex flex-col items-center shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-[#E8D2B5]/40 flex items-center justify-center mb-4">
+            <Heart size={32} className="text-[#590907]" />
+          </div>
+          <p className="text-[#30231F] text-lg font-bold mb-2">Your wishlist is empty</p>
+          <p className="text-[#75665C] text-xs mb-6">Explore our collections and save your favorite items.</p>
           <Link to="/shop" className="btn-primary text-xs py-3 px-8 uppercase tracking-widest">
             Browse Shop
           </Link>
@@ -95,33 +97,37 @@ const Wishlist = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {wishlistItems.map((item) => (
-            <div key={item.id} className="bg-vy-card border border-vy-border overflow-hidden group">
-              <Link to={`/product/${item.id}`} className="block relative aspect-[4/5] bg-vy-dark overflow-hidden">
-                <img 
-                  src={item.image} 
-                  alt={item.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                />
-              </Link>
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <Link to={`/product/${item.id}`} className="hover:text-vy-grey transition-colors">
-                    <h3 className="text-vy-white font-bold text-sm truncate pr-2">{item.name}</h3>
-                  </Link>
-                  <p className="text-vy-white font-mono text-sm">₹{item.price?.toLocaleString()}</p>
+            <div key={item.id} className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-xl overflow-hidden group shadow-sm flex flex-col justify-between">
+              <div>
+                <Link to={`/product/${item.id}`} className="block relative aspect-[4/5] bg-[#F3E7D8] overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                  />
+                </Link>
+                <div className="p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <Link to={`/product/${item.id}`} className="hover:text-[#590907] transition-colors">
+                      <h3 className="text-[#30231F] font-bold text-sm truncate pr-2">{item.name}</h3>
+                    </Link>
+                    <p className="text-[#590907] font-bold font-mono text-sm">₹{item.price?.toLocaleString()}</p>
+                  </div>
+                  <p className="text-[#75665C] text-xs capitalize mb-4 font-medium">{item.category}</p>
                 </div>
-                <p className="text-vy-grey text-xs capitalize mb-4">{item.category}</p>
-                
+              </div>
+              
+              <div className="p-4 pt-0">
                 <div className="flex gap-2">
                   <button 
                     onClick={() => moveToCart(item)}
-                    className="flex-1 py-2.5 bg-vy-white text-vy-black text-[10px] font-bold tracking-widest uppercase hover:bg-vy-grey transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 bg-[#590907] text-white rounded-lg text-[10px] font-bold tracking-widest uppercase hover:bg-[#430605] transition-all flex items-center justify-center gap-2 shadow-sm"
                   >
                     <ShoppingBag size={14} /> Move to Cart
                   </button>
                   <button 
                     onClick={() => removeFromWishlist(item.id)}
-                    className="w-10 h-10 border border-vy-border flex items-center justify-center text-vy-grey hover:text-red-400 hover:border-red-400/50 transition-all"
+                    className="w-10 h-10 border border-[#D4BEA5] rounded-lg flex items-center justify-center text-[#75665C] hover:text-[#590907] hover:border-[#590907] hover:bg-[#E8D2B5]/30 transition-all"
                   >
                     <Trash2 size={14} />
                   </button>

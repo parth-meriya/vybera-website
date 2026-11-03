@@ -17,7 +17,7 @@ const PRICE_RANGES = [
 
 /* ── Embroidery "Coming Soon" visual ──────────────────── */
 const ComingSoon = () => (
-  <div className="min-h-screen bg-vy-black pt-24 flex items-center justify-center relative">
+  <div className="min-h-screen bg-[#F3E7D8] pt-24 flex items-center justify-center relative">
     <div className="absolute top-24 left-6 md:left-12">
       <BackButton />
     </div>
@@ -25,29 +25,29 @@ const ComingSoon = () => (
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="text-center px-6 max-w-lg"
+      className="text-center px-6 max-w-lg bg-[#FAF5ED] border border-[#D4BEA5] rounded-3xl p-10 md:p-14 shadow-sm"
     >
       {/* Animated stitch ring */}
       <motion.div
         animate={{ rotate: [0, 360] }}
         transition={{ repeat: Infinity, duration: 16, ease: 'linear' }}
-        className="inline-flex items-center justify-center w-24 h-24 rounded-full border border-dashed border-vy-grey/30 mb-8 relative"
+        className="inline-flex items-center justify-center w-24 h-24 rounded-full border border-dashed border-[#D4BEA5] mb-8 relative"
       >
         <motion.div
           animate={{ scale: [1, 1.12, 1] }}
           transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
         >
-          <Scissors size={32} className="text-vy-accent" />
+          <Scissors size={32} className="text-[#590907]" />
         </motion.div>
       </motion.div>
 
-      <h1 className="font-display font-bold text-4xl md:text-5xl tracking-wider text-vy-white mb-4">
+      <h1 className="font-display font-black text-3xl md:text-4xl tracking-wider text-[#30231F] mb-4">
         Embroidery Collection
       </h1>
-      <p className="text-vy-accent text-sm font-semibold tracking-[0.3em] uppercase mb-3">
+      <p className="text-[#590907] text-sm font-bold tracking-[0.3em] uppercase mb-3">
         Coming Soon
       </p>
-      <p className="text-vy-border text-xs leading-relaxed max-w-sm mx-auto">
+      <p className="text-[#75665C] text-xs leading-relaxed max-w-sm mx-auto font-medium">
         Hand-crafted embroidery on premium fabric. Every thread placed with intention. Stay tuned for the drop.
       </p>
 
@@ -56,25 +56,8 @@ const ComingSoon = () => (
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ duration: 1.4, delay: 0.4 }}
-        className="mt-10 mx-auto h-px w-40 bg-gradient-to-r from-transparent via-vy-accent/40 to-transparent"
+        className="mt-8 mx-auto h-px w-40 bg-gradient-to-r from-transparent via-[#590907]/40 to-transparent"
       />
-
-      {/* Floating thread particles */}
-      <div className="relative mt-8 h-8 overflow-hidden">
-        {[0, 1, 2, 3, 4].map(i => (
-          <motion.div
-            key={i}
-            animate={{ x: [-20, 20, -20], y: [0, -6, 0] }}
-            transition={{ repeat: Infinity, duration: 3 + i * 0.4, delay: i * 0.3, ease: 'easeInOut' }}
-            className="absolute top-1/2 rounded-full bg-vy-accent/20"
-            style={{
-              width: 2 + i,
-              height: 2 + i,
-              left: `${15 + i * 18}%`,
-            }}
-          />
-        ))}
-      </div>
     </motion.div>
   </div>
 );
@@ -112,48 +95,50 @@ const ProductGrid = ({ products: allProducts }) => {
   const hasFilters = selectedSizes.length > 0 || selectedPrice !== 0;
 
   return (
-    <div className="min-h-screen bg-vy-black pt-24">
+    <div className="min-h-screen bg-[#FAF5ED] text-[#30231F] pt-28 pb-20">
       <SEO
         title="Embroidery Collection"
         description="Hand-crafted embroidery on premium heavyweight fabric. Every thread placed with intention. Discover the collection."
         keywords="embroidered streetwear, premium embroidered t-shirts, custom embroidery India, VYBERA embroidery"
         path="/embroidery"
       />
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 md:px-12">
         <div className="mb-6">
           <BackButton />
         </div>
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex items-end justify-between mb-10 border-b border-vy-border pb-6"
+          transition={{ duration: 0.5 }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 border-b border-[#E5DACD] pb-6"
         >
           <div>
-            <p className="text-vy-grey text-xs tracking-[0.5em] uppercase mb-1">Crafted by Hand</p>
-            <h1 className="font-display font-bold text-3xl md:text-4xl tracking-wider text-vy-white flex items-center gap-3">
+            <p className="text-[#A5A79B] text-[10px] tracking-[0.3em] uppercase font-bold mb-1">Crafted by Hand</p>
+            <h1 className="font-display font-black text-3xl md:text-5xl tracking-tight text-[#30231F] uppercase flex items-center gap-3">
               EMBROIDERY
-              <Scissors size={20} className="text-vy-accent" />
+              <Scissors size={26} className="text-[#590907]" />
             </h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             {hasFilters && (
               <button
+                type="button"
                 onClick={clearFilters}
-                className="flex items-center gap-1 text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors"
+                className="flex items-center gap-1 text-[#590907] text-xs tracking-wider uppercase font-bold hover:underline"
               >
-                <X size={12} /> Clear
+                <X size={13} /> Reset Filters
               </button>
             )}
             <button
+              type="button"
               onClick={() => setFilterOpen(o => !o)}
-              className="flex items-center gap-2 text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors"
+              className="btn-secondary !py-2 !px-4 text-xs font-bold tracking-wider uppercase"
             >
               <SlidersHorizontal size={14} />
-              Filter
+              {filterOpen ? 'Hide Filters' : 'Filter Products'}
             </button>
-            <span className="text-vy-grey text-xs">{filtered.length} items</span>
+            <span className="text-[#7A6E69] text-xs font-semibold">{filtered.length} items</span>
           </div>
         </motion.div>
 

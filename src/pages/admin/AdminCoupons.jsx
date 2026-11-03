@@ -70,73 +70,73 @@ const CouponModal = ({ coupon, onClose, onSaved }) => {
         animate={{ scale: 1 }}
         exit={{ scale: 0.95 }}
         onClick={e => e.stopPropagation()}
-        className="bg-vy-dark border border-vy-border w-full max-w-lg"
+        className="bg-[#FAF5ED] border border-[#D4BEA5] w-full max-w-lg shadow-2xl rounded-sm"
       >
-        <div className="flex items-center justify-between p-6 border-b border-vy-border">
-          <h2 className="text-vy-white font-semibold tracking-wider">
+        <div className="flex items-center justify-between p-6 border-b border-[#D4BEA5]">
+          <h2 className="text-[#30231F] font-bold text-lg tracking-wider">
             {coupon?.id ? 'Edit Coupon' : 'Create Coupon'}
           </h2>
-          <button onClick={onClose} className="text-vy-grey hover:text-vy-white"><X size={18} /></button>
+          <button onClick={onClose} className="text-[#75665C] hover:text-[#30231F]"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Coupon Code</label>
-              <input name="code" value={form.code} onChange={onChange} className="vy-input font-mono uppercase" placeholder="VYBERA20" required />
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Coupon Code</label>
+              <input name="code" value={form.code} onChange={onChange} className="vy-input font-mono uppercase text-xs" placeholder="VYBERA20" required />
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Type</label>
-              <select name="type" value={form.type} onChange={onChange} className="vy-input">
-                <option value="percentage" className="bg-vy-dark">Percentage (%)</option>
-                <option value="flat" className="bg-vy-dark">Flat (₹)</option>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Type</label>
+              <select name="type" value={form.type} onChange={onChange} className="vy-input text-xs">
+                <option value="percentage">Percentage (%)</option>
+                <option value="flat">Flat (₹)</option>
               </select>
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">
                 Value ({form.type === 'percentage' ? '%' : '₹'})
               </label>
-              <input name="value" type="number" value={form.value} onChange={onChange} className="vy-input" placeholder="20" required />
+              <input name="value" type="number" value={form.value} onChange={onChange} className="vy-input text-xs" placeholder="20" required />
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Min Order (₹)</label>
-              <input name="minOrder" type="number" value={form.minOrder} onChange={onChange} className="vy-input" placeholder="Optional" />
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Min Order (₹)</label>
+              <input name="minOrder" type="number" value={form.minOrder} onChange={onChange} className="vy-input text-xs" placeholder="Optional" />
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Max Discount (₹)</label>
-              <input name="maxDiscount" type="number" value={form.maxDiscount} onChange={onChange} className="vy-input" placeholder="Optional" />
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Max Discount (₹)</label>
+              <input name="maxDiscount" type="number" value={form.maxDiscount} onChange={onChange} className="vy-input text-xs" placeholder="Optional" />
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Usage Limit (0=∞)</label>
-              <input name="usageLimit" type="number" value={form.usageLimit} onChange={onChange} className="vy-input" placeholder="0" />
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Usage Limit (0=∞)</label>
+              <input name="usageLimit" type="number" value={form.usageLimit} onChange={onChange} className="vy-input text-xs" placeholder="0" />
             </div>
             <div>
-              <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Expiry Date</label>
-              <input name="expiry" type="date" value={form.expiry} onChange={onChange} className="vy-input" />
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Expiry Date</label>
+              <input name="expiry" type="date" value={form.expiry} onChange={onChange} className="vy-input text-xs" />
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 pt-1">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.active}
                 onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
-                className="w-4 h-4 accent-white"
+                className="w-4 h-4 accent-[#590907] cursor-pointer"
               />
-              <span className="text-vy-grey text-xs tracking-widest uppercase">Active</span>
+              <span className="text-[#30231F] text-xs font-bold tracking-widest uppercase">Active</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.showToUser}
                 onChange={e => setForm(f => ({ ...f, showToUser: e.target.checked }))}
-                className="w-4 h-4 accent-white"
+                className="w-4 h-4 accent-[#590907] cursor-pointer"
               />
-              <span className="text-vy-grey text-xs tracking-widest uppercase">Show in Cart</span>
+              <span className="text-[#30231F] text-xs font-bold tracking-widest uppercase">Show in Cart</span>
             </label>
           </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-ghost flex-1">Cancel</button>
-            <button type="submit" disabled={loading} className="btn-primary flex-1 disabled:opacity-60">
+          <div className="flex gap-3 pt-3 border-t border-[#D4BEA5]">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1 text-xs">Cancel</button>
+            <button type="submit" disabled={loading} className="btn-primary flex-1 text-xs disabled:opacity-60">
               {loading ? 'Saving...' : coupon?.id ? 'Update' : 'Create'}
             </button>
           </div>
@@ -172,57 +172,61 @@ const AdminCoupons = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-[#D4BEA5]">
         <div>
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-          <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Coupons</h1>
+          <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
+          <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">Coupons</h1>
         </div>
-        <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs">
-          <Plus size={13} /> Create Coupon
+        <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs font-bold">
+          <Plus size={14} /> Create Coupon
         </button>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : (
-        <div className="bg-vy-card border border-vy-border overflow-hidden">
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm overflow-hidden rounded-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-vy-border">
+              <tr className="border-b-2 border-[#D4BEA5] bg-[#FAF5ED]">
                 {['Code', 'Type', 'Value', 'Min Order', 'Limit', 'Used', 'Expiry', 'Visible', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
+                  <th key={h} className="text-[#75665C] text-xs tracking-widest uppercase text-left px-4 py-3.5 font-bold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {coupons.map(coupon => (
-                <tr key={coupon.id} className="border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors">
-                  <td className="px-4 py-3 text-vy-white font-mono font-bold text-xs">{coupon.code}</td>
-                  <td className="px-4 py-3 text-vy-grey text-xs capitalize">{coupon.type}</td>
-                  <td className="px-4 py-3 text-vy-white text-xs font-semibold">
+                <tr key={coupon.id} className="border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors">
+                  <td className="px-4 py-3 text-[#590907] font-mono font-bold text-xs tracking-wider">{coupon.code}</td>
+                  <td className="px-4 py-3 text-[#30231F] text-xs font-medium capitalize">{coupon.type}</td>
+                  <td className="px-4 py-3 text-[#590907] text-xs font-bold">
                     {coupon.type === 'percentage' ? `${coupon.value}%` : `₹${coupon.value}`}
                   </td>
-                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.minOrder ? `₹${coupon.minOrder}` : '—'}</td>
-                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.usageLimit > 0 ? coupon.usageLimit : '∞'}</td>
-                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.timesUsed || 0}</td>
-                  <td className="px-4 py-3 text-vy-grey text-xs">{coupon.expiry || '—'}</td>
-                  <td className="px-4 py-3 text-vy-grey text-xs font-semibold">{coupon.showToUser ? 'Yes' : 'No'}</td>
+                  <td className="px-4 py-3 text-[#75665C] text-xs font-medium">{coupon.minOrder ? `₹${coupon.minOrder}` : '—'}</td>
+                  <td className="px-4 py-3 text-[#75665C] text-xs font-medium">{coupon.usageLimit > 0 ? coupon.usageLimit : '∞'}</td>
+                  <td className="px-4 py-3 text-[#30231F] text-xs font-bold">{coupon.timesUsed || 0}</td>
+                  <td className="px-4 py-3 text-[#75665C] text-xs font-medium">{coupon.expiry || '—'}</td>
+                  <td className="px-4 py-3 text-xs font-semibold">
+                    <span className={`px-2 py-0.5 rounded-xs ${coupon.showToUser ? 'text-emerald-900 bg-emerald-100 border border-emerald-300' : 'text-[#75665C] bg-[#E8D2B5] border border-[#D4BEA5]'}`}>
+                      {coupon.showToUser ? 'Yes' : 'No'}
+                    </span>
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => handleToggle(coupon)}
-                      className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${coupon.active ? 'bg-green-500' : 'bg-vy-border'}`}
+                      className={`w-9 h-5 rounded-full relative transition-colors duration-300 ${coupon.active ? 'bg-emerald-600' : 'bg-[#D4BEA5]'}`}
                     >
                       <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${coupon.active ? 'translate-x-4' : ''}`} />
                     </button>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <button onClick={() => setModal(coupon)} className="p-1.5 text-vy-grey hover:text-vy-white transition-colors">
-                        <Edit2 size={13} />
+                      <button onClick={() => setModal(coupon)} className="p-1.5 text-[#590907] hover:bg-[#E8D2B5] rounded-xs transition-colors" title="Edit">
+                        <Edit2 size={14} />
                       </button>
-                      <button onClick={() => setDeleteConfirm(coupon)} className="p-1.5 text-vy-grey hover:text-red-400 transition-colors">
-                        <Trash2 size={13} />
+                      <button onClick={() => setDeleteConfirm(coupon)} className="p-1.5 text-rose-700 hover:bg-rose-100 rounded-xs transition-colors" title="Delete">
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </td>
@@ -231,8 +235,8 @@ const AdminCoupons = () => {
             </tbody>
           </table>
           {coupons.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-vy-grey text-sm tracking-widest uppercase">No coupons yet</p>
+            <div className="text-center py-16 text-[#75665C]">
+              <p className="text-sm tracking-widest uppercase">No coupons yet</p>
             </div>
           )}
         </div>

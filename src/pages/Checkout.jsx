@@ -22,17 +22,17 @@ const StepIndicator = ({ step }) => (
   <div className="flex items-center gap-2 mb-10">
     {['Details', 'Review', 'Pay'].map((label, i) => (
       <div key={label} className="flex items-center">
-        <div className={`flex items-center gap-2 ${i + 1 <= step ? 'text-vy-white' : 'text-vy-border'}`}>
-          <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold transition-colors duration-300 ${
-            i + 1 < step ? 'bg-vy-white border-vy-white text-vy-black' :
-            i + 1 === step ? 'border-vy-white text-vy-white' :
-            'border-vy-border text-vy-border'
+        <div className={`flex items-center gap-2 ${i + 1 <= step ? 'text-[#30231F]' : 'text-[#75665C]'}`}>
+          <div className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold transition-colors duration-300 ${
+            i + 1 < step ? 'bg-[#590907] border-[#590907] text-white' :
+            i + 1 === step ? 'border-[#590907] text-[#590907] bg-white ring-2 ring-[#590907]/20' :
+            'border-[#D4BEA5] text-[#75665C] bg-[#FAF5ED]'
           }`}>
             {i + 1 < step ? '✓' : i + 1}
           </div>
-          <span className="text-xs tracking-widest uppercase hidden sm:block">{label}</span>
+          <span className={`text-xs tracking-widest uppercase hidden sm:block ${i + 1 === step ? 'font-bold text-[#30231F]' : 'font-medium'}`}>{label}</span>
         </div>
-        {i < 2 && <div className={`w-8 sm:w-16 h-px mx-3 transition-colors duration-500 ${i + 1 < step ? 'bg-vy-white' : 'bg-vy-border'}`} />}
+        {i < 2 && <div className={`w-8 sm:w-16 h-px mx-3 transition-colors duration-500 ${i + 1 < step ? 'bg-[#590907]' : 'bg-[#D4BEA5]'}`} />}
       </div>
     ))}
   </div>
@@ -41,7 +41,7 @@ const StepIndicator = ({ step }) => (
 // ─── Form Field ──────────────────────────────────────────────────
 const Field = ({ label, name, value, onChange, type = 'text', placeholder, maxLength, colSpan = 1 }) => (
   <div className={colSpan === 2 ? 'md:col-span-2' : ''}>
-    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">{label}</label>
+    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">{label}</label>
     <input
       name={name}
       type={type}
@@ -67,30 +67,30 @@ const OrderSummaryPanel = ({
   applyCoupon, 
   removeCoupon 
 }) => (
-  <div className={`bg-vy-card border border-vy-border ${compact ? 'p-4' : 'p-6'}`}>
+  <div className={`bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm ${compact ? 'p-4' : 'p-6'}`}>
     {!compact && (
-      <h2 className="text-vy-white font-semibold tracking-widest uppercase text-sm mb-6">Order Summary</h2>
+      <h2 className="text-[#30231F] font-bold tracking-widest uppercase text-sm mb-6">Order Summary</h2>
     )}
 
     {/* Items */}
-    <div className="space-y-3 mb-4 pb-4 border-b border-vy-border">
+    <div className="space-y-3 mb-4 pb-4 border-b border-[#D4BEA5]">
       {items.map(item => (
         <div key={item.cartId || `${item.id}-${item.size}-${item.selectedColor}`} className="flex gap-3 items-center">
           <img
             src={item.image || PLACEHOLDER}
             alt={item.name}
-            className="w-10 h-12 object-cover bg-vy-dark flex-shrink-0"
+            className="w-12 h-14 object-cover bg-white border border-[#D4BEA5] flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <p className="text-vy-white text-xs font-medium truncate">{item.name}</p>
-            <p className="text-vy-grey text-xs">
+            <p className="text-[#30231F] text-xs font-bold truncate">{item.name}</p>
+            <p className="text-[#75665C] text-xs">
               Size: {item.size}
               {item.selectedColor && ` | Color: ${item.selectedColor}`}
               {item.fit && ` | Fit: ${item.fit}`}
               {' '}× {item.quantity}
             </p>
           </div>
-          <span className="text-vy-white text-xs font-semibold flex-shrink-0">
+          <span className="text-[#590907] text-xs font-bold font-mono flex-shrink-0">
             ₹{(getProductPricing(item, campaign).price * item.quantity).toLocaleString()}
           </span>
         </div>
@@ -100,33 +100,33 @@ const OrderSummaryPanel = ({
     {/* Price breakdown */}
     <div className="space-y-2.5 mb-4">
       <div className="flex justify-between text-sm">
-        <span className="text-vy-grey">Subtotal</span>
-        <span className="text-vy-white">₹{subtotal.toLocaleString()}</span>
+        <span className="text-[#75665C]">Subtotal</span>
+        <span className="text-[#30231F] font-bold font-mono">₹{subtotal.toLocaleString()}</span>
       </div>
       {discount > 0 && (
         <div className="flex justify-between text-sm">
-          <span className="text-green-400 flex items-center gap-1">
-            <CheckCircle size={11} />
+          <span className="text-emerald-700 font-semibold flex items-center gap-1">
+            <CheckCircle size={12} />
             Coupon {coupon?.code && `(${coupon.code})`}
           </span>
-          <span className="text-green-400 font-medium">−₹{discount.toLocaleString()}</span>
+          <span className="text-emerald-700 font-bold font-mono">−₹{discount.toLocaleString()}</span>
         </div>
       )}
       <div className="flex justify-between text-sm">
-        <span className="text-vy-grey">Shipping</span>
-        <span className="text-green-400">Free</span>
+        <span className="text-[#75665C]">Shipping</span>
+        <span className="text-emerald-700 font-bold">Free</span>
       </div>
     </div>
 
-    <div className="flex justify-between border-t border-vy-border pt-4">
-      <span className="text-vy-white font-semibold text-sm">Total</span>
-      <span className="text-vy-white font-bold text-xl">₹{total.toLocaleString()}</span>
+    <div className="flex justify-between items-baseline border-t border-[#D4BEA5] pt-4">
+      <span className="text-[#30231F] font-bold text-sm uppercase tracking-wider">Total</span>
+      <span className="text-[#590907] font-bold text-xl font-mono">₹{total.toLocaleString()}</span>
     </div>
 
     {/* Available Coupons list */}
     {!compact && userCoupons.length > 0 && (
-      <div className="mt-6 pt-4 border-t border-vy-border">
-        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-2 font-bold">Your Unused Reward Coupons</label>
+      <div className="mt-6 pt-4 border-t border-[#D4BEA5]">
+        <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Your Unused Reward Coupons</label>
         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
           {userCoupons.map(cp => {
             const isApplied = coupon?.code === cp.code;
@@ -135,19 +135,19 @@ const OrderSummaryPanel = ({
                 key={cp.id}
                 onClick={() => isApplied ? removeCoupon() : applyCoupon(cp)}
                 className={`p-3 border cursor-pointer flex items-center justify-between transition-colors ${
-                  isApplied ? 'border-vy-gold bg-vy-gold/5' : 'border-vy-border hover:border-vy-grey bg-vy-black/40'
+                  isApplied ? 'border-emerald-600 bg-emerald-50' : 'border-[#D4BEA5] hover:border-[#590907] bg-white'
                 }`}
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-vy-white text-[11px] font-bold">{cp.code}</span>
-                    <span className="text-[9px] px-1 bg-vy-gold/20 text-vy-gold uppercase tracking-wider">{cp.value}{cp.type === 'percentage' ? '%' : ' OFF'}</span>
+                    <span className="font-mono text-[#590907] text-[11px] font-bold">{cp.code}</span>
+                    <span className="text-[9px] px-1 bg-[#590907]/10 text-[#590907] font-bold uppercase tracking-wider">{cp.value}{cp.type === 'percentage' ? '%' : ' OFF'}</span>
                   </div>
-                  {cp.minOrder && <p className="text-[9px] text-vy-grey mt-0.5">Min. order ₹{cp.minOrder}</p>}
+                  {cp.minOrder && <p className="text-[10px] text-[#75665C] mt-0.5 font-medium">Min. order ₹{cp.minOrder}</p>}
                 </div>
                 <button
                   type="button"
-                  className={`text-[9px] uppercase tracking-widest font-bold ${isApplied ? 'text-red-400' : 'text-vy-gold'}`}
+                  className={`text-[10px] uppercase tracking-widest font-bold ${isApplied ? 'text-rose-700' : 'text-[#590907]'}`}
                 >
                   {isApplied ? 'Remove' : 'Apply'}
                 </button>
@@ -488,23 +488,23 @@ const Checkout = () => {
   // ── Empty cart guard ─────────────────────────────────────────
   if (items.length === 0 && paymentState !== 'success') {
     return (
-      <div className="min-h-screen bg-vy-black pt-24 flex flex-col items-center justify-center gap-6 px-6 relative">
+      <div className="min-h-screen bg-[#F3E7D8] pt-24 flex flex-col items-center justify-center gap-6 px-6 relative">
         <BackButton className="absolute top-24 left-6 md:left-12" />
-        <ShoppingBag size={48} className="text-vy-border" />
-        <h2 className="font-display font-bold text-2xl tracking-wider text-vy-white">No items in cart</h2>
+        <ShoppingBag size={48} className="text-[#D4BEA5]" />
+        <h2 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">No items in cart</h2>
         <Link to="/shop" className="btn-primary">Shop Now</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-vy-black pt-24">
+    <div className="min-h-screen bg-[#F3E7D8] pt-24">
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 py-12">
         <div className="mb-6">
           <BackButton />
         </div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="font-display font-bold text-3xl tracking-wider text-vy-white mb-8 border-b border-vy-border pb-6">
+          <h1 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-8 border-b border-[#D4BEA5] pb-6">
             Checkout
           </h1>
           <StepIndicator step={Math.min(step, 2)} />
@@ -522,12 +522,12 @@ const Checkout = () => {
             >
               {paymentState === 'loading' && (
                 <>
-                  <Loader2 size={48} className="text-vy-white animate-spin" />
+                  <Loader2 size={48} className="text-[#590907] animate-spin" />
                   <div>
-                    <h2 className="text-vy-white font-semibold text-xl tracking-wider mb-2">
+                    <h2 className="text-[#30231F] font-bold text-xl tracking-wider mb-2">
                       Processing Payment
                     </h2>
-                    <p className="text-vy-grey text-sm">
+                    <p className="text-[#75665C] text-sm font-medium">
                       Complete the payment in the Razorpay window…
                     </p>
                   </div>
@@ -535,23 +535,23 @@ const Checkout = () => {
               )}
               {paymentState === 'success' && (
                 <>
-                  <CheckCircle size={64} className="text-green-400" />
+                  <CheckCircle size={64} className="text-emerald-600" />
                   <div>
-                    <h2 className="text-vy-white font-semibold text-xl tracking-wider mb-2">
+                    <h2 className="text-[#30231F] font-bold text-xl tracking-wider mb-2">
                       Payment Successful!
                     </h2>
-                    <p className="text-vy-grey text-sm">Redirecting you to order confirmation…</p>
+                    <p className="text-[#75665C] text-sm font-medium">Redirecting you to order confirmation…</p>
                   </div>
                 </>
               )}
               {paymentState === 'failed' && (
                 <>
-                  <AlertCircle size={48} className="text-red-400" />
+                  <AlertCircle size={48} className="text-rose-600" />
                   <div>
-                    <h2 className="text-vy-white font-semibold text-xl tracking-wider mb-2">
+                    <h2 className="text-[#30231F] font-bold text-xl tracking-wider mb-2">
                       Payment Failed
                     </h2>
-                    <p className="text-vy-grey text-sm mb-6">Going back to order review…</p>
+                    <p className="text-[#75665C] text-sm mb-6 font-medium">Going back to order review…</p>
                   </div>
                 </>
               )}
@@ -570,56 +570,56 @@ const Checkout = () => {
             >
               {/* Form */}
               <div className="lg:col-span-2">
-                <h2 className="text-vy-white text-xs font-semibold tracking-widest uppercase mb-6">
+                <h2 className="text-[#30231F] text-xs font-bold tracking-widest uppercase mb-6">
                   Delivery Details
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className={errors.name ? 'relative' : ''}>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Full Name *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">Full Name *</label>
                     <input name="name" value={form.name} onChange={onChange} className={`vy-input ${errors.name ? 'border-red-500/60' : ''}`} placeholder="Letters only" />
-                    {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+                    {errors.name && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.name}</p>}
                   </div>
 
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Email *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">Email *</label>
                     <input name="email" type="email" value={form.email} onChange={onChange} className={`vy-input ${errors.email ? 'border-red-500/60' : ''}`} placeholder="you@example.com" />
-                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                    {errors.email && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.email}</p>}
                   </div>
 
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Mobile Number *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">Mobile Number *</label>
                     <div className="relative flex">
-                      <div className="flex items-center gap-1.5 px-3 border border-vy-border border-r-0 bg-vy-border/10 text-vy-grey text-sm select-none shrink-0">
-                        <Phone size={13} className="text-vy-grey" />
+                      <div className="flex items-center gap-1.5 px-3 border border-[#D4BEA5] border-r-0 bg-[#FAF5ED] text-[#30231F] text-sm select-none shrink-0 font-bold">
+                        <Phone size={13} className="text-[#75665C]" />
                         <span className="text-xs font-medium tracking-wider">+91</span>
                       </div>
                       <input name="phone" type="tel" inputMode="numeric" value={form.phone} onChange={onChange} className={`vy-input flex-1 ${errors.phone ? 'border-red-500/60' : ''}`} placeholder="9876543210" maxLength={10} />
                     </div>
-                    {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+                    {errors.phone && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.phone}</p>}
                   </div>
 
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Pincode *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">Pincode *</label>
                     <input name="pincode" value={form.pincode} onChange={onChange} className={`vy-input ${errors.pincode ? 'border-red-500/60' : ''}`} placeholder="6-digit pincode" maxLength={6} />
-                    {errors.pincode && <p className="text-red-400 text-xs mt-1">{errors.pincode}</p>}
+                    {errors.pincode && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.pincode}</p>}
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">Street Address *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">Street Address *</label>
                     <input name="address" value={form.address} onChange={onChange} className={`vy-input ${errors.address ? 'border-red-500/60' : ''}`} placeholder="House no., Street, Landmark" />
-                    {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
+                    {errors.address && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.address}</p>}
                   </div>
 
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">City *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">City *</label>
                     <input name="city" value={form.city} onChange={onChange} className={`vy-input ${errors.city ? 'border-red-500/60' : ''}`} placeholder="Mumbai" />
-                    {errors.city && <p className="text-red-400 text-xs mt-1">{errors.city}</p>}
+                    {errors.city && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.city}</p>}
                   </div>
 
                   <div>
-                    <label className="text-vy-grey text-xs tracking-widest uppercase block mb-2">State *</label>
+                    <label className="text-[#75665C] text-xs tracking-widest uppercase block mb-2 font-semibold">State *</label>
                     <input name="state" value={form.state} onChange={onChange} className={`vy-input ${errors.state ? 'border-red-500/60' : ''}`} placeholder="Maharashtra" />
-                    {errors.state && <p className="text-red-400 text-xs mt-1">{errors.state}</p>}
+                    {errors.state && <p className="text-rose-700 text-xs mt-1 font-medium">{errors.state}</p>}
                   </div>
 
                   <div className="md:col-span-2 pt-2">
@@ -629,11 +629,11 @@ const Checkout = () => {
                           type="checkbox" 
                           checked={saveAddress}
                           onChange={(e) => setSaveAddress(e.target.checked)}
-                          className="w-5 h-5 appearance-none border border-vy-border bg-vy-black rounded-none checked:bg-vy-white transition-all cursor-pointer"
+                          className="w-5 h-5 appearance-none border border-[#D4BEA5] bg-white rounded-none checked:bg-[#590907] transition-all cursor-pointer"
                         />
-                        {saveAddress && <CheckCircle size={12} className="absolute text-vy-black pointer-events-none" />}
+                        {saveAddress && <CheckCircle size={12} className="absolute text-white pointer-events-none" />}
                       </div>
-                      <span className="text-vy-grey text-[10px] uppercase tracking-widest group-hover:text-vy-white transition-colors">
+                      <span className="text-[#75665C] text-xs uppercase tracking-widest group-hover:text-[#30231F] transition-colors font-medium">
                         Save this address for future purchases
                       </span>
                     </label>
@@ -641,10 +641,10 @@ const Checkout = () => {
                 </div>
 
                 {!user && (
-                  <div className="mt-6 p-4 border border-yellow-500/30 bg-yellow-500/5">
-                    <p className="text-yellow-400 text-xs">
+                  <div className="mt-6 p-4 border border-amber-400 bg-amber-50">
+                    <p className="text-amber-900 text-xs font-medium">
                       You need to{' '}
-                      <Link to="/login" className="underline font-semibold">sign in</Link>
+                      <Link to="/login" className="underline font-bold text-[#590907]">sign in</Link>
                       {' '}before completing payment.
                     </p>
                   </div>
@@ -689,23 +689,23 @@ const Checkout = () => {
               {/* Left: Address review */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Delivery info review */}
-                <div className="bg-vy-card border border-vy-border p-6">
+                <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-vy-white text-xs font-semibold tracking-widest uppercase">
+                    <h2 className="text-[#30231F] text-xs font-bold tracking-widest uppercase">
                       Delivering To
                     </h2>
                     <button
                       onClick={() => setStep(1)}
-                      className="text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors"
+                      className="text-[#590907] text-xs tracking-widest uppercase hover:underline font-bold transition-colors"
                     >
                       Edit
                     </button>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-vy-white text-sm font-medium">{form.name}</p>
-                    <p className="text-vy-grey text-sm">{form.address}</p>
-                    <p className="text-vy-grey text-sm">{form.city}, {form.state} — {form.pincode}</p>
-                    <p className="text-vy-grey text-sm">{form.phone} · {form.email}</p>
+                    <p className="text-[#30231F] text-sm font-bold">{form.name}</p>
+                    <p className="text-[#75665C] text-sm">{form.address}</p>
+                    <p className="text-[#75665C] text-sm">{form.city}, {form.state} — {form.pincode}</p>
+                    <p className="text-[#75665C] text-sm">{form.phone} · {form.email}</p>
                   </div>
                 </div>
 
@@ -742,16 +742,16 @@ const Checkout = () => {
                 </div>
 
                 {/* Razorpay Pay Button */}
-                <div className="bg-vy-card border border-vy-border p-6">
+                <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
                   {/* Coupon confirmation */}
                   {discount > 0 && (
-                    <div className="flex items-center gap-2 mb-4 p-3 bg-green-500/10 border border-green-500/20">
-                      <CheckCircle size={14} className="text-green-400 flex-shrink-0" />
+                    <div className="flex items-center gap-2 mb-4 p-3 bg-emerald-50 border border-emerald-300">
+                      <CheckCircle size={14} className="text-emerald-700 flex-shrink-0" />
                       <div>
-                        <p className="text-green-400 text-xs font-semibold">
+                        <p className="text-emerald-800 text-xs font-bold">
                           Coupon {coupon?.code} applied
                         </p>
-                        <p className="text-green-400/70 text-xs">
+                        <p className="text-emerald-700 text-xs font-semibold font-mono">
                           You save ₹{discount.toLocaleString()}
                         </p>
                       </div>
@@ -760,26 +760,26 @@ const Checkout = () => {
 
                   {/* Rewards Toggle */}
                   {rewardsSettings.enabled && rewardPoints > 0 && Math.max(0, total - rewardsSettings.minPayable) > 0 && (
-                    <div className="mb-6 p-4 bg-vy-black border border-vy-border">
+                    <div className="mb-6 p-4 bg-[#F3E7D8] border border-[#D4BEA5]">
                       <label className="flex items-start gap-3 cursor-pointer group">
                         <div className="relative flex items-center justify-center mt-0.5">
                           <input 
                             type="checkbox" 
                             checked={useRewards}
                             onChange={(e) => setUseRewards(e.target.checked)}
-                            className="w-5 h-5 appearance-none border border-vy-border bg-vy-black rounded-none checked:bg-vy-white transition-all cursor-pointer"
+                            className="w-5 h-5 appearance-none border border-[#D4BEA5] bg-white rounded-none checked:bg-[#590907] transition-all cursor-pointer"
                           />
-                          {useRewards && <CheckCircle size={12} className="absolute text-vy-black pointer-events-none" />}
+                          {useRewards && <CheckCircle size={12} className="absolute text-white pointer-events-none" />}
                         </div>
                         <div className="flex-1">
-                          <p className="text-vy-white text-sm font-semibold tracking-wider">
+                          <p className="text-[#30231F] text-sm font-bold tracking-wider">
                             Use VYBERA Rewards
                           </p>
-                          <p className="text-vy-grey text-xs mt-1">
+                          <p className="text-[#75665C] text-xs mt-1 font-medium">
                             Balance: {rewardPoints} Points (₹{rewardPoints * rewardsSettings.redemptionRate})
                           </p>
                           {useRewards && (rewardsSettings.enabled ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0) > 0 && (
-                            <p className="text-green-400 text-xs mt-2 font-medium">
+                            <p className="text-emerald-700 text-xs mt-2 font-bold font-mono">
                               Applying {(rewardsSettings.enabled ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0) / rewardsSettings.redemptionRate} Points for ₹{rewardsSettings.enabled ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0} discount.
                             </p>
                           )}
@@ -790,22 +790,22 @@ const Checkout = () => {
 
                   {/* Secure badge */}
                   <div className="flex items-center gap-2 mb-5">
-                    <div className="w-px h-6 bg-vy-border" />
+                    <div className="w-px h-6 bg-[#D4BEA5]" />
                     <div className="flex items-center gap-2">
-                      <span className="text-vy-grey text-xs">Secured by</span>
-                      <span className="text-vy-white text-xs font-bold tracking-widest">RAZORPAY</span>
+                      <span className="text-[#75665C] text-xs">Secured by</span>
+                      <span className="text-[#30231F] text-xs font-bold tracking-widest">RAZORPAY</span>
                     </div>
                   </div>
 
                   {/* Final amount */}
                   <div className="flex items-baseline justify-between mb-6">
-                    <span className="text-vy-grey text-sm">You pay</span>
+                    <span className="text-[#75665C] text-sm font-semibold">You pay</span>
                     <div className="text-right">
-                      <span className="text-vy-white font-bold text-2xl">
+                      <span className="text-[#590907] font-bold text-2xl font-mono">
                         ₹{(total - (rewardsSettings.enabled && useRewards ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0)).toLocaleString()}
                       </span>
                       {(discount > 0 || (rewardsSettings.enabled && useRewards)) && (
-                        <p className="text-vy-grey text-xs line-through">
+                        <p className="text-[#75665C] text-xs line-through font-mono">
                           ₹{subtotal.toLocaleString()}
                         </p>
                       )}
@@ -813,9 +813,9 @@ const Checkout = () => {
                   </div>
 
                   {apiHealth === 'error' && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 flex items-center gap-2">
-                      <AlertCircle size={14} className="text-red-400 shrink-0" />
-                      <p className="text-red-400 text-[10px] uppercase font-bold tracking-widest">
+                    <div className="mb-4 p-3 bg-rose-50 border border-rose-300 flex items-center gap-2">
+                      <AlertCircle size={14} className="text-rose-700 shrink-0" />
+                      <p className="text-rose-800 text-[10px] uppercase font-bold tracking-widest">
                         Payment System Offline. Please refresh or try again later.
                       </p>
                     </div>
@@ -831,7 +831,7 @@ const Checkout = () => {
                     Pay ₹{(total - (rewardsSettings.enabled && useRewards ? Math.min(rewardPoints * rewardsSettings.redemptionRate, Math.max(0, total - rewardsSettings.minPayable)) : 0)).toLocaleString()} with Razorpay
                   </motion.button>
 
-                  <p className="text-vy-grey text-[10px] text-center mt-3 tracking-wide">
+                  <p className="text-[#75665C] text-[10px] text-center mt-3 tracking-wide">
                     By clicking Pay, you agree to our Terms. Your card data is never stored by VYBERA.
                   </p>
                 </div>

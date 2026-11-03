@@ -23,7 +23,7 @@ const Footer = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#1E1614] text-[#FAF5ED] pt-16 pb-12 px-6 md:px-12 border-t border-[#30231F]">
+    <footer className="bg-[#241916] text-[#FAF5ED] pt-16 pb-12 px-6 md:px-12 border-t border-[#30231F] surface-dark">
       <div className="max-w-7xl mx-auto">
         {/* Top Trust Banner */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-12 border-b border-white/10 text-xs">
@@ -33,7 +33,7 @@ const Footer = () => {
             </span>
             <div>
               <p className="font-bold uppercase tracking-wider text-[#FAF5ED]">PAN-INDIA EXPRESS SHIPPING</p>
-              <p className="text-[11px] text-[#A5A79B] mt-0.5">Fast dispatches with real-time SMS & tracking.</p>
+              <p className="text-[11px] text-[#D4BEA5] mt-0.5">Fast dispatches with real-time SMS & tracking.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -42,7 +42,7 @@ const Footer = () => {
             </span>
             <div>
               <p className="font-bold uppercase tracking-wider text-[#FAF5ED]">EASY SIZE EXCHANGES</p>
-              <p className="text-[11px] text-[#A5A79B] mt-0.5">Hassle-free 7-day size swap guarantee.</p>
+              <p className="text-[11px] text-[#D4BEA5] mt-0.5">Hassle-free 7-day size swap guarantee.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -51,7 +51,7 @@ const Footer = () => {
             </span>
             <div>
               <p className="font-bold uppercase tracking-wider text-[#FAF5ED]">100% SECURE PAYMENTS</p>
-              <p className="text-[11px] text-[#A5A79B] mt-0.5">Encrypted UPI, Cards & NetBanking via Razorpay.</p>
+              <p className="text-[11px] text-[#D4BEA5] mt-0.5">Encrypted UPI, Cards & NetBanking via Razorpay.</p>
             </div>
           </div>
         </div>
@@ -66,7 +66,7 @@ const Footer = () => {
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#E8D2B5]">
               THE ERA OF VIBES
             </p>
-            <p className="text-xs text-[#A5A79B] leading-relaxed max-w-sm">
+            <p className="text-xs text-[#D4BEA5] leading-relaxed max-w-sm">
               Premium oversized streetwear and custom apparel engineered for those who set culture. Heavyweight combed cotton, precision silhouettes, and high-definition bespoke printing. Made in India.
             </p>
 
@@ -187,7 +187,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#A5A79B]">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#D4BEA5]">
           <p>© {year} VYBERA. ALL RIGHTS RESERVED. CRAFTED IN INDIA.</p>
           <p className="tracking-widest uppercase text-[#E8D2B5] font-semibold">
             THE ERA OF VIBES.

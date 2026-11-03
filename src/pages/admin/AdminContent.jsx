@@ -143,17 +143,17 @@ const AdminContent = () => {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-        <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Content Management</h1>
+        <p className="text-[#75665C] text-xs tracking-widest uppercase mb-1 font-semibold">Admin</p>
+        <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">Content Management</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Left Column: About & Campaign */}
         <div className="space-y-8">
           {/* About Page CMS */}
-          <div className="bg-vy-card border border-vy-border p-6">
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">About Page CMS</h2>
-            <p className="text-vy-grey text-xs mb-6 tracking-wide">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
+            <h2 className="text-[#590907] font-bold text-sm tracking-wider uppercase mb-1">About Page CMS</h2>
+            <p className="text-[#75665C] text-xs mb-6 tracking-wide">
               Manage founder details, brand story, and mission.
             </p>
 
@@ -162,65 +162,65 @@ const AdminContent = () => {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Founder Name</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Founder Name</label>
                   <input
                     type="text"
                     value={aboutData.founderName}
                     onChange={e => setAboutData(d => ({ ...d, founderName: e.target.value }))}
                     placeholder="E.g. Parth Meriya"
-                    className="vy-input text-sm"
+                    className="vy-input text-sm bg-white border-[#D4BEA5] text-[#30231F]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Brand Mission / Tagline</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Brand Mission / Tagline</label>
                   <input
                     type="text"
                     value={aboutData.brandMission}
                     onChange={e => setAboutData(d => ({ ...d, brandMission: e.target.value }))}
                     placeholder="E.g. Born from an obsession with forward-thinking clothing."
-                    className="vy-input text-sm"
+                    className="vy-input text-sm bg-white border-[#D4BEA5] text-[#30231F]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Founder Quote</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Founder Quote</label>
                   <textarea
                     value={aboutData.founderQuote}
                     onChange={e => setAboutData(d => ({ ...d, founderQuote: e.target.value }))}
                     placeholder="E.g. We don't build clothing, we build vibes."
                     rows={2}
-                    className="vy-input resize-none w-full text-sm leading-relaxed"
+                    className="vy-input resize-none w-full text-sm leading-relaxed bg-white border-[#D4BEA5] text-[#30231F]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Brand Story</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Brand Story</label>
                   <textarea
                     value={aboutData.brandStory}
                     onChange={e => setAboutData(d => ({ ...d, brandStory: e.target.value }))}
                     rows={8}
-                    className="vy-input resize-none w-full text-sm leading-relaxed"
+                    className="vy-input resize-none w-full text-sm leading-relaxed bg-white border-[#D4BEA5] text-[#30231F]"
                     placeholder="Write the full brand story..."
                   />
                 </div>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Banner Image URL</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Banner Image URL</label>
                   <input
                     type="text"
                     value={aboutData.imageUrl}
                     onChange={e => setAboutData(d => ({ ...d, imageUrl: e.target.value }))}
                     placeholder="E.g. https://images.unsplash.com/..."
-                    className="vy-input text-sm"
+                    className="vy-input text-sm bg-white border-[#D4BEA5] text-[#30231F]"
                   />
                 </div>
 
-                <div className="pt-4 border-t border-vy-border text-right">
+                <div className="pt-4 border-t border-[#D4BEA5] text-right">
                   <button
                     onClick={handleSaveAbout}
                     disabled={saving || loading}
-                    className="btn-primary disabled:opacity-60"
+                    className="bg-[#590907] hover:bg-[#430605] text-white px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md transition-all disabled:opacity-60"
                   >
                     {saving ? 'Saving...' : 'Save About Page Content'}
                   </button>
@@ -230,9 +230,9 @@ const AdminContent = () => {
           </div>
 
           {/* Campaign & Sale Settings */}
-          <div className="bg-vy-card border border-vy-border p-6">
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Campaign & Sale Settings</h2>
-            <p className="text-vy-grey text-xs mb-6 tracking-wide">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
+            <h2 className="text-[#590907] font-bold text-sm tracking-wider uppercase mb-1">Campaign & Sale Settings</h2>
+            <p className="text-[#75665C] text-xs mb-6 tracking-wide">
               Manage global store-wide sales, discounts, and countdown timers.
             </p>
 
@@ -245,24 +245,24 @@ const AdminContent = () => {
                     type="checkbox"
                     checked={campaign.active}
                     onChange={e => setCampaign(c => ({ ...c, active: e.target.checked }))}
-                    className="w-4 h-4 accent-vy-accent"
+                    className="w-4 h-4 accent-[#590907]"
                   />
-                  <span className="text-vy-white text-xs tracking-widest uppercase font-bold">Enable Global Campaign</span>
+                  <span className="text-[#30231F] text-xs tracking-widest uppercase font-bold">Enable Global Campaign</span>
                 </label>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Campaign Name</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Campaign Name</label>
                   <input
                     type="text"
                     value={campaign.name}
                     onChange={e => setCampaign(c => ({ ...c, name: e.target.value }))}
                     placeholder="E.g. MIDSEASON SALE"
-                    className="vy-input text-sm"
+                    className="vy-input text-sm bg-white border-[#D4BEA5] text-[#30231F]"
                   />
                 </div>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Global Discount Percentage (%)</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Global Discount Percentage (%)</label>
                   <input
                     type="number"
                     value={campaign.discountPercent}
@@ -270,27 +270,27 @@ const AdminContent = () => {
                     placeholder="E.g. 10"
                     min="0"
                     max="100"
-                    className="vy-input text-sm"
+                    className="vy-input text-sm bg-white border-[#D4BEA5] text-[#30231F]"
                   />
-                  <p className="text-[10px] text-vy-grey mt-1">Applies to products without custom campaign pricing overrides.</p>
+                  <p className="text-[10px] text-[#75665C] mt-1">Applies to products without custom campaign pricing overrides.</p>
                 </div>
 
                 <div>
-                  <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Sale End Date & Time</label>
+                  <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">Sale End Date & Time</label>
                   <input
                     type="datetime-local"
                     value={campaign.endDate || ''}
                     onChange={e => setCampaign(c => ({ ...c, endDate: e.target.value }))}
-                    className="vy-input text-sm"
+                    className="vy-input text-sm bg-white border-[#D4BEA5] text-[#30231F]"
                   />
-                  <p className="text-[10px] text-vy-grey mt-1">Sets the countdown target shown to visitors.</p>
+                  <p className="text-[10px] text-[#75665C] mt-1">Sets the countdown target shown to visitors.</p>
                 </div>
 
-                <div className="pt-4 border-t border-vy-border text-right">
+                <div className="pt-4 border-t border-[#D4BEA5] text-right">
                   <button
                     onClick={handleSaveCampaign}
                     disabled={saving || loading}
-                    className="btn-primary disabled:opacity-60"
+                    className="bg-[#590907] hover:bg-[#430605] text-white px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md transition-all disabled:opacity-60"
                   >
                     {saving ? 'Saving...' : 'Save Campaign Settings'}
                   </button>
@@ -305,9 +305,9 @@ const AdminContent = () => {
         {/* Right Column: Customization & Trust Badges */}
         <div className="space-y-8">
           {/* Customization Settings */}
-          <div className="bg-vy-card border border-vy-border p-6">
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Studio Settings</h2>
-          <p className="text-vy-grey text-xs mb-6 tracking-wide">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
+            <h2 className="text-[#590907] font-bold text-sm tracking-wider uppercase mb-1">Studio Settings</h2>
+          <p className="text-[#75665C] text-xs mb-6 tracking-wide">
             Manage pricing and sizes for the Custom T-Shirt Studio.
           </p>
 
@@ -317,11 +317,11 @@ const AdminContent = () => {
             <div className="space-y-8">
               {/* Oversize Prices */}
               <div>
-                <label className="text-vy-accent text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-vy-accent pl-2">Oversize Fit Prices</label>
+                <label className="text-[#590907] font-bold text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-[#590907] pl-2">Oversize Fit Prices</label>
                 <div className="grid grid-cols-3 gap-3">
                   {Object.keys(customize.oversizePrices || { Front: 700, Back: 700, Both: 900 }).map(pos => (
                     <div key={pos}>
-                      <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">{pos}</label>
+                      <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">{pos}</label>
                       <input 
                         type="number"
                         value={customize.oversizePrices?.[pos] || 0} 
@@ -329,7 +329,7 @@ const AdminContent = () => {
                           ...c, 
                           oversizePrices: { ...(c.oversizePrices || { Front: 700, Back: 700, Both: 900 }), [pos]: parseInt(e.target.value) || 0 } 
                         }))}
-                        className="vy-input text-xs" 
+                        className="vy-input text-xs bg-white border-[#D4BEA5] text-[#30231F]" 
                       />
                     </div>
                   ))}
@@ -338,11 +338,11 @@ const AdminContent = () => {
 
               {/* Regular Prices */}
               <div>
-                <label className="text-vy-white text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-vy-white pl-2">Regular Fit Prices</label>
+                <label className="text-[#30231F] font-bold text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-[#30231F] pl-2">Regular Fit Prices</label>
                 <div className="grid grid-cols-3 gap-3">
                   {Object.keys(customize.regularPrices || { Front: 600, Back: 600, Both: 800 }).map(pos => (
                     <div key={pos}>
-                      <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">{pos}</label>
+                      <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-2 font-bold">{pos}</label>
                       <input 
                         type="number"
                         value={customize.regularPrices?.[pos] || 0} 
@@ -350,7 +350,7 @@ const AdminContent = () => {
                           ...c, 
                           regularPrices: { ...(c.regularPrices || { Front: 600, Back: 600, Both: 800 }), [pos]: parseInt(e.target.value) || 0 } 
                         }))}
-                        className="vy-input text-xs" 
+                        className="vy-input text-xs bg-white border-[#D4BEA5] text-[#30231F]" 
                       />
                     </div>
                   ))}
@@ -359,15 +359,15 @@ const AdminContent = () => {
 
               {/* T-Shirt Colors Management */}
               <div>
-                <label className="text-vy-accent text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-vy-accent pl-2">T-Shirt Color Presets</label>
-                <p className="text-vy-grey text-[10px] mb-4">These colors appear as selectable swatches in the customer T-Shirt Studio.</p>
+                <label className="text-[#590907] font-bold text-[10px] uppercase tracking-widest block mb-4 border-l-2 border-[#590907] pl-2">T-Shirt Color Presets</label>
+                <p className="text-[#75665C] text-[10px] mb-4">These colors appear as selectable swatches in the customer T-Shirt Studio.</p>
 
                 {/* Existing Colors */}
                 <div className="flex flex-wrap gap-2 mb-4">
                   {(customize.colors || []).map((c, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-vy-black/40 border border-vy-border px-2.5 py-1.5 group">
-                      <div className="w-4 h-4 border border-vy-border/60" style={{ backgroundColor: c.hex }} />
-                      <span className="text-[10px] text-vy-light tracking-wide">{c.name}</span>
+                    <div key={idx} className="flex items-center gap-2 bg-white border border-[#D4BEA5] px-2.5 py-1.5 shadow-xs">
+                      <div className="w-4 h-4 border border-[#D4BEA5]" style={{ backgroundColor: c.hex }} />
+                      <span className="text-[10px] text-[#30231F] font-medium tracking-wide">{c.name}</span>
                       <button
                         onClick={() => {
                           setCustomize(prev => ({
@@ -375,7 +375,7 @@ const AdminContent = () => {
                             colors: prev.colors.filter((_, i) => i !== idx)
                           }));
                         }}
-                        className="text-red-400/60 hover:text-red-400 transition-colors text-[10px] font-bold ml-1"
+                        className="text-red-600 hover:text-red-800 transition-colors text-[10px] font-bold ml-1"
                         title="Remove color"
                       >
                         ✕
@@ -383,36 +383,36 @@ const AdminContent = () => {
                     </div>
                   ))}
                   {(!customize.colors || customize.colors.length === 0) && (
-                    <p className="text-vy-grey text-[10px] italic">No colors configured yet. Using default presets on the studio page.</p>
+                    <p className="text-[#75665C] text-[10px] italic">No colors configured yet. Using default presets on the studio page.</p>
                   )}
                 </div>
 
                 {/* Add New Color */}
                 <div className="flex flex-wrap items-end gap-2">
                   <div className="flex-1 min-w-[120px]">
-                    <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Color Name</label>
+                    <label className="text-[#75665C] text-[9px] uppercase tracking-widest block mb-1 font-bold">Color Name</label>
                     <input
                       type="text"
                       value={newColorName}
                       onChange={e => setNewColorName(e.target.value)}
                       placeholder="e.g. Acid Wash Grey"
-                      className="vy-input text-xs w-full"
+                      className="vy-input text-xs w-full bg-white border-[#D4BEA5] text-[#30231F]"
                     />
                   </div>
                   <div>
-                    <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Hex</label>
+                    <label className="text-[#75665C] text-[9px] uppercase tracking-widest block mb-1 font-bold">Hex</label>
                     <div className="flex items-center gap-1">
                       <input
                         type="color"
                         value={newColorHex}
                         onChange={e => setNewColorHex(e.target.value)}
-                        className="w-8 h-8 cursor-pointer border border-vy-border bg-transparent"
+                        className="w-8 h-8 cursor-pointer border border-[#D4BEA5] bg-transparent"
                       />
                       <input
                         type="text"
                         value={newColorHex}
                         onChange={e => setNewColorHex(e.target.value)}
-                        className="vy-input text-xs w-20"
+                        className="vy-input text-xs w-20 bg-white border-[#D4BEA5] text-[#30231F]"
                       />
                     </div>
                   </div>
@@ -426,7 +426,7 @@ const AdminContent = () => {
                       setNewColorName('');
                       setNewColorHex('#0A0A0A');
                     }}
-                    className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-vy-accent text-vy-accent hover:bg-vy-accent/10 transition-all"
+                    className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#590907] text-[#590907] hover:bg-[#590907] hover:text-white transition-all shadow-xs"
                   >
                     + Add Color
                   </button>
@@ -435,7 +435,7 @@ const AdminContent = () => {
 
               {/* Sizes */}
               <div>
-                <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-3">Available Sizes (Global)</label>
+                <label className="text-[#75665C] text-[10px] uppercase tracking-widest block mb-3 font-bold">Available Sizes (Global)</label>
                 <div className="flex flex-wrap gap-2">
                   {['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map(s => (
                     <button
@@ -448,8 +448,8 @@ const AdminContent = () => {
                       }}
                       className={`px-3 py-1 text-[10px] font-bold border transition-all ${
                         customize.sizes.includes(s)
-                          ? 'border-vy-accent bg-vy-accent/10 text-vy-white'
-                          : 'border-vy-border text-vy-grey'
+                          ? 'border-[#590907] bg-[#590907] text-white shadow-xs'
+                          : 'border-[#D4BEA5] bg-white text-[#75665C] hover:border-[#590907]'
                       }`}
                     >
                       {s}
@@ -458,11 +458,11 @@ const AdminContent = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-vy-border text-right">
+              <div className="pt-4 border-t border-[#D4BEA5] text-right">
                 <button
                   onClick={handleSaveCustomize}
                   disabled={saving || loading}
-                  className="btn-primary disabled:opacity-60"
+                  className="bg-[#590907] hover:bg-[#430605] text-white px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md transition-all disabled:opacity-60"
                 >
                   {saving ? 'Saving...' : 'Save Studio Settings'}
                 </button>
@@ -472,9 +472,9 @@ const AdminContent = () => {
           </div>
 
           {/* Trust Badges Settings */}
-          <div className="bg-vy-card border border-vy-border p-6">
-            <h2 className="text-vy-white font-semibold text-sm tracking-wider uppercase mb-4 text-vy-accent">Trust Badges Settings</h2>
-            <p className="text-vy-grey text-xs mb-6 tracking-wide">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
+            <h2 className="text-[#590907] font-bold text-sm tracking-wider uppercase mb-1">Trust Badges Settings</h2>
+            <p className="text-[#75665C] text-xs mb-6 tracking-wide">
               Configure the trust badges shown right below the Add To Cart button on product pages.
             </p>
 
@@ -483,9 +483,9 @@ const AdminContent = () => {
             ) : (
               <div className="space-y-6">
                 {trustBadges.map((badge, idx) => (
-                  <div key={idx} className="p-4 bg-vy-black/40 border border-vy-border space-y-3">
+                  <div key={idx} className="p-4 bg-[#F3E7D8]/60 border border-[#D4BEA5] space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-vy-white text-xs font-bold uppercase tracking-wider">Badge #{idx + 1}</span>
+                      <span className="text-[#30231F] text-xs font-bold uppercase tracking-wider">Badge #{idx + 1}</span>
                       <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
                           type="checkbox"
@@ -495,15 +495,15 @@ const AdminContent = () => {
                             updated[idx] = { ...updated[idx], active: e.target.checked };
                             setTrustBadges(updated);
                           }}
-                          className="w-3.5 h-3.5 accent-vy-accent"
+                          className="w-3.5 h-3.5 accent-[#590907]"
                         />
-                        <span className="text-vy-grey text-[10px] uppercase tracking-widest font-semibold">Active</span>
+                        <span className="text-[#75665C] text-[10px] uppercase tracking-widest font-semibold">Active</span>
                       </label>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Icon</label>
+                        <label className="text-[#75665C] text-[9px] uppercase tracking-widest block mb-1 font-bold">Icon</label>
                         <select
                           value={badge.icon}
                           onChange={e => {
@@ -511,7 +511,7 @@ const AdminContent = () => {
                             updated[idx] = { ...updated[idx], icon: e.target.value };
                             setTrustBadges(updated);
                           }}
-                          className="vy-input text-xs"
+                          className="vy-input text-xs bg-white border-[#D4BEA5] text-[#30231F]"
                         >
                           <option value="Truck">Truck (Delivery)</option>
                           <option value="RotateCcw">RotateCcw (Returns)</option>
@@ -525,7 +525,7 @@ const AdminContent = () => {
                       </div>
 
                       <div>
-                        <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Title</label>
+                        <label className="text-[#75665C] text-[9px] uppercase tracking-widest block mb-1 font-bold">Title</label>
                         <input
                           type="text"
                           value={badge.title}
@@ -534,14 +534,14 @@ const AdminContent = () => {
                             updated[idx] = { ...updated[idx], title: e.target.value };
                             setTrustBadges(updated);
                           }}
-                          className="vy-input text-xs"
+                          className="vy-input text-xs bg-white border-[#D4BEA5] text-[#30231F]"
                           placeholder="E.g. Free Delivery"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-vy-grey text-[9px] uppercase tracking-widest block mb-1">Description</label>
+                      <label className="text-[#75665C] text-[9px] uppercase tracking-widest block mb-1 font-bold">Description</label>
                       <input
                         type="text"
                         value={badge.description}
@@ -550,18 +550,18 @@ const AdminContent = () => {
                           updated[idx] = { ...updated[idx], description: e.target.value };
                           setTrustBadges(updated);
                         }}
-                        className="vy-input text-xs"
+                        className="vy-input text-xs bg-white border-[#D4BEA5] text-[#30231F]"
                         placeholder="E.g. On orders over ₹999"
                       />
                     </div>
                   </div>
                 ))}
 
-                <div className="pt-4 border-t border-vy-border text-right">
+                <div className="pt-4 border-t border-[#D4BEA5] text-right">
                   <button
                     onClick={handleSaveTrustBadges}
                     disabled={saving || loading}
-                    className="btn-primary disabled:opacity-60"
+                    className="bg-[#590907] hover:bg-[#430605] text-white px-6 py-2.5 font-bold uppercase tracking-wider text-xs shadow-md transition-all disabled:opacity-60"
                   >
                     {saving ? 'Saving...' : 'Save Trust Badges'}
                   </button>

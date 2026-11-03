@@ -56,28 +56,28 @@ const Coupons = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">Coupons & Rewards</h2>
-        <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Your exclusive offers and loyalty points</p>
+        <h2 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-2">Coupons & Rewards</h2>
+        <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Your exclusive offers and loyalty points</p>
       </div>
 
       {/* Loyalty Points Section */}
-      <div className="bg-vy-accent/5 border border-vy-accent p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-        <div className="absolute top-1/2 -translate-y-1/2 right-10 text-vy-accent/10 pointer-events-none">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-sm">
+        <div className="absolute top-1/2 -translate-y-1/2 right-10 text-[#590907]/10 pointer-events-none">
           <Award size={160} />
         </div>
         <div className="relative z-10 text-center md:text-left">
-          <h3 className="text-vy-accent text-[10px] tracking-widest uppercase font-bold mb-2">VYBERA Rewards</h3>
-          <p className="text-vy-white text-lg">You currently have</p>
+          <h3 className="text-[#590907] text-[10px] tracking-widest uppercase font-bold mb-2">VYBERA Rewards</h3>
+          <p className="text-[#30231F] text-lg font-medium">You currently have</p>
           <div className="flex items-baseline justify-center md:justify-start gap-2 mt-1">
-            <span className="font-display font-bold text-5xl text-vy-white">{points}</span>
-            <span className="text-vy-grey text-sm tracking-widest uppercase">Points</span>
+            <span className="font-display font-black text-5xl text-[#590907]">{points}</span>
+            <span className="text-[#75665C] text-sm tracking-widest uppercase font-bold">Points</span>
           </div>
-          <p className="text-vy-grey text-xs mt-3">1 Point = ₹1 Discount on your next order.</p>
+          <p className="text-[#75665C] text-xs mt-3 font-medium">1 Point = ₹1 Discount on your next order.</p>
         </div>
         <div className="relative z-10 w-full md:w-auto text-center">
-          <p className="text-vy-grey text-[10px] uppercase tracking-widest mb-3">Redeem at checkout</p>
+          <p className="text-[#75665C] text-[10px] uppercase tracking-widest mb-3 font-semibold">Redeem at checkout</p>
           <button 
-            className="w-full md:w-auto px-8 py-3 bg-vy-accent text-vy-black text-xs font-bold uppercase tracking-widest hover:bg-vy-white transition-colors"
+            className="w-full md:w-auto px-8 py-3 btn-primary text-xs font-bold uppercase tracking-widest"
             onClick={() => window.location.href = '/shop'}
           >
             Shop Now
@@ -85,61 +85,63 @@ const Coupons = () => {
         </div>
       </div>
 
-      <h3 className="text-vy-white text-sm tracking-widest uppercase font-bold pt-4 border-b border-vy-border pb-4">
+      <h3 className="text-[#30231F] text-sm tracking-widest uppercase font-bold pt-4 border-b border-[#D4BEA5] pb-4">
         Active Coupons
       </h3>
 
       {coupons.length === 0 ? (
-        <div className="bg-vy-card border border-vy-border p-12 text-center flex flex-col items-center">
-          <Ticket size={48} className="text-vy-border mb-4" />
-          <p className="text-vy-white text-lg font-bold mb-2">No active coupons</p>
-          <p className="text-vy-grey text-xs">Check back later for exclusive drops and offers.</p>
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-12 text-center flex flex-col items-center shadow-sm">
+          <div className="w-16 h-16 rounded-full bg-[#E8D2B5]/40 flex items-center justify-center mb-4">
+            <Ticket size={32} className="text-[#590907]" />
+          </div>
+          <p className="text-[#30231F] text-lg font-bold mb-2">No active coupons</p>
+          <p className="text-[#75665C] text-xs">Check back later for exclusive drops and offers.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {coupons.map((coupon) => (
-            <div key={coupon.id} className="bg-vy-card border border-vy-border flex flex-col">
-              <div className="p-6 border-b border-vy-border border-dashed flex-1">
+            <div key={coupon.id} className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-xl flex flex-col overflow-hidden shadow-sm">
+              <div className="p-6 border-b border-[#D4BEA5] border-dashed flex-1">
                 <div className="flex justify-between items-start mb-4">
-                  <div className="bg-vy-white text-vy-black px-3 py-1 text-[10px] font-bold tracking-widest uppercase">
+                  <div className="bg-[#590907] text-white px-3 py-1 rounded text-[10px] font-bold tracking-widest uppercase">
                     {coupon.type === 'percentage' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`}
                   </div>
                   {coupon.expiry && (
-                    <span className="text-vy-grey text-[10px] tracking-widest uppercase">
+                    <span className="text-[#75665C] text-[10px] tracking-widest uppercase font-semibold">
                       Valid till {new Date(coupon.expiry).toLocaleDateString()}
                     </span>
                   )}
                 </div>
                 
-                <h4 className="text-vy-white font-bold text-lg mb-2 tracking-wide">{coupon.description || 'Exclusive VYBERA Discount'}</h4>
+                <h4 className="text-[#30231F] font-bold text-lg mb-2 tracking-wide">{coupon.description || 'Exclusive VYBERA Discount'}</h4>
                 
                 <ul className="space-y-1 mt-4">
                   {coupon.minOrder && (
-                    <li className="text-vy-grey text-xs flex items-center gap-2">
-                      <span className="w-1 h-1 bg-vy-grey rounded-full" /> 
+                    <li className="text-[#75665C] text-xs flex items-center gap-2 font-medium">
+                      <span className="w-1.5 h-1.5 bg-[#590907] rounded-full" /> 
                       Minimum order value: ₹{coupon.minOrder.toLocaleString()}
                     </li>
                   )}
                   {coupon.type === 'percentage' && coupon.maxDiscount && (
-                    <li className="text-vy-grey text-xs flex items-center gap-2">
-                      <span className="w-1 h-1 bg-vy-grey rounded-full" /> 
+                    <li className="text-[#75665C] text-xs flex items-center gap-2 font-medium">
+                      <span className="w-1.5 h-1.5 bg-[#590907] rounded-full" /> 
                       Maximum discount: ₹{coupon.maxDiscount.toLocaleString()}
                     </li>
                   )}
                 </ul>
               </div>
               
-              <div className="p-4 bg-vy-black/40 flex items-center justify-between">
+              <div className="p-4 bg-[#F3E7D8]/60 flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-vy-grey tracking-widest uppercase mb-1">Coupon Code</span>
-                  <span className="font-mono text-vy-white font-bold tracking-widest text-lg">{coupon.code}</span>
+                  <span className="text-[10px] text-[#75665C] tracking-widest uppercase mb-1 font-bold">Coupon Code</span>
+                  <span className="font-mono text-[#590907] font-black tracking-widest text-lg">{coupon.code}</span>
                 </div>
                 <button 
                   onClick={() => copyToClipboard(coupon.code)}
-                  className="w-10 h-10 border border-vy-border flex items-center justify-center text-vy-grey hover:text-vy-white hover:border-vy-white transition-all bg-vy-card"
+                  className="w-10 h-10 border border-[#D4BEA5] rounded-lg flex items-center justify-center text-[#75665C] hover:text-[#590907] hover:border-[#590907] bg-white transition-all shadow-sm"
                   title="Copy code"
                 >
-                  {copiedCode === coupon.code ? <CheckCircle size={16} className="text-green-400" /> : <Copy size={16} />}
+                  {copiedCode === coupon.code ? <CheckCircle size={16} className="text-emerald-600" /> : <Copy size={16} />}
                 </button>
               </div>
             </div>

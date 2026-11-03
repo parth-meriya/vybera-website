@@ -406,7 +406,7 @@ const Home = () => {
               <span className="text-[#590907]">COLLECTION.</span>
             </h2>
 
-            <p className="text-xs sm:text-sm text-[#7A6E69] leading-relaxed uppercase tracking-wider font-medium">
+            <p className="text-xs sm:text-sm text-[#75665C] leading-relaxed uppercase tracking-wider font-medium">
               We started VYBERA with one obsession: creating the ultimate oversized T-shirt.
               Engineered with 240+ GSM heavyweight combed cotton, dropped shoulders, and a clean
               boxy drape that stays structured wash after wash.
@@ -415,11 +415,11 @@ const Home = () => {
             <div className="grid grid-cols-2 gap-4 pt-2 pb-4 text-xs">
               <div className="p-3.5 bg-[#FAF5ED] border border-[#E5DACD]">
                 <p className="font-bold uppercase text-[#30231F] text-sm">240+ GSM</p>
-                <p className="text-[10px] text-[#7A6E69] uppercase mt-0.5">Heavyweight Combed Cotton</p>
+                <p className="text-[10px] text-[#75665C] uppercase mt-0.5 font-semibold">Heavyweight Combed Cotton</p>
               </div>
               <div className="p-3.5 bg-[#FAF5ED] border border-[#E5DACD]">
                 <p className="font-bold uppercase text-[#30231F] text-sm">BOXY FIT</p>
-                <p className="text-[10px] text-[#7A6E69] uppercase mt-0.5">Engineered Drop Shoulder</p>
+                <p className="text-[10px] text-[#75665C] uppercase mt-0.5 font-semibold">Engineered Drop Shoulder</p>
               </div>
             </div>
 
@@ -442,7 +442,7 @@ const Home = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-4 border-b border-[#E5DACD]">
             <div>
-              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#A5A79B] mb-1">
+              <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#75665C] mb-1">
                 COMMUNITY FAVORITES
               </p>
               <h2 className="font-display font-black text-3xl md:text-5xl tracking-tight uppercase text-[#30231F]">
@@ -473,7 +473,7 @@ const Home = () => {
       {/* ══════════════════════════════════════════════════════════════
           SECTION 5 — CUSTOMIZE YOUR OWN (PRIMARY USP)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="py-20 md:py-28 bg-[#1E1614] text-[#FAF5ED] relative overflow-hidden">
+      <section className="py-20 md:py-28 bg-[#241916] text-[#FAF5ED] relative overflow-hidden surface-dark">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           {/* Headline & USP Intro */}
           <div className="text-center max-w-2xl mx-auto mb-14 space-y-4">
@@ -485,7 +485,7 @@ const Home = () => {
               <br />
               <span className="text-[#E8D2B5]">YOUR VIBE.</span>
             </h2>
-            <p className="text-xs sm:text-sm text-[#A5A79B] uppercase tracking-[0.2em] leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#D4BEA5] uppercase tracking-[0.2em] leading-relaxed">
               Upload your artwork or customize fits with high-definition DTF printing, embroidery,
               and streetwear heavyweight blanks.
             </p>
@@ -507,14 +507,14 @@ const Home = () => {
                 <h3 className="font-display font-bold text-xl uppercase tracking-wider text-[#FAF5ED] mb-3">
                   CUSTOMIZE OVERSIZED
                 </h3>
-                <p className="text-xs text-[#A5A79B] leading-relaxed mb-6">
+                <p className="text-xs text-[#D4BEA5] leading-relaxed mb-6">
                   240+ GSM French terry / combed cotton with drop-shoulder streetwear fit. Front,
                   back, or chest print.
                 </p>
               </div>
               <Link
                 to="/customize?fit=Oversize"
-                className="w-full py-3 text-center text-xs font-bold tracking-[0.2em] uppercase bg-[#FAF5ED] text-[#1E1614] hover:bg-[#E8D2B5] transition-colors"
+                className="w-full py-3 text-center text-xs font-bold tracking-[0.2em] uppercase bg-[#FAF5ED] text-[#30231F] hover:bg-[#E8D2B5] transition-colors"
               >
                 Design Oversized &rarr;
               </Link>
@@ -527,21 +527,21 @@ const Home = () => {
                   <span className="p-3 bg-white/10 text-[#E8D2B5]">
                     <Shirt size={28} />
                   </span>
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#A5A79B] bg-white/5 px-2.5 py-1">
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-[#D4BEA5] bg-white/5 px-2.5 py-1">
                     CLASSIC FIT
                   </span>
                 </div>
                 <h3 className="font-display font-bold text-xl uppercase tracking-wider text-[#FAF5ED] mb-3">
                   CUSTOMIZE REGULAR
                 </h3>
-                <p className="text-xs text-[#A5A79B] leading-relaxed mb-6">
+                <p className="text-xs text-[#D4BEA5] leading-relaxed mb-6">
                   180+ GSM 100% bio-washed cotton in timeless standard comfort silhouette. Ideal for
                   daily casual wear.
                 </p>
               </div>
               <Link
                 to="/customize?fit=Regular"
-                className="w-full py-3 text-center text-xs font-bold tracking-[0.2em] uppercase bg-white/10 text-[#FAF5ED] hover:bg-[#FAF5ED] hover:text-[#1E1614] transition-colors"
+                className="w-full py-3 text-center text-xs font-bold tracking-[0.2em] uppercase bg-white/10 text-[#FAF5ED] hover:bg-[#FAF5ED] hover:text-[#30231F] transition-colors"
               >
                 Design Regular &rarr;
               </Link>
@@ -796,7 +796,7 @@ const Home = () => {
             of vibes."
           </h2>
 
-          <p className="text-xs sm:text-sm text-[#7A6E69] leading-relaxed max-w-xl mx-auto uppercase tracking-wider font-medium">
+          <p className="text-xs sm:text-sm text-[#75665C] leading-relaxed max-w-xl mx-auto uppercase tracking-wider font-medium">
             Born from underground fashion culture, VYBERA crafts heavyweight oversized silhouettes
             with uncompromising quality. Every piece is an invitation to stand out and define your
             own frequency.
@@ -807,22 +807,22 @@ const Home = () => {
             <div className="p-4 bg-[#FAF5ED] border border-[#E5DACD]">
               <span className="text-xs font-bold text-[#590907]">01</span>
               <p className="font-bold text-xs uppercase text-[#30231F] mt-1">240+ GSM Cotton</p>
-              <p className="text-[10px] text-[#7A6E69] mt-0.5">Heavyweight durability</p>
+              <p className="text-[10px] text-[#75665C] mt-0.5 font-semibold">Heavyweight durability</p>
             </div>
             <div className="p-4 bg-[#FAF5ED] border border-[#E5DACD]">
               <span className="text-xs font-bold text-[#590907]">02</span>
               <p className="font-bold text-xs uppercase text-[#30231F] mt-1">Boxy Silhouette</p>
-              <p className="text-[10px] text-[#7A6E69] mt-0.5">Engineered drop shoulder</p>
+              <p className="text-[10px] text-[#75665C] mt-0.5 font-semibold">Engineered drop shoulder</p>
             </div>
             <div className="p-4 bg-[#FAF5ED] border border-[#E5DACD]">
               <span className="text-xs font-bold text-[#590907]">03</span>
               <p className="font-bold text-xs uppercase text-[#30231F] mt-1">Bespoke Studio</p>
-              <p className="text-[10px] text-[#7A6E69] mt-0.5">High-definition printing</p>
+              <p className="text-[10px] text-[#75665C] mt-0.5 font-semibold">High-definition printing</p>
             </div>
             <div className="p-4 bg-[#FAF5ED] border border-[#E5DACD]">
               <span className="text-xs font-bold text-[#590907]">04</span>
               <p className="font-bold text-xs uppercase text-[#30231F] mt-1">Made in India</p>
-              <p className="text-[10px] text-[#7A6E69] mt-0.5">Crafted with precision</p>
+              <p className="text-[10px] text-[#75665C] mt-0.5 font-semibold">Crafted with precision</p>
             </div>
           </div>
         </div>

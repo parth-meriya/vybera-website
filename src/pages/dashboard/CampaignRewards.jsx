@@ -238,15 +238,15 @@ const CampaignRewards = () => {
   if (rewards.length === 0 && freeTees.length === 0) {
     return (
       <div>
-        <h2 className="text-vy-white font-display font-bold text-2xl tracking-widest uppercase mb-8">
+        <h2 className="text-[#30231F] font-display font-bold text-2xl tracking-widest uppercase mb-8">
           My Coupons
         </h2>
-        <div className="bg-vy-card border border-vy-border p-12 text-center rounded-sm">
-          <Ticket size={48} className="text-vy-border mx-auto mb-4" />
-          <p className="text-vy-white font-semibold tracking-wider text-lg">
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-12 text-center rounded-2xl shadow-sm">
+          <Ticket size={48} className="text-[#D4BEA5] mx-auto mb-4" />
+          <p className="text-[#30231F] font-bold tracking-wider text-lg">
             No rewards yet
           </p>
-          <p className="text-vy-grey text-sm mt-2 max-w-sm mx-auto">
+          <p className="text-[#75665C] text-sm mt-2 max-w-sm mx-auto font-medium">
             Find our secret QR codes in the real world to spin the wheel and win
             exclusive discounts.
           </p>
@@ -258,7 +258,7 @@ const CampaignRewards = () => {
   // ── render ────────────────────────────────────────────────────────
   return (
     <div>
-      <h2 className="text-vy-white font-display font-bold text-2xl tracking-widest uppercase mb-8">
+      <h2 className="text-[#30231F] font-display font-bold text-2xl tracking-widest uppercase mb-8">
         My Coupons
       </h2>
 
@@ -271,16 +271,16 @@ const CampaignRewards = () => {
             exit={{ opacity: 0, height: 0 }}
             className="mb-6"
           >
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-sm px-5 py-3 flex items-start gap-3">
+            <div className="bg-amber-50 border border-amber-300 rounded-xl px-5 py-3 flex items-start gap-3 shadow-sm">
               <AlertTriangle
                 size={18}
-                className="text-amber-400 mt-0.5 shrink-0"
+                className="text-amber-700 mt-0.5 shrink-0"
               />
               <div>
-                <p className="text-amber-300 text-sm font-semibold tracking-wider uppercase">
+                <p className="text-amber-900 text-sm font-bold tracking-wider uppercase">
                   Coupon expiring soon!
                 </p>
-                <p className="text-amber-200/70 text-xs mt-1">
+                <p className="text-amber-800 text-xs mt-1 font-medium">
                   {expiringSoon.length === 1
                     ? `Code "${expiringSoon[0].code}" expires within 24 hours. Use it before it's gone!`
                     : `${expiringSoon.length} coupons expire within 24 hours. Use them before they're gone!`}
@@ -295,7 +295,7 @@ const CampaignRewards = () => {
         {/* ── FREE TEES Section ──────────────────────────────────── */}
         {freeTees.length > 0 && (
           <div>
-            <h3 className="text-vy-gold text-xs font-semibold tracking-widest uppercase mb-4 border-b border-vy-border pb-2 flex items-center gap-2">
+            <h3 className="text-[#590907] text-xs font-bold tracking-widest uppercase mb-4 border-b border-[#D4BEA5] pb-2 flex items-center gap-2">
               <Gift size={14} />
               Physical Rewards (Free Tees)
             </h3>
@@ -309,29 +309,29 @@ const CampaignRewards = () => {
                 <motion.div
                   variants={card}
                   key={tee.id}
-                  className="bg-vy-card border border-vy-gold/30 p-5 rounded-sm flex items-start gap-4"
+                  className="bg-[#FAF5ED] border border-[#D4BEA5] p-5 rounded-xl flex items-start gap-4 shadow-sm"
                 >
-                  <div className="bg-vy-gold/10 p-3 rounded-full text-vy-gold shrink-0">
+                  <div className="bg-[#590907]/10 p-3 rounded-full text-[#590907] shrink-0">
                     <Gift size={24} />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-vy-white font-semibold text-sm tracking-wider uppercase">
+                    <h4 className="text-[#30231F] font-bold text-sm tracking-wider uppercase">
                       Free Exclusive Tee
                     </h4>
-                    <p className="text-vy-grey text-xs mt-1">
+                    <p className="text-[#75665C] text-xs mt-1 font-medium">
                       Campaign: {tee.campaignId}
                     </p>
 
                     <div className="mt-4 flex items-center gap-2">
                       <span
-                        className={`text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded-sm border ${
+                        className={`text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded border ${
                           tee.status === 'pending'
-                            ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                            ? 'bg-amber-50 text-amber-800 border-amber-300'
                             : tee.status === 'approved'
-                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            ? 'bg-blue-50 text-blue-800 border-blue-300'
                             : tee.status === 'shipped'
-                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                            : 'bg-red-500/10 text-red-400 border-red-500/20'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : 'bg-rose-50 text-rose-800 border-rose-300'
                         }`}
                       >
                         Status: {tee.status}
@@ -339,7 +339,7 @@ const CampaignRewards = () => {
                     </div>
 
                     {tee.status === 'pending' && (
-                      <p className="text-vy-grey text-[10px] mt-3 tracking-wide">
+                      <p className="text-[#75665C] text-[10px] mt-3 tracking-wide font-medium">
                         Our team will contact you soon on your registered mobile
                         number.
                       </p>
@@ -355,28 +355,28 @@ const CampaignRewards = () => {
         {rewards.length > 0 && (
           <div>
             {/* Tab bar */}
-            <div className="flex items-center gap-1 mb-6 border-b border-vy-border overflow-x-auto scrollbar-none">
-              <Filter size={14} className="text-vy-grey mr-2 shrink-0" />
+            <div className="flex items-center gap-1 mb-6 border-b border-[#D4BEA5] overflow-x-auto scrollbar-none">
+              <Filter size={14} className="text-[#75665C] mr-2 shrink-0" />
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`relative px-4 py-2.5 text-[11px] font-semibold tracking-widest uppercase whitespace-nowrap transition-colors ${
+                  className={`relative px-4 py-2.5 text-[11px] font-bold tracking-widest uppercase whitespace-nowrap transition-colors ${
                     activeTab === tab.key
-                      ? 'text-vy-gold'
-                      : 'text-vy-grey hover:text-vy-white'
+                      ? 'text-[#590907]'
+                      : 'text-[#75665C] hover:text-[#30231F]'
                   }`}
                 >
                   {tab.label}
                   {tabCounts[tab.key] > 0 && (
-                    <span className="ml-1.5 text-[9px] opacity-60">
+                    <span className="ml-1.5 text-[9px] opacity-75 font-semibold">
                       ({tabCounts[tab.key]})
                     </span>
                   )}
                   {activeTab === tab.key && (
                     <motion.div
                       layoutId="couponTab"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-vy-gold"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#590907]"
                     />
                   )}
                 </button>
@@ -394,12 +394,12 @@ const CampaignRewards = () => {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
               >
                 {filtered.length === 0 ? (
-                  <div className="col-span-full bg-vy-card border border-vy-border p-10 text-center rounded-sm">
+                  <div className="col-span-full bg-[#FAF5ED] border border-[#D4BEA5] p-10 text-center rounded-xl shadow-sm">
                     <Ticket
                       size={32}
-                      className="text-vy-border mx-auto mb-3"
+                      className="text-[#D4BEA5] mx-auto mb-3"
                     />
-                    <p className="text-vy-grey text-sm tracking-wider">
+                    <p className="text-[#75665C] text-sm tracking-wider font-medium">
                       No {activeTab} coupons
                     </p>
                   </div>
@@ -417,17 +417,17 @@ const CampaignRewards = () => {
                       <motion.div
                         variants={card}
                         key={reward.id}
-                        className={`bg-vy-black border rounded-sm relative overflow-hidden ${
+                        className={`bg-[#FAF5ED] border rounded-xl relative overflow-hidden shadow-sm ${
                           isActive
-                            ? 'border-vy-border hover:border-vy-gold/40'
-                            : 'border-vy-border/50 opacity-60'
+                            ? 'border-[#D4BEA5] hover:border-[#590907]'
+                            : 'border-[#D4BEA5]/60 opacity-60'
                         } transition-colors`}
                       >
                         {/* Expiring-soon ribbon */}
                         {isExpiringSoon && (
-                          <div className="bg-amber-500/15 px-4 py-1.5 flex items-center gap-1.5 border-b border-amber-500/20">
-                            <Clock size={10} className="text-amber-400" />
-                            <span className="text-amber-300 text-[9px] font-bold tracking-widest uppercase">
+                          <div className="bg-amber-100 px-4 py-1.5 flex items-center gap-1.5 border-b border-amber-300">
+                            <Clock size={10} className="text-amber-800" />
+                            <span className="text-amber-900 text-[9px] font-bold tracking-widest uppercase">
                               Expires soon
                             </span>
                           </div>
@@ -436,10 +436,10 @@ const CampaignRewards = () => {
                         <div className="p-5">
                           {/* Code + copy */}
                           <div className="flex items-center justify-between mb-4">
-                            <div className="bg-vy-border/20 px-3 py-1.5 text-vy-white text-xs font-bold tracking-widest uppercase rounded-sm inline-flex items-center gap-1.5 min-w-0">
+                            <div className="bg-[#F3E7D8] border border-[#D4BEA5] px-3 py-1.5 text-[#590907] text-xs font-mono font-bold tracking-widest uppercase rounded-lg inline-flex items-center gap-1.5 min-w-0">
                               <Ticket
                                 size={12}
-                                className="text-vy-gold shrink-0"
+                                className="text-[#590907] shrink-0"
                               />
                               <span className="truncate">{reward.code}</span>
                             </div>
@@ -447,11 +447,11 @@ const CampaignRewards = () => {
                               onClick={() =>
                                 handleCopy(reward.code, reward.id)
                               }
-                              className="ml-2 p-1.5 rounded-sm hover:bg-vy-border/20 text-vy-grey hover:text-vy-white transition-colors shrink-0"
+                              className="ml-2 p-1.5 rounded-lg border border-[#D4BEA5] bg-white hover:bg-[#F3E7D8]/40 text-[#75665C] hover:text-[#590907] transition-colors shrink-0 shadow-sm"
                               title="Copy code"
                             >
                               {copiedId === reward.id ? (
-                                <Check size={14} className="text-green-400" />
+                                <Check size={14} className="text-emerald-700" />
                               ) : (
                                 <Copy size={14} />
                               )}
@@ -460,10 +460,10 @@ const CampaignRewards = () => {
 
                           {/* Discount value */}
                           <p
-                            className={`font-display font-bold text-xl tracking-wider ${
+                            className={`font-display font-black text-xl tracking-wider ${
                               isUsed
-                                ? 'text-vy-grey line-through'
-                                : 'text-vy-gold'
+                                ? 'text-[#75665C] line-through'
+                                : 'text-[#590907]'
                             }`}
                           >
                             {reward.type === 'percentage'
@@ -472,25 +472,25 @@ const CampaignRewards = () => {
                           </p>
 
                           {/* Campaign name */}
-                          <p className="text-vy-grey text-[10px] uppercase tracking-widest mt-1">
+                          <p className="text-[#75665C] text-[10px] uppercase tracking-widest mt-1 font-semibold">
                             {reward.campaignId}
                           </p>
 
                           {/* Dates */}
                           <div className="mt-4 space-y-1">
-                            <p className="text-vy-grey text-[11px] tracking-wide">
+                            <p className="text-[#75665C] text-[11px] tracking-wide font-medium">
                               Won:{' '}
-                              <span className="text-vy-white">
+                              <span className="text-[#30231F] font-bold">
                                 {fmt(reward.createdAt)}
                               </span>
                             </p>
-                            <p className="text-vy-grey text-[11px] tracking-wide">
+                            <p className="text-[#75665C] text-[11px] tracking-wide font-medium">
                               Expires:{' '}
                               <span
                                 className={
                                   isExpiringSoon
-                                    ? 'text-amber-400'
-                                    : 'text-vy-white'
+                                    ? 'text-amber-800 font-bold'
+                                    : 'text-[#30231F] font-bold'
                                 }
                               >
                                 {fmt(reward.expiry)}
@@ -499,15 +499,15 @@ const CampaignRewards = () => {
                           </div>
 
                           {/* Footer: Status + action */}
-                          <div className="flex items-center justify-between pt-4 mt-4 border-t border-vy-border/50">
+                          <div className="flex items-center justify-between pt-4 mt-4 border-t border-[#D4BEA5]">
                             {/* Status badge */}
                             <span
-                              className={`text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-sm border ${
+                              className={`text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded border ${
                                 isActive
-                                  ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                                   : isUsed
-                                  ? 'bg-vy-border/10 text-vy-grey border-vy-border/30 line-through'
-                                  : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                  ? 'bg-slate-100 text-slate-600 border-slate-300 line-through'
+                                  : 'bg-rose-50 text-rose-800 border-rose-300'
                               }`}
                             >
                               {isActive
@@ -522,7 +522,7 @@ const CampaignRewards = () => {
                               <button
                                 onClick={() => handleApply(reward)}
                                 disabled={applyingId === reward.id}
-                                className="flex items-center gap-1.5 bg-vy-gold/10 hover:bg-vy-gold/20 text-vy-gold text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-sm transition-colors disabled:opacity-50"
+                                className="flex items-center gap-1.5 btn-primary text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                               >
                                 {applyingId === reward.id ? (
                                   <RefreshCw

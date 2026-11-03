@@ -72,13 +72,13 @@ const compressionOptions = {
 
 // ── Sub-components ──────────────────────────────────────
 const StepLabel = ({ n, label, active, done }) => (
-  <div className={`flex items-center gap-2 ${done ? 'text-vy-white' : active ? 'text-vy-white' : 'text-vy-border'}`}>
+  <div className={`flex items-center gap-2 ${done ? 'text-[#FAF5ED]' : active ? 'text-[#FAF5ED]' : 'text-[#D4BEA5]/60'}`}>
     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-all duration-300 ${
-      done ? 'bg-vy-white border-vy-white text-vy-black' :
-      active ? 'border-vy-white text-vy-white' :
-      'border-vy-border text-vy-border'
+      done ? 'bg-[#590907] border-[#590907] text-[#FAF5ED]' :
+      active ? 'border-[#FAF5ED] text-[#FAF5ED] bg-[#590907]/20' :
+      'border-[#D4BEA5]/30 text-[#D4BEA5]/60'
     }`}>{done ? '✓' : n}</div>
-    <span className="text-xs tracking-widest uppercase hidden md:block">{label}</span>
+    <span className="text-xs tracking-widest uppercase font-bold hidden md:block">{label}</span>
   </div>
 );
 
@@ -489,7 +489,7 @@ const Customize = () => {
 
   // ── Render ─────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-vy-black pt-24">
+    <div className="min-h-screen bg-[#241916] surface-dark text-[#FAF5ED] pt-24">
       <SEO
         title="Customize Your T-Shirt"
         description="Design your own custom premium oversized tee. Upload your artwork, choose your print placement, and we'll bring it to life."
@@ -506,11 +506,11 @@ const Customize = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
         >
-          <p className="text-vy-grey text-xs tracking-widest uppercase mb-2">Studio</p>
-          <h1 className="font-display font-bold text-4xl md:text-5xl tracking-wider text-vy-white mb-4">
+          <p className="text-[#D4BEA5] text-xs tracking-widest uppercase font-bold mb-2">Studio</p>
+          <h1 className="font-display font-bold text-4xl md:text-5xl tracking-wider text-[#FAF5ED] mb-4">
             Customize
           </h1>
-          <p className="text-vy-grey text-sm max-w-lg leading-relaxed">
+          <p className="text-[#D4BEA5] text-sm max-w-lg leading-relaxed">
             Upload your design, choose your options, and we'll print and deliver a premium oversized tee — built exactly to your spec.
           </p>
         </motion.div>
@@ -518,9 +518,9 @@ const Customize = () => {
         {/* Step indicator */}
         <div className="flex items-center gap-4 mb-10 overflow-x-auto pb-2 scrollbar-hide">
           <StepLabel n={1} label="Fit" active={step === 1} done={step > 1} />
-          <div className={`flex-1 min-w-4 h-px transition-colors duration-500 ${step > 1 ? 'bg-vy-white' : 'bg-vy-border'}`} />
+          <div className={`flex-1 min-w-4 h-px transition-colors duration-500 ${step > 1 ? 'bg-[#590907]' : 'bg-[#D4BEA5]/30'}`} />
           <StepLabel n={2} label="Design" active={step === 2} done={step > 2} />
-          <div className={`flex-1 min-w-4 h-px transition-colors duration-500 ${step > 2 ? 'bg-vy-white' : 'bg-vy-border'}`} />
+          <div className={`flex-1 min-w-4 h-px transition-colors duration-500 ${step > 2 ? 'bg-[#590907]' : 'bg-[#D4BEA5]/30'}`} />
           <StepLabel n={3} label="Review" active={step === 3} done={addingToCart} />
         </div>
 

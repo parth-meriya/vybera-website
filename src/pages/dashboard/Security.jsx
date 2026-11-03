@@ -84,24 +84,24 @@ const Security = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-3xl">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">Security</h2>
-        <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Manage your account security</p>
+        <h2 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-2">Security</h2>
+        <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Manage your account security</p>
       </div>
 
       {/* Email Verification */}
-      <div className="bg-vy-card border border-vy-border p-6 md:p-8 flex flex-col md:flex-row justify-between md:items-center gap-6">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between md:items-center gap-6 shadow-sm">
         <div className="flex items-start gap-4">
           <div className="mt-1">
-            {isEmailVerified ? <ShieldCheck size={24} className="text-green-400" /> : <ShieldAlert size={24} className="text-yellow-400" />}
+            {isEmailVerified ? <ShieldCheck size={24} className="text-emerald-700" /> : <ShieldAlert size={24} className="text-amber-600" />}
           </div>
           <div>
-            <h3 className="text-vy-white text-sm font-bold tracking-widest uppercase mb-1">Email Verification</h3>
-            <p className="text-vy-grey text-xs mb-2">
-              Status: <span className={isEmailVerified ? "text-green-400" : "text-yellow-400"}>
+            <h3 className="text-[#30231F] text-sm font-bold tracking-widest uppercase mb-1">Email Verification</h3>
+            <p className="text-[#75665C] text-xs mb-2">
+              Status: <span className={isEmailVerified ? "text-emerald-700 font-bold" : "text-amber-700 font-bold"}>
                 {isEmailVerified ? "Verified" : "Unverified"}
               </span>
             </p>
-            <p className="text-vy-light text-xs">
+            <p className="text-[#75665C] text-xs font-medium">
               {isEmailVerified 
                 ? "Your email address has been verified successfully." 
                 : "Please verify your email address to secure your account."}
@@ -112,7 +112,7 @@ const Security = () => {
           <button 
             onClick={handleResendVerification}
             disabled={resending}
-            className="btn-outline text-xs py-2 px-6 uppercase tracking-widest whitespace-nowrap"
+            className="border border-[#D4BEA5] bg-white text-[#30231F] hover:bg-[#F3E7D8]/40 rounded-lg text-xs py-2 px-6 uppercase tracking-widest font-semibold whitespace-nowrap shadow-sm"
           >
             {resending ? 'Sending...' : 'Resend Email'}
           </button>
@@ -120,9 +120,9 @@ const Security = () => {
       </div>
 
       {/* Linked Accounts */}
-      <div className="bg-vy-card border border-vy-border p-6 md:p-8 flex flex-col md:flex-row justify-between md:items-center gap-6">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row justify-between md:items-center gap-6 shadow-sm">
         <div className="flex items-start gap-4">
-          <div className="mt-1 bg-vy-white rounded-full p-1.5 flex items-center justify-center h-8 w-8">
+          <div className="mt-1 bg-white border border-[#D4BEA5] rounded-full p-1.5 flex items-center justify-center h-8 w-8 shadow-sm">
             <svg viewBox="0 0 24 24" className="w-5 h-5">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -131,13 +131,13 @@ const Security = () => {
             </svg>
           </div>
           <div>
-            <h3 className="text-vy-white text-sm font-bold tracking-widest uppercase mb-1">Google Account</h3>
-            <p className="text-vy-grey text-xs mb-2">
-              Status: <span className={isGoogleLinked ? "text-green-400" : "text-vy-border"}>
+            <h3 className="text-[#30231F] text-sm font-bold tracking-widest uppercase mb-1">Google Account</h3>
+            <p className="text-[#75665C] text-xs mb-2">
+              Status: <span className={isGoogleLinked ? "text-emerald-700 font-bold" : "text-[#75665C] font-semibold"}>
                 {isGoogleLinked ? "Linked" : "Not Linked"}
               </span>
             </p>
-            <p className="text-vy-light text-xs">
+            <p className="text-[#75665C] text-xs font-medium">
               {isGoogleLinked 
                 ? "You can sign in quickly using your Google account." 
                 : "Link your Google account for faster, secure sign-in."}
@@ -148,7 +148,7 @@ const Security = () => {
           <button 
             onClick={handleLinkGoogle}
             disabled={linking}
-            className="btn-outline text-xs py-2 px-6 uppercase tracking-widest whitespace-nowrap"
+            className="border border-[#D4BEA5] bg-white text-[#30231F] hover:bg-[#F3E7D8]/40 rounded-lg text-xs py-2 px-6 uppercase tracking-widest font-semibold whitespace-nowrap shadow-sm"
           >
             {linking ? 'Linking...' : 'Link Google'}
           </button>
@@ -156,15 +156,15 @@ const Security = () => {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-red-500/5 border border-red-500/20 p-6 md:p-8">
-        <h3 className="text-red-400 text-sm font-bold tracking-widest uppercase mb-4 flex items-center gap-2">
-          <AlertTriangle size={16} /> Danger Zone
+      <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 md:p-8 shadow-sm">
+        <h3 className="text-rose-900 text-sm font-bold tracking-widest uppercase mb-4 flex items-center gap-2">
+          <AlertTriangle size={16} className="text-rose-600" /> Danger Zone
         </h3>
         
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-6">
           <div>
-            <p className="text-vy-white text-sm font-bold mb-1">Delete Account</p>
-            <p className="text-vy-grey text-xs max-w-md leading-relaxed">
+            <p className="text-[#30231F] text-sm font-bold mb-1">Delete Account</p>
+            <p className="text-[#75665C] text-xs max-w-md leading-relaxed font-medium">
               Once you request account deletion, our admins will process it within 7 days. Your data, orders, and custom designs will be permanently removed.
             </p>
           </div>
@@ -172,10 +172,10 @@ const Security = () => {
           <button 
             onClick={requestAccountDeletion}
             disabled={deleteRequested}
-            className={`text-xs py-3 px-6 uppercase tracking-widest font-bold border transition-colors whitespace-nowrap ${
+            className={`text-xs py-2.5 px-6 uppercase tracking-widest font-bold rounded-lg border transition-colors whitespace-nowrap ${
               deleteRequested 
-                ? 'bg-red-500/20 border-red-500/30 text-red-300 cursor-not-allowed' 
-                : 'bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20'
+                ? 'bg-rose-100 border-rose-300 text-rose-500 cursor-not-allowed' 
+                : 'bg-white border-rose-300 text-rose-700 hover:bg-rose-100 shadow-sm'
             }`}
           >
             {deleteRequested ? 'Request Pending' : 'Request Deletion'}

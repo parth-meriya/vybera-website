@@ -248,36 +248,36 @@ const AdminMainBanner = () => {
   return (
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
-        <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-        <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">Main Banner Manager</h1>
+        <p className="text-[#75665C] text-xs tracking-widest uppercase font-bold mb-1">Admin</p>
+        <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">Main Banner Manager</h1>
       </div>
 
-      <div className="bg-vy-card border border-vy-border p-6 space-y-8">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 md:p-8 space-y-8 shadow-sm">
         {/* Basic Fields */}
         <div className="space-y-4">
           <div>
-            <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Headline</label>
+            <label className="text-[#75665C] text-xs font-bold uppercase tracking-widest block mb-2">Headline</label>
             <input 
               value={banner.headline} 
               onChange={e => setBanner(b => ({ ...b, headline: e.target.value }))}
-              className="vy-input" placeholder="e.g. SUMMER SALE" 
+              className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]" placeholder="e.g. SUMMER SALE" 
             />
           </div>
           <div>
-            <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Subtitle</label>
+            <label className="text-[#75665C] text-xs font-bold uppercase tracking-widest block mb-2">Subtitle</label>
             <input 
               value={banner.subtitle} 
               onChange={e => setBanner(b => ({ ...b, subtitle: e.target.value }))}
-              className="vy-input" placeholder="e.g. Up to 40% Off" 
+              className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]" placeholder="e.g. Up to 40% Off" 
             />
           </div>
         </div>
 
         {/* Image Upload / Crop / Quick Pick */}
         <div>
-          <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Banner Image *</label>
+          <label className="text-[#75665C] text-xs font-bold uppercase tracking-widest block mb-2">Banner Image *</label>
           {imagePreview ? (
-            <div className="relative aspect-[9/16] md:aspect-[16/9] max-w-lg bg-vy-black border border-vy-border overflow-hidden mb-3 group">
+            <div className="relative aspect-[9/16] md:aspect-[16/9] max-w-lg bg-white border border-[#D4BEA5] rounded-xl overflow-hidden mb-3 group shadow-sm">
               <img 
                 src={imagePreview} 
                 alt="Preview" 
@@ -292,14 +292,14 @@ const AdminMainBanner = () => {
                       setZoom(1);
                       setShowCrop(true);
                     }}
-                    className="w-8 h-8 bg-black/60 border border-white/10 flex items-center justify-center text-vy-accent hover:text-white transition-all"
+                    className="w-8 h-8 bg-black/60 rounded flex items-center justify-center text-white hover:bg-black transition-all"
                   >
                     <Crop size={14} />
                   </button>
                 <button
                   type="button"
                   onClick={() => { setImagePreview(''); setImageFile(null); setBanner(b => ({ ...b, imageUrl: '' })); }}
-                  className="w-8 h-8 bg-black/60 border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-all"
+                  className="w-8 h-8 bg-black/60 rounded flex items-center justify-center text-white/80 hover:text-white transition-all"
                 >
                   <X size={14} />
                 </button>
@@ -308,11 +308,11 @@ const AdminMainBanner = () => {
           ) : (
             <div
               onClick={() => fileRef.current?.click()}
-              className="aspect-[16/9] max-w-lg border-2 border-dashed border-vy-border flex flex-col items-center justify-center cursor-pointer hover:border-vy-accent/50 transition-all bg-vy-card group"
+              className="aspect-[16/9] max-w-lg border-2 border-dashed border-[#D4BEA5] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[#590907] transition-all bg-white group"
             >
-              <Upload size={28} className="text-vy-border mb-2 group-hover:text-vy-accent transition-colors" />
-              <p className="text-vy-grey text-xs tracking-wider">Click to upload & crop</p>
-              <p className="text-vy-border text-[10px] mt-1">Default crop ratio is 9:16 (Mobile)</p>
+              <Upload size={28} className="text-[#75665C] mb-2 group-hover:text-[#590907] transition-colors" />
+              <p className="text-[#30231F] text-xs font-semibold tracking-wider">Click to upload & crop</p>
+              <p className="text-[#75665C] text-[10px] mt-1">Default crop ratio is 9:16 (Mobile)</p>
             </div>
           )}
           
@@ -327,22 +327,22 @@ const AdminMainBanner = () => {
           {uploading && (
             <div className="mt-3 flex items-center gap-2">
               <div className="spinner w-3 h-3" />
-              <span className="text-vy-accent text-[10px] tracking-wider animate-pulse">{savingLabel}</span>
+              <span className="text-[#590907] text-[10px] tracking-wider animate-pulse font-bold">{savingLabel}</span>
             </div>
           )}
           {!uploading && !saving && savingLabel && (
-            <p className="text-green-400 text-[10px] mt-2 tracking-wider flex items-center gap-1">
+            <p className="text-emerald-700 text-[10px] mt-2 tracking-wider flex items-center gap-1 font-semibold">
               <ImageIcon size={10} /> {savingLabel}
             </p>
           )}
 
           {/* Quick Pick (Local) */}
-          <div className="mt-4 border border-vy-border/50 bg-vy-black/30 p-3 max-w-lg">
+          <div className="mt-4 border border-[#D4BEA5] bg-[#F3E7D8]/50 rounded-xl p-4 max-w-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Zap size={12} className="text-yellow-400" />
-              <span className="text-yellow-400 text-[10px] font-bold tracking-widest uppercase">Quick Pick (No Upload)</span>
+              <Zap size={14} className="text-amber-700" />
+              <span className="text-amber-900 text-[10px] font-bold tracking-widest uppercase">Quick Pick (No Upload)</span>
             </div>
-            <p className="text-vy-grey text-[10px] mb-3">Select from <code className="text-vy-accent">/public/mainbanner/</code>.</p>
+            <p className="text-[#75665C] text-[10px] mb-3">Select from <code className="text-[#590907] font-semibold">/public/mainbanner/</code>.</p>
             <div className="flex flex-wrap gap-2">
               {[
                 '/mainbanner/anniversary_banner.png',
@@ -353,8 +353,8 @@ const AdminMainBanner = () => {
                   key={path}
                   type="button"
                   onClick={() => pickLocalImage(path)}
-                  className={`relative h-20 w-14 border overflow-hidden transition-all hover:scale-105 ${
-                    imagePreview === path ? 'border-green-400 ring-1 ring-green-400/50' : 'border-vy-border hover:border-vy-accent/50'
+                  className={`relative h-20 w-14 border rounded-lg overflow-hidden transition-all hover:scale-105 shadow-sm ${
+                    imagePreview === path ? 'border-[#590907] ring-2 ring-[#590907]' : 'border-[#D4BEA5] hover:border-[#590907]'
                   }`}
                 >
                   <img
@@ -364,8 +364,8 @@ const AdminMainBanner = () => {
                     onError={(e) => { e.target.parentElement.style.display = 'none'; }}
                   />
                   {imagePreview === path && (
-                    <div className="absolute inset-0 bg-green-400/10 flex items-center justify-center">
-                      <span className="text-green-400 text-[8px] font-bold">✓</span>
+                    <div className="absolute inset-0 bg-[#590907]/20 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">✓</span>
                     </div>
                   )}
                 </button>
@@ -374,7 +374,7 @@ const AdminMainBanner = () => {
             <div className="mt-3 flex gap-2">
               <input
                 id="local-mainbanner-input"
-                className="vy-input text-xs flex-1"
+                className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-3 py-1.5 text-xs focus:outline-none"
                 placeholder="/mainbanner/your-image.png"
               />
               <button
@@ -386,90 +386,36 @@ const AdminMainBanner = () => {
                     document.getElementById('local-mainbanner-input').value = '';
                   }
                 }}
-                className="btn-outline px-3 py-1.5 text-[10px]"
+                className="btn-primary px-3 py-1.5 text-[10px]"
               >
                 Use
               </button>
             </div>
-            <p className="text-vy-border text-[9px] mt-2 flex items-center gap-1">
-              <FolderOpen size={9} /> Add images to <code>public/mainbanner/</code>
-            </p>
           </div>
         </div>
 
         {/* Expiry Date */}
         <div>
-          <label className="text-vy-grey text-[10px] uppercase tracking-widest block mb-2">Expiry Date (Sale End)</label>
+          <label className="text-[#75665C] text-xs font-bold uppercase tracking-widest block mb-2">Expiry Date (Sale End)</label>
           <input 
             type="date"
             value={banner.expiryDate} 
             onChange={e => setBanner(b => ({ ...b, expiryDate: e.target.value }))}
-            className="vy-input" 
+            className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#590907]" 
           />
-          <p className="text-vy-grey text-[9px] mt-2 italic">After this date, the home page will revert to the default branding.</p>
-        </div>
-
-        {/* Music Upload */}
-        <div className="pt-4 border-t border-vy-border">
-          <h3 className="text-vy-accent text-[10px] uppercase tracking-widest mb-4">Background Music (Campaign Only)</h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <label className="flex-1 cursor-pointer">
-                <div className="vy-input flex items-center justify-between group">
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <Music size={14} className="text-vy-grey" />
-                    <span className="text-[11px] text-vy-grey truncate">
-                      {uploadingMusic ? `Uploading ${musicProgress}%...` : (banner.musicUrl ? "Song Uploaded ✅" : "Select MP3 file...")}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-vy-accent uppercase tracking-widest font-bold group-hover:text-vy-white transition-colors">
-                    {uploadingMusic ? "Uploading..." : "Browse"}
-                  </span>
-                </div>
-                <input 
-                  type="file" 
-                  onChange={handleMusicUpload} 
-                  className="hidden" 
-                  accept="audio/mp3,audio/mpeg" 
-                  disabled={uploadingMusic}
-                />
-              </label>
-              {banner.musicUrl && (
-                <button 
-                  onClick={() => setBanner(b => ({ ...b, musicUrl: '', musicEnabled: false }))}
-                  className="p-3 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={banner.musicEnabled || false} 
-                onChange={e => setBanner(b => ({ ...b, musicEnabled: e.target.checked }))}
-                className="w-4 h-4 accent-vy-accent"
-                disabled={!banner.musicUrl}
-              />
-              <span className={`text-[10px] uppercase tracking-widest ${!banner.musicUrl ? 'text-vy-grey/40' : 'text-vy-white'}`}>
-                Enable Background Music
-              </span>
-            </label>
-            <p className="text-vy-grey text-[9px] italic">Note: Music starts after the first click on the site.</p>
-          </div>
+          <p className="text-[#75665C] text-xs mt-2 italic font-medium">After this date, the home page will revert to the default branding.</p>
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-between pt-4 border-t border-vy-border">
+        <div className="flex items-center justify-between pt-4 border-t border-[#D4BEA5]">
           <label className="flex items-center gap-2 cursor-pointer">
             <input 
               type="checkbox" 
               checked={banner.isActive} 
               onChange={e => setBanner(b => ({ ...b, isActive: e.target.checked }))}
-              className="w-4 h-4 accent-vy-accent"
+              className="w-4 h-4 accent-[#590907]"
             />
-            <span className="text-vy-white text-xs uppercase tracking-widest">Set as Active</span>
+            <span className="text-[#30231F] text-xs font-bold uppercase tracking-widest">Set as Active</span>
           </label>
           <div className="flex gap-2">
             <button
@@ -479,11 +425,11 @@ const AdminMainBanner = () => {
                 setImageFile(null);
                 toast.success('Cleared. Click Save to reset site.', { className: 'toast-vybera' });
               }}
-              className="px-4 py-2 border border-vy-border text-vy-grey text-[10px] uppercase tracking-widest hover:text-vy-white"
+              className="px-4 py-2 border border-[#D4BEA5] bg-white rounded-lg text-[#75665C] text-xs uppercase tracking-widest font-semibold hover:text-[#590907]"
             >
               Reset
             </button>
-            <button onClick={handleSave} disabled={saving || uploading} className="btn-primary flex gap-2 items-center">
+            <button onClick={handleSave} disabled={saving || uploading} className="btn-primary flex gap-2 items-center text-xs py-2 px-5 font-bold uppercase tracking-widest">
               {saving ? <Loader2 size={14} className="animate-spin" /> : null}
               {saving ? 'Saving...' : 'Save Banner'}
             </button>

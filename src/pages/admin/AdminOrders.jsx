@@ -7,13 +7,13 @@ import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
 const statusClass = {
-  pending: 'text-vy-grey bg-vy-grey/10 border border-vy-grey/30',
-  confirmed: 'text-vy-white bg-vy-white/10 border border-vy-white/30',
-  processing: 'text-yellow-400 bg-yellow-500/10 border border-yellow-500/30',
-  shipped: 'text-blue-400 bg-blue-500/10 border border-blue-500/30',
-  out_for_delivery: 'text-green-400 bg-green-500/10 border border-green-500/30',
-  delivered: 'text-green-400 bg-green-500/10 border border-green-500/30',
-  cancelled: 'text-red-400 bg-red-500/10 border border-red-500/30',
+  pending: 'bg-amber-100 text-amber-900 border border-amber-300 font-bold',
+  confirmed: 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold',
+  processing: 'bg-blue-100 text-blue-900 border border-blue-300 font-bold',
+  shipped: 'bg-purple-100 text-purple-900 border border-purple-300 font-bold',
+  out_for_delivery: 'bg-blue-100 text-blue-900 border border-blue-300 font-bold',
+  delivered: 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold',
+  cancelled: 'bg-rose-100 text-rose-900 border border-rose-300 font-bold',
 };
 
 const PLACEHOLDER = 'https://placehold.co/60x75/141414/888888?text=NX';
@@ -221,25 +221,25 @@ const AdminOrders = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-6">
       <div className="mb-6">
-        <div className="flex items-end justify-between mb-4">
+        <div className="flex items-end justify-between mb-4 pb-4 border-b border-[#D4BEA5]">
           <div>
-            <p className="text-vy-grey text-xs tracking-widest uppercase mb-1">Admin</p>
-            <h1 className="font-display font-bold text-2xl tracking-wider text-vy-white">
-              Orders <span className="text-vy-grey font-normal text-lg">({filteredOrders.length}{filteredOrders.length !== orders.length ? ` / ${orders.length}` : ''})</span>
+            <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
+            <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">
+              Orders <span className="text-[#75665C] font-normal text-lg">({filteredOrders.length}{filteredOrders.length !== orders.length ? ` / ${orders.length}` : ''})</span>
             </h1>
           </div>
           <div className="flex items-center gap-3">
             {hasActiveFilters && (
-              <button onClick={clearAllFilters} className="flex items-center gap-1.5 text-vy-grey text-xs tracking-widest uppercase hover:text-vy-white transition-colors">
+              <button onClick={clearAllFilters} className="flex items-center gap-1.5 text-[#590907] text-xs font-semibold tracking-widest uppercase hover:underline transition-colors">
                 <X size={12} /> Clear
               </button>
             )}
             <button
               onClick={() => setShowFilters(f => !f)}
-              className={`flex items-center gap-2 px-4 py-2 border text-xs tracking-widest uppercase transition-all ${
-                showFilters ? 'bg-vy-white text-vy-black border-vy-white' : 'border-vy-border text-vy-grey hover:text-vy-white hover:border-vy-grey'
+              className={`flex items-center gap-2 px-4 py-2 border text-xs font-semibold tracking-widest uppercase transition-all rounded-sm ${
+                showFilters ? 'bg-[#590907] text-[#FAF5ED] border-[#590907]' : 'bg-[#FAF5ED] border-[#D4BEA5] text-[#30231F] hover:bg-[#E8D2B5]'
               }`}
             >
               <SlidersHorizontal size={14} /> Filters
@@ -254,12 +254,12 @@ const AdminOrders = () => {
           transition={{ duration: 0.3 }}
           className="overflow-hidden"
         >
-          <div className="bg-vy-card border border-vy-border p-6 mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shadow-sm rounded-sm">
             {/* Search */}
             <div>
-              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Search</label>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Search</label>
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-vy-grey" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#75665C]" />
                 <input
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
@@ -271,11 +271,11 @@ const AdminOrders = () => {
 
             {/* Status */}
             <div>
-              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Status</label>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Status</label>
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
-                className="vy-input w-full text-xs bg-vy-dark"
+                className="vy-input w-full text-xs"
               >
                 <option value="all">All Statuses</option>
                 {STATUS_OPTIONS.map(s => (
@@ -286,11 +286,11 @@ const AdminOrders = () => {
 
             {/* Coupon */}
             <div>
-              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Coupon Code</label>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Coupon Code</label>
               <select
                 value={filterCoupon}
                 onChange={e => setFilterCoupon(e.target.value)}
-                className="vy-input w-full text-xs bg-vy-dark"
+                className="vy-input w-full text-xs"
               >
                 <option value="">All Orders</option>
                 {uniqueCoupons.map(c => (
@@ -301,122 +301,124 @@ const AdminOrders = () => {
 
             {/* Sort */}
             <div>
-              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">Sort By</label>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">Sort By</label>
               <button
                 onClick={() => setSortOrder(s => s === 'newest' ? 'oldest' : 'newest')}
                 className="vy-input w-full text-xs flex items-center justify-between"
               >
-                <span>{sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}</span>
-                <ArrowUpDown size={14} className="text-vy-grey" />
+                <span className="font-medium">{sortOrder === 'newest' ? 'Newest First' : 'Oldest First'}</span>
+                <ArrowUpDown size={14} className="text-[#75665C]" />
               </button>
             </div>
 
             {/* Date From */}
             <div>
-              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">From Date</label>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">From Date</label>
               <input
                 type="date"
                 value={filterDateFrom}
                 onChange={e => setFilterDateFrom(e.target.value)}
-                className="vy-input w-full text-xs bg-vy-dark"
+                className="vy-input w-full text-xs"
               />
             </div>
 
             {/* Date To */}
             <div>
-              <label className="text-vy-grey text-[10px] tracking-widest uppercase block mb-2">To Date</label>
+              <label className="text-[#75665C] text-xs font-semibold tracking-widest uppercase block mb-2">To Date</label>
               <input
                 type="date"
                 value={filterDateTo}
                 onChange={e => setFilterDateTo(e.target.value)}
-                className="vy-input w-full text-xs bg-vy-dark"
+                className="vy-input w-full text-xs"
               />
             </div>
           </div>
         </motion.div>
       </div>
 
+      {/* ── Orders Table ────────────────────── */}
       {loading ? (
         <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
       ) : (
-        <div className="bg-vy-card border border-vy-border">
+        <div className="bg-[#FAF5ED] border border-[#D4BEA5] shadow-sm overflow-hidden rounded-sm">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-vy-border">
+              <tr className="border-b-2 border-[#D4BEA5] bg-[#FAF5ED]">
                 {['Order ID', 'Customer', 'Items', 'Total', 'Status', 'Date', 'Details'].map(h => (
-                  <th key={h} className="text-vy-grey text-xs tracking-widest uppercase text-left px-4 py-3 font-normal">{h}</th>
+                  <th key={h} className="text-[#75665C] text-xs tracking-widest uppercase text-left px-4 py-3.5 font-bold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filteredOrders.map(order => (
-                <>
+                <React.Fragment key={order.id}>
                   <tr
-                    key={order.id}
-                    className="border-b border-vy-border/50 hover:bg-vy-border/20 transition-colors"
+                    className="border-b border-[#D4BEA5] hover:bg-[#E8D2B5]/30 transition-colors"
                   >
-                    <td className="px-4 py-3 text-vy-grey text-xs font-mono">{order.id.slice(0, 10)}...</td>
+                    <td className="px-4 py-3 text-[#590907] text-xs font-mono font-bold">
+                      #{order.id.slice(0, 10)}
+                    </td>
                     <td className="px-4 py-3">
-                      <p className="text-vy-white text-xs font-medium">{order.customerName || order.address?.name || '—'}</p>
-                      <p className="text-vy-grey text-xs">{order.userEmail || order.address?.email || ''}</p>
+                      <p className="text-[#30231F] text-xs font-bold">{order.customerName || order.address?.name || '—'}</p>
+                      <p className="text-[#75665C] text-xs">{order.userEmail || order.address?.email || ''}</p>
                       {(order.customerPhone || order.address?.phone) && (
-                        <p className="text-vy-light text-[10px] font-mono mt-0.5">📱 +91 {order.customerPhone || order.address?.phone}</p>
+                        <p className="text-[#590907] text-[11px] font-mono font-semibold mt-0.5">📱 +91 {order.customerPhone || order.address?.phone}</p>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-vy-grey text-xs">{order.products?.length || 0} item(s)</td>
-                    <td className="px-4 py-3 text-vy-white text-xs font-semibold">₹{order.total?.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-[#30231F] text-xs font-medium">{order.products?.length || 0} item(s)</td>
+                    <td className="px-4 py-3 text-[#590907] text-xs font-bold">₹{order.total?.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <select
                         value={order.status?.toLowerCase() || 'confirmed'}
                         onChange={e => handleStatusChange(order.id, e.target.value)}
-                        className={`text-[10px] uppercase tracking-widest bg-transparent border-0 outline-none cursor-pointer font-bold px-3 py-1.5 rounded-sm ${statusClass[order.status?.toLowerCase()] || statusClass.confirmed}`}
+                        className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-1 rounded-sm border cursor-pointer outline-none ${statusClass[order.status?.toLowerCase()] || statusClass.confirmed}`}
                       >
                         {STATUS_OPTIONS.map(s => (
-                          <option key={s} value={s} className="bg-vy-dark text-vy-white">{s.replace(/_/g, ' ')}</option>
+                          <option key={s} value={s} className="bg-[#FAF5ED] text-[#30231F] font-semibold">{s.replace(/_/g, ' ')}</option>
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-vy-grey text-xs">
-                      <div>{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</div>
-                      <div className="text-[10px] text-vy-border">{order.createdAt?.toDate?.()?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) || ''}</div>
+                    <td className="px-4 py-3 text-[#75665C] text-xs font-medium">
+                      <div className="text-[#30231F]">{order.createdAt?.toDate?.()?.toLocaleDateString('en-IN') || '—'}</div>
+                      <div className="text-[10px] text-[#75665C]">{order.createdAt?.toDate?.()?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) || ''}</div>
                       {order.couponCode && (
-                        <div className="text-[9px] text-green-400 mt-1 tracking-wider">🎟 {order.couponCode}</div>
+                        <div className="text-[10px] text-emerald-800 font-bold mt-1 tracking-wider">🎟 {order.couponCode}</div>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => setExpanded(expanded === order.id ? null : order.id)}
-                        className="text-vy-grey text-xs hover:text-vy-white transition-colors tracking-widest uppercase"
+                        className="text-[#590907] hover:text-[#430605] text-xs font-bold hover:underline transition-colors tracking-widest uppercase"
                       >
                         {expanded === order.id ? 'Hide' : 'View'}
                       </button>
                     </td>
                   </tr>
                   {expanded === order.id && (
-                    <tr key={`${order.id}-detail`} className="border-b border-vy-border/50 bg-vy-black/20">
+                    <tr key={`${order.id}-detail`} className="border-b border-[#D4BEA5] bg-[#E8D2B5]/25">
                       <td colSpan={7} className="px-8 py-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           {/* Products */}
                           <div>
-                            <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Products</h4>
+                            <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase mb-4">Products</h4>
                             <div className="space-y-3">
                               {order.products?.map((p, i) => (
-                                <div key={i} className="flex gap-3 items-start border-b border-vy-border/30 pb-3 last:border-0">
-                                  <img src={p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-contain bg-vy-dark border border-vy-border/50" />
+                                <div key={i} className="flex gap-3 items-start border-b border-[#D4BEA5] pb-3 last:border-0">
+                                  <img src={p.image || PLACEHOLDER} alt={p.name} className="w-10 h-12 object-contain bg-white border border-[#D4BEA5]" />
                                   <div className="flex-1">
-                                    <p className="text-vy-white text-xs font-medium">
-                                      {p.isCustom && <span className="inline-block bg-vy-accent text-vy-black text-[8px] font-bold px-1 mr-1 rounded-sm">CUSTOM</span>}
+                                    <p className="text-[#30231F] text-xs font-bold">
+                                      {p.isCustom && <span className="inline-block bg-[#590907] text-white text-[8px] font-bold px-1.5 py-0.5 mr-1 rounded-sm">CUSTOM</span>}
                                       {p.name}
                                     </p>
-                                    <p className="text-vy-grey text-xs">Size: {p.size} × {p.quantity}</p>
+                                    <p className="text-[#75665C] text-xs font-medium">Size: {p.size} × {p.quantity}</p>
                                     {p.isCustom && (
                                       <div className="mt-1 space-y-1">
-                                        <p className="text-vy-accent text-[10px] uppercase tracking-widest">Fit: {p.fit || 'Oversize'} | Position: {p.position}</p>
-                                        {p.description && <p className="text-vy-grey text-[10px] leading-relaxed italic">"{p.description}"</p>}
+                                        <p className="text-[#590907] text-[10px] uppercase tracking-widest font-bold">Fit: {p.fit || 'Oversize'} | Position: {p.position}</p>
+                                        {p.description && <p className="text-[#75665C] text-[10px] leading-relaxed italic">"{p.description}"</p>}
                                         {p.imageUrls && p.imageUrls.length > 0 && (
-                                          <div className="flex gap-1 mt-2">
+                                          <div className="flex gap-1.5 mt-2">
                                             {p.imageUrls.map((url, idx) => (
-                                              <a key={idx} href={url} target="_blank" rel="noreferrer" className="w-8 h-8 border border-vy-border hover:border-vy-accent transition-colors">
+                                              <a key={idx} href={url} target="_blank" rel="noreferrer" className="w-9 h-9 border border-[#D4BEA5] hover:border-[#590907] transition-colors rounded-sm overflow-hidden">
                                                 <img src={url} alt="Design" className="w-full h-full object-cover" />
                                               </a>
                                             ))}
@@ -425,7 +427,7 @@ const AdminOrders = () => {
                                       </div>
                                     )}
                                   </div>
-                                  <span className="text-vy-white text-xs font-semibold">₹{(p.price * p.quantity).toLocaleString()}</span>
+                                  <span className="text-[#590907] text-xs font-bold">₹{(p.price * p.quantity).toLocaleString()}</span>
                                 </div>
                               ))}
                             </div>
@@ -434,14 +436,14 @@ const AdminOrders = () => {
                           <div>
                             <div className="mb-6">
                               <div className="flex items-center justify-between mb-4">
-                                <h4 className="text-vy-grey text-xs tracking-widest uppercase">Customer Contact</h4>
+                                <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase">Customer Contact</h4>
                                 {editingOrder === order.id ? (
                                   <div className="flex gap-2">
-                                    <button onClick={() => setEditingOrder(null)} className="text-vy-grey text-xs hover:text-vy-white transition-colors">Cancel</button>
-                                    <button onClick={() => handleEditSave(order)} className="flex items-center gap-1 text-green-400 text-xs hover:text-green-300 transition-colors"><Save size={12}/> Save</button>
+                                    <button onClick={() => setEditingOrder(null)} className="text-[#75665C] text-xs hover:text-[#30231F] transition-colors font-semibold">Cancel</button>
+                                    <button onClick={() => handleEditSave(order)} className="flex items-center gap-1 text-emerald-800 font-bold text-xs hover:underline transition-colors"><Save size={12}/> Save</button>
                                   </div>
                                 ) : (
-                                  <button onClick={() => startEditing(order)} className="flex items-center gap-1 text-vy-grey text-xs hover:text-vy-white transition-colors"><Edit3 size={12} /> Edit</button>
+                                  <button onClick={() => startEditing(order)} className="flex items-center gap-1 text-[#590907] text-xs font-bold hover:underline transition-colors"><Edit3 size={12} /> Edit</button>
                                 )}
                               </div>
                               <div className="space-y-1.5">
@@ -453,80 +455,80 @@ const AdminOrders = () => {
                                   </>
                                 ) : (
                                   <>
-                                    <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Name:</span> {order.customerName || order.address?.name}</p>
-                                    <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Email:</span> {order.userEmail || order.address?.email}</p>
-                                    <p className="text-vy-light text-xs"><span className="text-vy-grey inline-block w-16">Mobile:</span> {order.customerPhone || order.address?.phone}</p>
+                                    <p className="text-[#30231F] text-xs font-medium"><span className="text-[#75665C] inline-block w-16">Name:</span> {order.customerName || order.address?.name}</p>
+                                    <p className="text-[#30231F] text-xs font-medium"><span className="text-[#75665C] inline-block w-16">Email:</span> {order.userEmail || order.address?.email}</p>
+                                    <p className="text-[#30231F] text-xs font-medium"><span className="text-[#75665C] inline-block w-16">Mobile:</span> {order.customerPhone || order.address?.phone}</p>
                                   </>
                                 )}
                               </div>
                             </div>
                             
-                            <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Delivery Address</h4>
+                            <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase mb-4">Delivery Address</h4>
                             <div className="space-y-1.5">
                               {order.address && Object.entries(order.address).filter(([k]) => !['email', 'name', 'phone'].includes(k)).map(([k, v]) => (
-                                <p key={k} className="text-vy-light text-xs capitalize"><span className="text-vy-grey inline-block w-16">{k}:</span> {v}</p>
+                                <p key={k} className="text-[#30231F] text-xs capitalize font-medium"><span className="text-[#75665C] inline-block w-16">{k}:</span> {v}</p>
                               ))}
                             </div>
-                            <div className="mt-4 pt-4 border-t border-vy-border space-y-1">
+                            <div className="mt-4 pt-4 border-t border-[#D4BEA5] space-y-1">
                               {editingOrder === order.id ? (
                                 <>
                                   <div className="flex justify-between items-center text-xs">
-                                    <span className="text-vy-grey">Subtotal</span>
+                                    <span className="text-[#75665C] font-medium">Subtotal</span>
                                     <input type="number" value={editForm.subtotal} onChange={e => setEditForm(p => ({...p, subtotal: e.target.value}))} className="vy-input text-xs w-24 text-right" />
                                   </div>
                                   <div className="flex justify-between items-center text-xs">
-                                    <span className="text-green-400">Coupon Discount</span>
+                                    <span className="text-emerald-800 font-medium">Coupon Discount</span>
                                     <input type="number" value={editForm.discount} onChange={e => setEditForm(p => ({...p, discount: e.target.value}))} className="vy-input text-xs w-24 text-right" />
                                   </div>
-                                  <div className="flex justify-between items-center text-xs font-semibold">
-                                    <span className="text-vy-white">Total</span>
+                                  <div className="flex justify-between items-center text-xs font-bold">
+                                    <span className="text-[#30231F]">Total</span>
                                     <input type="number" value={editForm.total} onChange={e => setEditForm(p => ({...p, total: e.target.value}))} className="vy-input text-xs w-24 text-right" />
                                   </div>
                                 </>
                               ) : (
                                 <>
                                   <div className="flex justify-between text-xs">
-                                    <span className="text-vy-grey">Subtotal</span>
-                                    <span className="text-vy-white">₹{order.subtotal?.toLocaleString()}</span>
+                                    <span className="text-[#75665C] font-medium">Subtotal</span>
+                                    <span className="text-[#30231F] font-bold">₹{order.subtotal?.toLocaleString()}</span>
                                   </div>
                                   {order.discount > 0 && (
                                     <div className="flex justify-between text-xs">
-                                      <span className="text-green-400">Coupon ({order.couponCode})</span>
-                                      <span className="text-green-400">−₹{order.discount?.toLocaleString()}</span>
+                                      <span className="text-emerald-800 font-semibold">Coupon ({order.couponCode})</span>
+                                      <span className="text-emerald-800 font-bold">−₹{order.discount?.toLocaleString()}</span>
                                     </div>
                                   )}
-                                  <div className="flex justify-between text-xs font-semibold">
-                                    <span className="text-vy-white">Total</span>
-                                    <span className="text-vy-white">₹{order.total?.toLocaleString()}</span>
+                                  <div className="flex justify-between text-xs font-bold">
+                                    <span className="text-[#30231F]">Total</span>
+                                    <span className="text-[#590907] text-sm">₹{order.total?.toLocaleString()}</span>
                                   </div>
                                 </>
                               )}
                             </div>
                             {order.paymentId && (
-                              <p className="text-vy-grey text-xs mt-3">Payment ID: <span className="font-mono text-vy-light">{order.paymentId}</span></p>
+                              <p className="text-[#75665C] text-xs mt-3">Payment ID: <span className="font-mono text-[#590907] font-semibold">{order.paymentId}</span></p>
                             )}
                             
                             <button 
                               onClick={() => handleMessageCustomer(order)}
-                              className="mt-6 w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase hover:bg-green-500/20 transition-all flex items-center justify-center gap-2"
+                              className="mt-6 w-full py-2.5 bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs font-bold tracking-widest uppercase hover:bg-emerald-200 transition-all flex items-center justify-center gap-2 rounded-sm shadow-xs"
                             >
-                              <MessageCircle size={14} /> Message on WhatsApp
+                              <MessageCircle size={15} /> Message on WhatsApp
                             </button>
                             
                             <button 
                               onClick={() => handleDeleteOrder(order.id)}
-                              className="mt-3 w-full py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold tracking-widest uppercase hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+                              className="mt-3 w-full py-2.5 bg-rose-100 border border-rose-300 text-rose-950 text-xs font-bold tracking-widest uppercase hover:bg-rose-200 transition-all flex items-center justify-center gap-2 rounded-sm"
                             >
-                              <Trash2 size={14} /> Delete Order
+                              <Trash2 size={15} /> Delete Order
                             </button>
                           </div>
 
                           {/* Tracking & Admin Controls */}
-                          <div className="md:col-span-2 pt-4 border-t border-vy-border mt-2">
+                          <div className="md:col-span-2 pt-4 border-t border-[#D4BEA5] mt-2">
                             <div className="flex flex-col md:flex-row gap-6">
                               {/* Tracking */}
                               <div className="flex-1">
-                                <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Tracking Information</h4>
+                                <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase mb-4">Tracking Information</h4>
                                 <div className="flex gap-4 items-center">
                                   <input 
                                     value={trackingInputs[order.id] || ''} 
@@ -544,21 +546,21 @@ const AdminOrders = () => {
                               </div>
                               {/* Bill Downloads */}
                               <div>
-                                <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4">Download Bills</h4>
+                                <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase mb-4">Download Bills</h4>
                                 <div className="flex gap-3">
                                   <button
                                     onClick={() => printShippingLabel(order)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-vy-border/30 border border-vy-border text-vy-light text-xs tracking-widest uppercase hover:bg-vy-border/60 hover:text-vy-white transition-all"
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#FAF5ED] border border-[#D4BEA5] text-[#590907] font-semibold text-xs tracking-widest uppercase hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs"
                                   >
                                     <Package size={14} />
                                     Shipping Label
                                   </button>
                                   <button
                                     onClick={() => printOrderInvoice(order)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-vy-border/30 border border-vy-border text-vy-light text-xs tracking-widest uppercase hover:bg-vy-border/60 hover:text-vy-white transition-all"
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#FAF5ED] border border-[#D4BEA5] text-[#590907] font-semibold text-xs tracking-widest uppercase hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs"
                                   >
                                     <FileText size={14} />
-                                    Order Invoice
+                                    Invoice
                                   </button>
                                 </div>
                               </div>
@@ -567,22 +569,22 @@ const AdminOrders = () => {
 
                           {/* Return / Replace Request */}
                           {order.returnRequest && (
-                            <div className="md:col-span-2 pt-4 border-t border-vy-border mt-2">
-                              <h4 className="text-vy-grey text-xs tracking-widest uppercase mb-4 flex items-center gap-2">
-                                <RotateCcw size={14} />
+                            <div className="md:col-span-2 pt-4 border-t border-[#D4BEA5] mt-2">
+                              <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase mb-4 flex items-center gap-2">
+                                <RotateCcw size={14} className="text-[#590907]" />
                                 {order.returnRequest.type === 'replace' ? 'Replacement' : 'Return'} Request
-                                <span className={`ml-2 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${
-                                  order.returnRequest.status === 'approved' ? 'text-green-400 border-green-500/30 bg-green-500/10'
-                                  : order.returnRequest.status === 'rejected' ? 'text-red-400 border-red-500/30 bg-red-500/10'
-                                  : 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10'
+                                <span className={`ml-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border rounded-xs ${
+                                  order.returnRequest.status === 'approved' ? 'text-emerald-900 border-emerald-300 bg-emerald-100'
+                                  : order.returnRequest.status === 'rejected' ? 'text-rose-900 border-rose-300 bg-rose-100'
+                                  : 'text-amber-900 border-amber-300 bg-amber-100'
                                 }`}>{order.returnRequest.status}</span>
                               </h4>
-                              <div className="space-y-2 mb-4">
-                                <p className="text-vy-grey text-xs">Reason: <span className="text-vy-light">{order.returnRequest.reason}</span></p>
+                              <div className="space-y-1.5 mb-4 text-xs font-medium">
+                                <p className="text-[#75665C]">Reason: <span className="text-[#30231F] font-bold">{order.returnRequest.reason}</span></p>
                                 {order.returnRequest.items && (
-                                  <p className="text-vy-grey text-xs">Items: <span className="text-vy-light">{order.returnRequest.items.join(', ')}</span></p>
+                                  <p className="text-[#75665C]">Items: <span className="text-[#30231F] font-bold">{order.returnRequest.items.join(', ')}</span></p>
                                 )}
-                                <p className="text-vy-grey text-xs">Requested: <span className="text-vy-light">{new Date(order.returnRequest.requestedAt).toLocaleDateString('en-IN')}</span></p>
+                                <p className="text-[#75665C]">Requested: <span className="text-[#30231F]">{new Date(order.returnRequest.requestedAt).toLocaleDateString('en-IN')}</span></p>
                               </div>
                               {order.returnRequest.status === 'pending' && (
                                 <div className="flex gap-3">
@@ -592,7 +594,7 @@ const AdminOrders = () => {
                                       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, returnRequest: { ...o.returnRequest, status: 'approved', adminNote: 'Return approved by admin.' } } : o));
                                       toast.success('Return approved', { className: 'toast-vybera' });
                                     }}
-                                    className="px-4 py-2 bg-green-500/20 border border-green-500/30 text-green-400 text-xs tracking-widest uppercase hover:bg-green-500/30 transition-all"
+                                    className="px-4 py-2 bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs font-bold tracking-widest uppercase hover:bg-emerald-200 transition-all rounded-sm shadow-xs"
                                   >Approve</button>
                                   <button
                                     onClick={async () => {
@@ -601,7 +603,7 @@ const AdminOrders = () => {
                                       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, returnRequest: { ...o.returnRequest, status: 'rejected', adminNote: note } } : o));
                                       toast.success('Return rejected', { className: 'toast-vybera' });
                                     }}
-                                    className="px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 text-xs tracking-widest uppercase hover:bg-red-500/30 transition-all"
+                                    className="px-4 py-2 bg-rose-100 border border-rose-300 text-rose-950 text-xs font-bold tracking-widest uppercase hover:bg-rose-200 transition-all rounded-sm"
                                   >Reject</button>
                                 </div>
                               )}
@@ -611,17 +613,17 @@ const AdminOrders = () => {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
           {filteredOrders.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-vy-grey text-sm tracking-widest uppercase mb-3">
-                {hasActiveFilters ? 'No orders match your filters' : 'No orders yet'}
+            <div className="text-center py-16 text-[#75665C]">
+              <p className="text-xs uppercase tracking-widest mb-3">
+                {hasActiveFilters ? 'No orders match your filters' : 'No orders recorded yet'}
               </p>
               {hasActiveFilters && (
-                <button onClick={clearAllFilters} className="btn-outline text-xs">Clear Filters</button>
+                <button onClick={clearAllFilters} className="btn-secondary text-xs">Clear Filters</button>
               )}
             </div>
           )}

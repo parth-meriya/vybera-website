@@ -6,26 +6,67 @@
 
 :root {
   /* Official Brand Palette */
-  --vy-beige: #E8D2B5;
-  --vy-sage: #A5A79B;
-  --vy-burgundy: #590907;
+  --vy-beige: #E8D2B5;          /* Warm Cream Beige */
+  --vy-sage: #A5A79B;           /* Muted Sage Grey */
+  --vy-burgundy: #590907;       /* Deep Burgundy */
   --vy-burgundy-hover: #430605;
   --vy-burgundy-light: #7A1310;
-  --vy-cream: #F3E7D8;
-  --vy-card-bg: #FAF5ED;
-  --vy-text: #30231F;
-  --vy-text-muted: #7A6E69;
-  --vy-border-light: #E5DACD;
+  --vy-cream: #F3E7D8;          /* Secondary Background */
+  --vy-card-bg: #FAF5ED;        /* Card Background */
 
-  /* Legacy CSS vars */
-  --vy-black: #1E1614;
-  --vy-dark: #FAF5ED;
-  --vy-card: #FAF5ED;
-  --vy-border: #D8CBBF;
-  --vy-grey: #A5A79B;
-  --vy-light: #E8D2B5;
+  /* Text Colors */
+  --vy-text: #30231F;           /* Primary Dark Text */
+  --vy-text-secondary: #75665C; /* Secondary Dark Text */
+  --vy-text-muted: #75665C;
+  --vy-text-light: #FAF5ED;     /* Primary Light Text (on dark surfaces) */
+  --vy-text-light-secondary: #D4BEA5; /* Secondary Light Text */
+
+  /* Dark Surfaces (Editorial & Intentional Dark sections) */
+  --vy-dark-bg: #241916;        /* Dark Background */
+  --vy-dark-card: #30231F;      /* Dark Card */
+
+  /* Borders & Accents */
+  --vy-border: #D4BEA5;
+  --vy-border-light: #D4BEA5;
   --vy-white: #FFFFFF;
   --vy-accent: #590907;
+
+  /* Legacy CSS vars mapping */
+  --vy-black: #241916;
+  --vy-dark: #FAF5ED;
+  --vy-card: #FAF5ED;
+  --vy-grey: #75665C;
+  --vy-light: #E8D2B5;
+}
+
+/* Surface helpers */
+.surface-dark {
+  background-color: #241916 !important;
+  color: #FAF5ED !important;
+}
+.surface-dark h1,
+.surface-dark h2,
+.surface-dark h3,
+.surface-dark h4,
+.surface-dark h5,
+.surface-dark h6,
+.surface-dark strong {
+  color: #FAF5ED !important;
+}
+.surface-dark .text-secondary,
+.surface-dark .text-muted,
+.surface-dark .text-sub {
+  color: #D4BEA5 !important;
+}
+
+.surface-light {
+  background-color: #FAF5ED !important;
+  color: #30231F !important;
+}
+.surface-light .text-secondary,
+.surface-light .text-muted,
+.surface-light .text-sub {
+  color: #75665C !important;
 }
 
 * {
@@ -96,29 +137,29 @@ a, button, [role="button"], input[type="submit"], input[type="button"], select {
 
 /* Button styles */
 .btn-primary {
-  @apply px-8 py-3.5 bg-vy-burgundy text-[#FAF5ED] font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-vy-burgundy-hover hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2;
+  @apply px-8 py-3.5 bg-vy-burgundy text-[#FFFFFF] font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-vy-burgundy-hover hover:shadow-md active:scale-[0.99] flex items-center justify-center gap-2;
 }
 
 .btn-secondary {
-  @apply px-8 py-3.5 bg-vy-cream text-vy-text border border-vy-border-light font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-vy-beige active:scale-[0.99] flex items-center justify-center gap-2;
+  @apply px-8 py-3.5 bg-vy-cream text-[#30231F] border border-vy-border font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-vy-beige active:scale-[0.99] flex items-center justify-center gap-2;
 }
 
 .btn-outline {
-  @apply px-8 py-3.5 border border-vy-burgundy text-vy-burgundy font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-vy-burgundy hover:text-[#FAF5ED] active:scale-[0.99] flex items-center justify-center gap-2;
+  @apply px-8 py-3.5 border border-vy-burgundy text-vy-burgundy font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:bg-vy-burgundy hover:text-[#FFFFFF] active:scale-[0.99] flex items-center justify-center gap-2;
 }
 
 .btn-ghost {
-  @apply px-6 py-2.5 text-vy-text-muted font-medium text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:text-vy-burgundy flex items-center gap-2;
+  @apply px-6 py-2.5 text-[#75665C] font-semibold text-xs tracking-[0.2em] uppercase transition-all duration-300 hover:text-vy-burgundy flex items-center gap-2;
 }
 
 /* Card styles */
 .vy-card {
-  @apply bg-vy-card-bg border border-vy-border-light;
+  @apply bg-vy-card-bg border border-vy-border;
 }
 
 /* Input styles */
 .vy-input {
-  @apply w-full bg-white border border-vy-border-light text-vy-text placeholder-vy-sage px-4 py-3 text-sm focus:outline-none focus:border-vy-burgundy transition-colors duration-300;
+  @apply w-full bg-white border border-vy-border text-vy-text placeholder-[#75665C]/80 px-4 py-3 text-sm focus:outline-none focus:border-vy-burgundy transition-colors duration-300 rounded-sm;
 }
 
 /* Section spacing */
@@ -153,25 +194,196 @@ a, button, [role="button"], input[type="submit"], input[type="button"], select {
 
 /* Admin sidebar */
 .admin-nav-link {
-  @apply flex items-center gap-3 px-4 py-3 text-vy-text-muted text-sm font-medium tracking-wide transition-all duration-200 hover:text-vy-burgundy hover:bg-vy-cream/60;
+  @apply flex items-center gap-3 px-4 py-3 text-[#30231F] text-xs font-medium tracking-wide transition-all duration-200 hover:text-[#590907] hover:bg-[#F3E7D8]/80 rounded-sm;
 }
 
 .admin-nav-link.active {
-  @apply text-vy-burgundy bg-vy-cream font-semibold border-r-2 border-vy-burgundy;
+  @apply text-[#FAF5ED] bg-[#590907] font-semibold shadow-sm;
 }
 
-/* Status badges */
+/* Status badges - High Contrast System */
 .badge-pending {
-  @apply px-3 py-1 text-xs font-medium bg-amber-500/10 text-amber-700 border border-amber-500/20;
+  @apply px-2.5 py-1 text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300 rounded-sm inline-flex items-center gap-1;
+}
+.badge-confirmed {
+  @apply px-2.5 py-1 text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-sm inline-flex items-center gap-1;
+}
+.badge-processing {
+  @apply px-2.5 py-1 text-xs font-semibold bg-blue-100 text-blue-900 border border-blue-300 rounded-sm inline-flex items-center gap-1;
 }
 .badge-shipped {
-  @apply px-3 py-1 text-xs font-medium bg-blue-500/10 text-blue-700 border border-blue-500/20;
+  @apply px-2.5 py-1 text-xs font-semibold bg-purple-100 text-purple-900 border border-purple-300 rounded-sm inline-flex items-center gap-1;
 }
 .badge-delivered {
-  @apply px-3 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20;
+  @apply px-2.5 py-1 text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300 rounded-sm inline-flex items-center gap-1;
 }
 .badge-cancelled {
-  @apply px-3 py-1 text-xs font-medium bg-rose-500/10 text-rose-700 border border-rose-500/20;
+  @apply px-2.5 py-1 text-xs font-semibold bg-rose-100 text-rose-900 border border-rose-300 rounded-sm inline-flex items-center gap-1;
+}
+.badge-refunded {
+  @apply px-2.5 py-1 text-xs font-semibold bg-stone-200 text-stone-800 border border-stone-300 rounded-sm inline-flex items-center gap-1;
+}
+
+/* ==========================================================================
+   VYBERA ADMIN PANEL — CENTRALIZED THEME & CONTRAST SYSTEM
+   ========================================================================== */
+.admin-theme {
+  --admin-burgundy: #590907;
+  --admin-bg: #F3E7D8;
+  --admin-card: #FAF5ED;
+  --admin-sidebar: #E8D2B5;
+  --admin-text: #30231F;
+  --admin-text-secondary: #75665C;
+  --admin-border: #D4BEA5;
+  --admin-white: #FFFFFF;
+
+  background-color: #F3E7D8 !important;
+  color: #30231F !important;
+}
+
+/* Headings in Admin */
+.admin-theme h1,
+.admin-theme h2,
+.admin-theme h3,
+.admin-theme h4,
+.admin-theme h5,
+.admin-theme h6 {
+  color: #30231F !important;
+}
+
+/* Global text overrides for legacy classes inside Admin */
+.admin-theme .text-vy-white:not(button):not(.btn-primary):not([class*="bg-vy-burgundy"]):not([class*="bg-[#590907]"]):not([class*="bg-black"]):not([class*="bg-red-"]):not([class*="bg-emerald-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]),
+.admin-theme .text-white:not(button):not(.btn-primary):not([class*="bg-vy-burgundy"]):not([class*="bg-[#590907]"]):not([class*="bg-black"]):not([class*="bg-red-"]):not([class*="bg-emerald-"]):not([class*="bg-blue-"]):not([class*="bg-purple-"]) {
+  color: #30231F !important;
+}
+
+.admin-theme .text-vy-grey,
+.admin-theme .text-vy-text-muted,
+.admin-theme .text-gray-400,
+.admin-theme .text-neutral-400,
+.admin-theme .text-zinc-400 {
+  color: #75665C !important;
+}
+
+.admin-theme .text-vy-light {
+  color: #590907 !important;
+}
+
+/* Container & Card Overrides */
+.admin-theme .bg-vy-card,
+.admin-theme .bg-vy-dark {
+  background-color: #FAF5ED !important;
+  border-color: #D4BEA5 !important;
+}
+
+.admin-theme .border-vy-border,
+.admin-theme .border-vy-border-light,
+.admin-theme .border-vy-border\/50,
+.admin-theme .border-vy-border\/40,
+.admin-theme .border-vy-border\/30,
+.admin-theme .border-vy-border\/20,
+.admin-theme .border-vy-border\/10 {
+  border-color: #D4BEA5 !important;
+}
+
+/* Tables inside Admin */
+.admin-theme table {
+  background-color: #FAF5ED !important;
+}
+
+.admin-theme thead,
+.admin-theme thead tr {
+  background-color: #FAF5ED !important;
+  border-bottom: 2px solid #D4BEA5 !important;
+}
+
+.admin-theme th {
+  color: #75665C !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 11px !important;
+  border-bottom: 2px solid #D4BEA5 !important;
+}
+
+.admin-theme tbody tr {
+  background-color: #FAF5ED !important;
+  border-bottom: 1px solid #D4BEA5 !important;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.admin-theme tbody tr:hover {
+  background-color: rgba(232, 210, 181, 0.45) !important;
+}
+
+.admin-theme td {
+  color: #30231F !important;
+  border-bottom: 1px solid #D4BEA5 !important;
+}
+
+/* Admin Input Fields & Dropdowns */
+.admin-theme input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]),
+.admin-theme select,
+.admin-theme textarea,
+.admin-theme .vy-input {
+  background-color: #FFFFFF !important;
+  color: #30231F !important;
+  border: 1px solid #D4BEA5 !important;
+}
+
+.admin-theme input::placeholder,
+.admin-theme textarea::placeholder {
+  color: #75665C !important;
+  opacity: 0.8 !important;
+}
+
+.admin-theme input:focus,
+.admin-theme select:focus,
+.admin-theme textarea:focus,
+.admin-theme .vy-input:focus {
+  border-color: #590907 !important;
+  box-shadow: 0 0 0 1px rgba(89, 9, 7, 0.25) !important;
+  outline: none !important;
+}
+
+.admin-theme option {
+  background-color: #FAF5ED !important;
+  color: #30231F !important;
+}
+
+/* Buttons in Admin */
+.admin-theme .btn-primary {
+  background-color: #590907 !important;
+  color: #FAF5ED !important;
+  border: 1px solid #590907 !important;
+}
+
+.admin-theme .btn-primary:hover {
+  background-color: #430605 !important;
+  color: #FFFFFF !important;
+}
+
+.admin-theme .btn-secondary,
+.admin-theme .btn-outline {
+  background-color: #FAF5ED !important;
+  border: 1px solid #D4BEA5 !important;
+  color: #590907 !important;
+  font-weight: 600 !important;
+}
+
+.admin-theme .btn-secondary:hover,
+.admin-theme .btn-outline:hover {
+  background-color: #E8D2B5 !important;
+  color: #430605 !important;
+}
+
+.admin-theme .btn-ghost {
+  color: #75665C !important;
+}
+
+.admin-theme .btn-ghost:hover {
+  color: #590907 !important;
+  background-color: rgba(232, 210, 181, 0.5) !important;
 }
 
 /* Product size selector */

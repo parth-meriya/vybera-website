@@ -81,51 +81,51 @@ const Settings = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-3xl">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">Account Settings</h2>
-        <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Update your personal information</p>
+        <h2 className="font-display font-bold text-3xl tracking-wider text-[#30231F] mb-2">Account Settings</h2>
+        <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Update your personal information</p>
       </div>
 
-      <div className="bg-vy-card border border-vy-border p-6 md:p-10">
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 md:p-10 shadow-sm">
         <form onSubmit={handleSave} className="space-y-6">
           
           <div className="space-y-4">
-            <h3 className="text-vy-white text-xs font-bold tracking-widest uppercase mb-4 border-b border-vy-border pb-2">Profile Details</h3>
+            <h3 className="text-[#30231F] text-xs font-bold tracking-widest uppercase mb-4 border-b border-[#D4BEA5] pb-2">Profile Details</h3>
             
             <div>
-              <label className="flex items-center gap-2 text-[10px] text-vy-grey uppercase tracking-widest mb-2">
-                <User size={12} /> Full Name
+              <label className="flex items-center gap-2 text-xs font-bold text-[#75665C] uppercase tracking-widest mb-2">
+                <User size={13} className="text-[#590907]" /> Full Name
               </label>
               <input 
                 name="name" 
                 value={form.name} 
                 onChange={handleChange} 
-                className="vy-input w-full" 
+                className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]" 
                 placeholder="Enter your full name"
                 required 
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-[10px] text-vy-grey uppercase tracking-widest mb-2">
-                <Mail size={12} /> Email Address
+              <label className="flex items-center gap-2 text-xs font-bold text-[#75665C] uppercase tracking-widest mb-2">
+                <Mail size={13} className="text-[#590907]" /> Email Address
               </label>
               <input 
                 value={user.email} 
-                className="vy-input w-full bg-vy-black text-vy-grey cursor-not-allowed" 
+                className="w-full bg-[#E8D2B5]/30 border border-[#D4BEA5] text-[#75665C] rounded-lg px-4 py-2.5 text-sm cursor-not-allowed font-medium" 
                 disabled 
               />
-              <p className="text-[10px] text-vy-border mt-1">Email address cannot be changed.</p>
+              <p className="text-[10px] text-[#75665C] mt-1 font-medium">Email address cannot be changed.</p>
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-[10px] text-vy-grey uppercase tracking-widest mb-2">
-                <Phone size={12} /> Mobile Number
+              <label className="flex items-center gap-2 text-xs font-bold text-[#75665C] uppercase tracking-widest mb-2">
+                <Phone size={13} className="text-[#590907]" /> Mobile Number
               </label>
               <input 
                 name="phone" 
                 value={form.phone} 
                 onChange={handleChange} 
-                className="vy-input w-full" 
+                className="w-full bg-white border border-[#D4BEA5] text-[#30231F] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#590907]" 
                 placeholder="10-digit mobile number"
               />
             </div>
@@ -143,27 +143,27 @@ const Settings = () => {
         </form>
       </div>
 
-      <div className="bg-vy-card border border-vy-border p-6 md:p-10">
-        <h3 className="text-vy-white text-xs font-bold tracking-widest uppercase mb-4 border-b border-vy-border pb-2 flex items-center gap-2">
-          <Lock size={14} /> Authentication
+      <div className="bg-[#FAF5ED] border border-[#D4BEA5] rounded-2xl p-6 md:p-10 shadow-sm">
+        <h3 className="text-[#30231F] text-xs font-bold tracking-widest uppercase mb-4 border-b border-[#D4BEA5] pb-2 flex items-center gap-2">
+          <Lock size={14} className="text-[#590907]" /> Authentication
         </h3>
         
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
-            <p className="text-vy-white text-sm font-bold mb-1">Change Password</p>
-            <p className="text-vy-grey text-xs">Receive an email to reset your account password.</p>
+            <p className="text-[#30231F] text-sm font-bold mb-1">Change Password</p>
+            <p className="text-[#75665C] text-xs">Receive an email to reset your account password.</p>
           </div>
           
           <button 
             onClick={handlePasswordReset}
             disabled={resetSent || isGoogleLinked}
-            className={`btn-outline text-xs py-2 px-6 uppercase tracking-widest ${isGoogleLinked ? 'opacity-50 cursor-not-allowed border-vy-border text-vy-grey hover:bg-transparent' : ''}`}
+            className={`border border-[#D4BEA5] bg-white text-[#30231F] hover:bg-[#F3E7D8]/40 rounded-lg text-xs py-2.5 px-6 uppercase tracking-widest font-semibold transition-colors ${isGoogleLinked ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {resetSent ? 'Email Sent' : 'Reset Password'}
           </button>
         </div>
         {isGoogleLinked && (
-          <p className="text-[10px] text-vy-accent uppercase tracking-widest mt-4">
+          <p className="text-[10px] text-[#590907] uppercase tracking-widest mt-4 font-bold">
             You are signed in with Google. Password resets are handled by Google.
           </p>
         )}

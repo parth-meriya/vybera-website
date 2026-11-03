@@ -107,29 +107,28 @@ const Overview = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 pb-12">
       <div>
-        <h2 className="font-display font-bold text-3xl tracking-wider mb-2">My Profile</h2>
-        <p className="text-vy-grey text-xs tracking-[0.2em] uppercase">Manage your premium VYBERA experience</p>
+        <h2 className="font-display font-bold text-3xl tracking-wider mb-2 text-[#30231F]">My Profile</h2>
+        <p className="text-[#75665C] text-xs tracking-[0.2em] uppercase font-semibold">Manage your premium VYBERA experience</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Details & Wallet */}
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Card */}
-          <div className="bg-vy-card border border-vy-border p-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-vy-accent/5 rounded-bl-full pointer-events-none" />
-            <h3 className="text-vy-grey text-[10px] uppercase tracking-widest mb-4 font-bold">Profile Details</h3>
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 relative overflow-hidden shadow-sm">
+            <h3 className="text-[#75665C] text-[10px] uppercase tracking-widest mb-4 font-bold">Profile Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="flex flex-col">
-                <span className="text-[10px] text-vy-border uppercase tracking-widest">Name</span>
-                <span className="text-base font-bold text-vy-white mt-1">{profile?.name || user?.displayName || 'N/A'}</span>
+                <span className="text-[10px] text-[#75665C] uppercase tracking-widest font-semibold">Name</span>
+                <span className="text-base font-bold text-[#30231F] mt-1">{profile?.name || user?.displayName || 'N/A'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-vy-border uppercase tracking-widest">Email</span>
-                <span className="text-sm text-vy-light mt-1 truncate">{user?.email}</span>
+                <span className="text-[10px] text-[#75665C] uppercase tracking-widest font-semibold">Email</span>
+                <span className="text-sm font-medium text-[#30231F] mt-1 truncate">{user?.email}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-vy-border uppercase tracking-widest">Mobile</span>
-                <span className="text-sm text-vy-light mt-1">{profile?.phone || 'Not added'}</span>
+                <span className="text-[10px] text-[#75665C] uppercase tracking-widest font-semibold">Mobile</span>
+                <span className="text-sm font-medium text-[#30231F] mt-1">{profile?.phone || 'Not added'}</span>
               </div>
             </div>
           </div>
@@ -137,31 +136,31 @@ const Overview = () => {
           {/* Wallet & Referral Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Wallet Balance */}
-            <div className="bg-vy-card border border-vy-border p-6 relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute top-4 right-4 text-vy-border/20"><Wallet size={40} /></div>
+            <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 relative overflow-hidden flex flex-col justify-between shadow-sm">
+              <div className="absolute top-4 right-4 text-[#D4BEA5]/40"><Wallet size={40} /></div>
               <div>
-                <span className="text-[10px] text-vy-grey uppercase tracking-widest mb-1 block">VYBERA Wallet</span>
-                <h4 className="font-display text-3xl font-bold text-vy-white">{profile?.rewardPoints || 0} Points</h4>
-                <p className="text-vy-grey text-xs mt-1">Equivalent to ₹{(profile?.rewardPoints || 0).toLocaleString()} cashback</p>
+                <span className="text-[10px] text-[#75665C] uppercase tracking-widest mb-1 block font-bold">VYBERA Wallet</span>
+                <h4 className="font-display text-3xl font-bold text-[#590907]">{profile?.rewardPoints || 0} Points</h4>
+                <p className="text-[#75665C] text-xs mt-1 font-medium">Equivalent to ₹{(profile?.rewardPoints || 0).toLocaleString()} cashback</p>
               </div>
-              <div className="mt-6 pt-4 border-t border-vy-border/40 text-[10px] text-vy-grey uppercase tracking-wider">
+              <div className="mt-6 pt-4 border-t border-[#D4BEA5] text-[10px] text-[#75665C] uppercase tracking-wider font-semibold">
                 Points auto-applied at checkout payment.
               </div>
             </div>
 
             {/* Referrals & Invites */}
-            <div className="bg-vy-card border border-vy-border p-6 flex flex-col justify-between">
+            <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 flex flex-col justify-between shadow-sm">
               <div>
-                <span className="text-[10px] text-vy-grey uppercase tracking-widest mb-1 block">Referrals program</span>
-                <h4 className="font-display text-3xl font-bold text-vy-white">{referralCount} Friends Joined</h4>
-                <p className="text-vy-grey text-xs mt-1">Earn points for every friend who registers and shops.</p>
+                <span className="text-[10px] text-[#75665C] uppercase tracking-widest mb-1 block font-bold">Referrals program</span>
+                <h4 className="font-display text-3xl font-bold text-[#30231F]">{referralCount} Friends Joined</h4>
+                <p className="text-[#75665C] text-xs mt-1 font-medium">Earn points for every friend who registers and shops.</p>
               </div>
               <div className="mt-4">
-                <span className="text-[9px] text-vy-border uppercase tracking-widest block mb-2">Share Invite Link</span>
-                <div className="flex items-center gap-2 bg-vy-black/40 border border-vy-border px-3 py-2">
-                  <span className="text-[10px] font-mono text-vy-light truncate flex-1">{referralLink}</span>
-                  <button onClick={handleCopyLink} className="text-vy-gold hover:text-vy-white transition-colors">
-                    {copiedLink ? <Check size={14} /> : <Copy size={14} />}
+                <span className="text-[9px] text-[#75665C] uppercase tracking-widest block mb-2 font-bold">Share Invite Link</span>
+                <div className="flex items-center gap-2 bg-white border border-[#D4BEA5] px-3 py-2">
+                  <span className="text-[10px] font-mono text-[#30231F] font-semibold truncate flex-1">{referralLink}</span>
+                  <button onClick={handleCopyLink} className="text-[#590907] hover:underline transition-colors p-1" title="Copy Link">
+                    {copiedLink ? <Check size={14} className="text-emerald-700" /> : <Copy size={14} />}
                   </button>
                 </div>
               </div>
@@ -169,28 +168,30 @@ const Overview = () => {
           </div>
 
           {/* Activity Timeline */}
-          <div className="bg-vy-card border border-vy-border p-6">
-            <h3 className="text-vy-grey text-[10px] uppercase tracking-widest mb-6 font-bold flex items-center gap-2">
-              <Clock size={12} /> Recent Activity Timeline
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 shadow-sm">
+            <h3 className="text-[#75665C] text-[10px] uppercase tracking-widest mb-6 font-bold flex items-center gap-2">
+              <Clock size={12} className="text-[#590907]" /> Recent Activity Timeline
             </h3>
             {timelineEvents.length === 0 ? (
-              <p className="text-vy-grey text-xs py-4 text-center">No recent activities recorded.</p>
+              <p className="text-[#75665C] text-xs py-4 text-center">No recent activities recorded.</p>
             ) : (
-              <div className="relative border-l border-vy-border pl-6 space-y-6">
+              <div className="relative border-l border-[#D4BEA5] pl-6 space-y-6">
                 {timelineEvents.map((evt) => {
                   const Icon = evt.icon;
                   return (
                     <div key={evt.id} className="relative">
                       {/* Dot icon */}
-                      <span className={`absolute -left-[35px] top-0.5 rounded-full border p-1 ${evt.color}`}>
+                      <span className={`absolute -left-[35px] top-0.5 rounded-full border p-1 bg-white ${
+                        evt.type === 'order' ? 'text-[#590907] border-[#590907]' : 'text-emerald-700 border-emerald-500'
+                      }`}>
                         <Icon size={12} />
                       </span>
                       <div>
-                        <span className="text-[9px] text-vy-border font-bold uppercase tracking-widest flex items-center gap-1.5 mb-1">
+                        <span className="text-[10px] text-[#75665C] font-semibold uppercase tracking-widest flex items-center gap-1.5 mb-1">
                           <Calendar size={10} /> {new Date(evt.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
-                        <h4 className="text-sm font-bold text-vy-white uppercase tracking-wider">{evt.title}</h4>
-                        <p className="text-xs text-vy-grey mt-0.5 leading-relaxed">{evt.desc}</p>
+                        <h4 className="text-sm font-bold text-[#30231F] uppercase tracking-wider">{evt.title}</h4>
+                        <p className="text-xs text-[#75665C] mt-0.5 leading-relaxed font-medium">{evt.desc}</p>
                       </div>
                     </div>
                   );
@@ -203,16 +204,16 @@ const Overview = () => {
         {/* Right Col: Quick Stats & Coupons */}
         <div className="space-y-6">
           {/* Quick Stats Summary */}
-          <div className="bg-vy-card border border-vy-border p-6 space-y-4">
-            <h3 className="text-vy-grey text-[10px] uppercase tracking-widest font-bold">Account Stats</h3>
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 space-y-4 shadow-sm">
+            <h3 className="text-[#75665C] text-[10px] uppercase tracking-widest font-bold">Account Stats</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="border border-vy-border/40 p-4 bg-vy-black/20 text-center">
-                <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Total Orders</span>
-                <span className="text-2xl font-bold text-vy-white font-display mt-1 block">{orderCount}</span>
+              <div className="border border-[#D4BEA5] p-4 bg-white text-center">
+                <span className="text-[9px] text-[#75665C] uppercase tracking-widest block font-bold">Total Orders</span>
+                <span className="text-2xl font-bold text-[#590907] font-display mt-1 block font-mono">{orderCount}</span>
               </div>
-              <div className="border border-vy-border/40 p-4 bg-vy-black/20 text-center">
-                <span className="text-[9px] text-vy-grey uppercase tracking-widest block">Member Since</span>
-                <span className="text-2xl font-bold text-vy-white font-display mt-1 block">
+              <div className="border border-[#D4BEA5] p-4 bg-white text-center">
+                <span className="text-[9px] text-[#75665C] uppercase tracking-widest block font-bold">Member Since</span>
+                <span className="text-2xl font-bold text-[#30231F] font-display mt-1 block font-mono">
                   {profile?.createdAt?.toDate?.()?.getFullYear() || new Date(user?.metadata?.creationTime).getFullYear() || '2025'}
                 </span>
               </div>
@@ -220,35 +221,35 @@ const Overview = () => {
           </div>
 
           {/* Active Coupons panel */}
-          <div className="bg-vy-card border border-vy-border p-6 flex flex-col justify-between">
+          <div className="bg-[#FAF5ED] border border-[#D4BEA5] p-6 flex flex-col justify-between shadow-sm">
             <div>
-              <h3 className="text-vy-grey text-[10px] uppercase tracking-widest mb-4 font-bold flex items-center gap-2">
-                <Gift size={12} /> Active Coupons
+              <h3 className="text-[#75665C] text-[10px] uppercase tracking-widest mb-4 font-bold flex items-center gap-2">
+                <Gift size={12} className="text-[#590907]" /> Active Coupons
               </h3>
               {coupons.length === 0 ? (
-                <div className="border border-vy-border/40 bg-vy-black/10 p-6 text-center text-vy-grey text-xs">
+                <div className="border border-[#D4BEA5] bg-[#F3E7D8]/60 p-6 text-center text-[#75665C] text-xs font-medium">
                   No active reward coupons. Spin the wheel to unlock!
                 </div>
               ) : (
                 <div className="space-y-3">
                   {coupons.map(cp => (
-                    <div key={cp.id} className="p-3 border border-vy-border bg-vy-black/40 flex items-center justify-between group hover:border-vy-grey transition-all">
+                    <div key={cp.id} className="p-3 border border-[#D4BEA5] bg-white flex items-center justify-between group hover:border-[#590907] transition-all">
                       <div>
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-vy-white text-xs font-bold select-all">{cp.code}</span>
-                          <span className="text-[9px] px-1 bg-vy-gold/20 text-vy-gold uppercase tracking-wider font-bold">
+                          <span className="font-mono text-[#590907] text-xs font-bold select-all">{cp.code}</span>
+                          <span className="text-[9px] px-1 bg-[#590907]/10 text-[#590907] uppercase tracking-wider font-bold">
                             {cp.value}{cp.type === 'percentage' ? '%' : ' OFF'}
                           </span>
                         </div>
                         {cp.expiry && (
-                          <span className="text-[9px] text-vy-border block mt-1">
+                          <span className="text-[10px] text-[#75665C] block mt-1 font-medium">
                             Expires {new Date(cp.expiry).toLocaleDateString()}
                           </span>
                         )}
                       </div>
                       <button 
                         onClick={() => handleCopyCoupon(cp.code)}
-                        className="p-1.5 border border-vy-border text-vy-grey hover:text-vy-gold hover:border-vy-gold transition-all"
+                        className="p-1.5 border border-[#D4BEA5] text-[#75665C] hover:text-[#590907] hover:border-[#590907] transition-all"
                         title="Copy Code"
                       >
                         <Copy size={12} />
