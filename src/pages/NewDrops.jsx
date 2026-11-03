@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Flame, SlidersHorizontal, X, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ui/ProductCard';
-import { getNewDropProducts } from '../firebase/products';
+import { getNewDropProducts, listenToProducts, isProductNewDropActive } from '../firebase/products';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
 
@@ -23,15 +23,26 @@ const NewDrops = () => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   useEffect(() => {
-    getNewDropProducts()
-      .then((drops) => {
+    const unsubscribe = listenToProducts(
+      (allProds) => {
+        const drops = (allProds || [])
+          .filter((p) => isProductNewDropActive(p))
+          .sort((a, b) => {
+            const prioDiff = (Number(b.newDropPriority) || 0) - (Number(a.newDropPriority) || 0);
+            if (prioDiff !== 0) return prioDiff;
+            return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+          });
         setProducts(drops);
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching New Drops:', err);
-        setLoading(false);
-      });
+      },
+      () => {
+        getNewDropProducts().then((drops) => {
+          setProducts(drops);
+          setLoading(false);
+        });
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   // Filter products

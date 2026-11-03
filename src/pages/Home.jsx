@@ -26,6 +26,9 @@ import {
   getNewDropProducts,
   getSaleProducts,
   getCollectionProducts,
+  isProductNewDropActive,
+  isProductSaleActive,
+  listenToProducts,
 } from '../firebase/products';
 import { getDiwaliCampaign, isCampaignActive, DEFAULT_DIWALI_CAMPAIGN } from '../firebase/diwaliCampaign';
 import { getShoppableVideos, DEFAULT_SHOPPABLE_VIDEOS } from '../firebase/shoppableVideos';
@@ -137,58 +140,54 @@ const Home = () => {
   const videoRef = useRef(null);
 
   useEffect(() => {
-    // Parallel fetching for ultra-fast initial render
+    // 1. Fetch static campaign & videos
     Promise.all([
       getDiwaliCampaign().catch(() => DEFAULT_DIWALI_CAMPAIGN),
-      getNewDropProducts().catch(() => []),
-      getSaleProducts().catch(() => []),
-      getCollectionProducts().catch(() => []),
-      getFeaturedProducts().catch(() => []),
       getShoppableVideos().catch(() => DEFAULT_SHOPPABLE_VIDEOS),
-    ])
-      .then(([camp, dropList, saleList, colList, featList, vidList]) => {
-        setCampaign(camp);
+    ]).then(([camp, vidList]) => {
+      setCampaign(camp);
+      setVideos(vidList && vidList.length > 0 ? vidList : DEFAULT_SHOPPABLE_VIDEOS);
+    });
 
-        // Populate drops
-        if (dropList && dropList.length > 0) {
-          setDrops(dropList.slice(0, 4));
+    // 2. Real-time product synchronization with Firestore
+    const unsubscribe = listenToProducts(
+      (allProds) => {
+        if (allProds && allProds.length > 0) {
+          // Drops: strictly active drops or newest live products
+          const dropList = allProds
+            .filter((p) => isProductNewDropActive(p))
+            .sort((a, b) => (Number(b.newDropPriority) || 0) - (Number(a.newDropPriority) || 0));
+          setDrops(dropList.length > 0 ? dropList.slice(0, 4) : allProds.slice(0, 4));
+
+          // Sale: strictly active sale products
+          const saleList = allProds
+            .filter((p) => isProductSaleActive(p))
+            .sort((a, b) => (Number(b.salePriority) || 0) - (Number(a.salePriority) || 0));
+          setSaleProducts(saleList.length > 0 ? saleList.slice(0, 4) : allProds.filter(p => p.salePrice || (p.compareAtPrice && p.compareAtPrice > p.price)).slice(0, 4));
+
+          // Collections: products assigned to collections
+          const colList = allProds.filter((p) => p.showInCollections !== false);
+          setCollections(colList.length > 0 ? colList.slice(0, 4) : allProds.slice(0, 4));
+
+          // Bestsellers / Featured
+          const featList = allProds.filter((p) => p.isFeatured || p.featured);
+          setBestsellers(featList.length > 0 ? featList.slice(0, 6) : allProds.slice(0, 6));
         } else {
-          setDrops(FALLBACK_PRODUCTS.slice(0, 4));
+          // If Firestore is empty (e.g. all products deleted by admin), clear all sections
+          setDrops([]);
+          setSaleProducts([]);
+          setCollections([]);
+          setBestsellers([]);
         }
-
-        // Populate sale products
-        if (saleList && saleList.length > 0) {
-          setSaleProducts(saleList.slice(0, 4));
-        } else {
-          setSaleProducts(FALLBACK_PRODUCTS.filter((p) => p.compareAtPrice > p.price).slice(0, 4));
-        }
-
-        // Populate collections
-        if (colList && colList.length > 0) {
-          setCollections(colList.slice(0, 4));
-        } else {
-          setCollections(FALLBACK_PRODUCTS.slice(0, 4));
-        }
-
-        // Populate bestsellers (4-6 products)
-        if (featList && featList.length >= 4) {
-          setBestsellers(featList.slice(0, 6));
-        } else {
-          setBestsellers(FALLBACK_PRODUCTS.slice(0, 6));
-        }
-
-        setVideos(vidList && vidList.length > 0 ? vidList : DEFAULT_SHOPPABLE_VIDEOS);
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Home data load error:', err);
-        setDrops(FALLBACK_PRODUCTS.slice(0, 4));
-        setSaleProducts(FALLBACK_PRODUCTS.slice(0, 4));
-        setCollections(FALLBACK_PRODUCTS.slice(0, 4));
-        setBestsellers(FALLBACK_PRODUCTS.slice(0, 6));
-        setVideos(DEFAULT_SHOPPABLE_VIDEOS);
+      },
+      (err) => {
+        console.error('Home real-time products sync error:', err);
         setLoading(false);
-      });
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const diwaliActive = isCampaignActive(campaign);

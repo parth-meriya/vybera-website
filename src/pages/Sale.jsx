@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Tag, SlidersHorizontal, Percent, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ui/ProductCard';
-import { getSaleProducts } from '../firebase/products';
+import { getSaleProducts, listenToProducts, isProductSaleActive } from '../firebase/products';
 import { getProductPricing } from '../utils/pricing';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
@@ -25,15 +25,26 @@ const Sale = () => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   useEffect(() => {
-    getSaleProducts()
-      .then((saleList) => {
+    const unsubscribe = listenToProducts(
+      (allProds) => {
+        const saleList = (allProds || [])
+          .filter((p) => isProductSaleActive(p))
+          .sort((a, b) => {
+            const prioDiff = (Number(b.salePriority) || 0) - (Number(a.salePriority) || 0);
+            if (prioDiff !== 0) return prioDiff;
+            return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+          });
         setProducts(saleList);
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching Sale products:', err);
-        setLoading(false);
-      });
+      },
+      () => {
+        getSaleProducts().then((saleList) => {
+          setProducts(saleList);
+          setLoading(false);
+        });
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   // Filter products

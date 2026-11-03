@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, SlidersHorizontal, Search, Layers, ArrowRight } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getCollectionProducts } from '../firebase/products';
+import { getCollectionProducts, listenToProducts } from '../firebase/products';
 import { getSections } from '../firebase/sections';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
@@ -45,19 +45,27 @@ const Collections = () => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      getCollectionProducts(),
-      getSections().catch(() => []),
-    ])
-      .then(([allCollectionProducts, dynamicSections]) => {
-        setProducts(allCollectionProducts);
-        setSections(dynamicSections || []);
+    getSections().then((s) => setSections(s || [])).catch(() => setSections([]));
+
+    const unsubscribe = listenToProducts(
+      (allProds) => {
+        const colls = (allProds || []).filter((p) => p.showInCollections !== false);
+        setProducts(colls);
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching collections:', err);
-        setLoading(false);
-      });
+      },
+      () => {
+        getCollectionProducts()
+          .then((allCollectionProducts) => {
+            setProducts(allCollectionProducts || []);
+            setLoading(false);
+          })
+          .catch((err) => {
+            console.error('Error fetching collections:', err);
+            setLoading(false);
+          });
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   // Update selected category when URL query parameter changes

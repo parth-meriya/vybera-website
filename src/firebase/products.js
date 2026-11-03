@@ -15,6 +15,7 @@ import {
 import { ref, deleteObject } from 'firebase/storage';
 import { db, storage } from './config';
 import { isProductSaleActive, isProductNewDropActive } from '../utils/pricing';
+export { isProductSaleActive, isProductNewDropActive };
 
 export const uploadProductImage = (file) => {
   return new Promise((resolve, reject) => {
@@ -38,6 +39,24 @@ export const getProducts = async () => {
   const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+};
+
+/**
+ * Real-time listener for all products across client storefront and admin.
+ */
+export const listenToProducts = (callback, onError) => {
+  const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const prods = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      callback(prods);
+    },
+    (err) => {
+      console.warn('Realtime listenToProducts snapshot error:', err);
+      if (onError) onError(err);
+    }
+  );
 };
 
 export const getFeaturedProducts = async () => {

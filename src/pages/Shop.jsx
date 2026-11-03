@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, X, Flame } from 'lucide-react';
 import ProductCard from '../components/ui/ProductCard';
-import { getProducts } from '../firebase/products';
+import { getProducts, listenToProducts } from '../firebase/products';
 import SEO from '../components/SEO';
 import BackButton from '../components/ui/BackButton';
 
@@ -112,18 +112,30 @@ const Shop = () => {
   const [activeFilterParam, setActiveFilterParam] = useState('');
 
   useEffect(() => {
-    getProducts()
-      .then((p) => {
-        const list = p && p.length > 0 ? p : FALLBACK_PRODUCTS;
+    const unsubscribe = listenToProducts(
+      (p) => {
+        const list = p || [];
         setProducts(list);
         setFiltered(list);
         setLoading(false);
-      })
-      .catch(() => {
-        setProducts(FALLBACK_PRODUCTS);
-        setFiltered(FALLBACK_PRODUCTS);
-        setLoading(false);
-      });
+      },
+      () => {
+        getProducts()
+          .then((p) => {
+            const list = p || [];
+            setProducts(list);
+            setFiltered(list);
+            setLoading(false);
+          })
+          .catch(() => {
+            setProducts([]);
+            setFiltered([]);
+            setLoading(false);
+          });
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   // Parse URL search params
