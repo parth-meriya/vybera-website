@@ -48,10 +48,24 @@ class ErrorBoundary extends Component {
               color: '#999',
               fontSize: '0.875rem',
               lineHeight: '1.6',
-              marginBottom: '1.5rem',
+              marginBottom: '1rem',
             }}>
               Something went wrong. Please refresh the page or try again later.
             </p>
+            {this.state.error && (
+              <p style={{
+                color: '#e11d48',
+                fontSize: '0.75rem',
+                fontFamily: 'monospace',
+                background: 'rgba(255,255,255,0.05)',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                marginBottom: '1.5rem',
+                wordBreak: 'break-word',
+              }}>
+                {this.state.error.message || String(this.state.error)}
+              </p>
+            )}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => window.location.reload()}

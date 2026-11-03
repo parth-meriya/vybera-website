@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllUsers } from '../../firebase/users';
 import { getOrdersByUser, createOrder, deleteOrder, updateOrderFull } from '../../firebase/orders';
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, RefreshCw, Sparkles, Ticket, ShoppingBag, Calendar, Wallet, Activity } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Users, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, RefreshCw, Sparkles, Ticket, ShoppingBag, Calendar, Wallet, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [userOrders, setUserOrders] = useState({});
   const [loadingOrders, setLoadingOrders] = useState(null);
@@ -36,8 +37,21 @@ const AdminUsers = () => {
   const [editingOrderId, setEditingOrderId] = useState(null);
   const [submittingOrder, setSubmittingOrder] = useState(false);
 
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const u = await getAllUsers();
+      setUsers(u || []);
+    } catch (err) {
+      console.error('Failed to load users:', err);
+      toast.error('Failed to sync users: ' + (err.message || 'Check connection'), { className: 'toast-vybera' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getAllUsers().then(u => { setUsers(u); setLoading(false); });
+    loadUsers();
   }, []);
 
   const toggleUser = async (uid) => {
