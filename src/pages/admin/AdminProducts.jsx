@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, X, Upload, Image, Sliders, Flame, Tag, Layers, Search, Sparkles } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Upload, Image, Sliders, Flame, Tag, Layers, Search, Sparkles, RefreshCw } from 'lucide-react';
 import { getProducts, addProduct, updateProduct, deleteProduct, bulkUpdateProducts } from '../../firebase/products';
 import { getSections } from '../../firebase/sections';
 import { isProductSaleActive, isProductNewDropActive } from '../../utils/pricing';
@@ -1038,6 +1038,15 @@ const AdminProducts = () => {
               </motion.button>
             )}
           </AnimatePresence>
+          <button
+            type="button"
+            onClick={fetchProducts}
+            disabled={loading}
+            title="Refresh product list from database"
+            className="btn-secondary flex items-center gap-2 text-xs font-bold"
+          >
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
           {products.length > 0 && (
             <button
               onClick={() => setShowBulkModal(true)}

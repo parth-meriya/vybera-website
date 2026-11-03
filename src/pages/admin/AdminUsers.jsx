@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllUsers } from '../../firebase/users';
 import { getOrdersByUser, createOrder, deleteOrder, updateOrderFull } from '../../firebase/orders';
-import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, Ticket, ShoppingBag, Calendar, Wallet, Activity } from 'lucide-react';
+import { ChevronDown, ChevronUp, MessageCircle, Phone, Mail, Search, User, Plus, X, Package, Trash2, Edit2, Eye, RotateCw, RefreshCw, Sparkles, Ticket, ShoppingBag, Calendar, Wallet, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -232,11 +232,23 @@ const AdminUsers = () => {
 
   return (
     <div className="p-8 space-y-6">
-      <div className="mb-6 pb-4 border-b border-[#D4BEA5]">
-        <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
-        <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">
-          Customers <span className="text-[#75665C] font-normal text-lg">({filteredUsers.length}{filteredUsers.length !== users.length ? ` / ${users.length}` : ''})</span>
-        </h1>
+      <div className="mb-6 pb-4 border-b border-[#D4BEA5] flex items-end justify-between">
+        <div>
+          <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
+          <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">
+            Customers <span className="text-[#75665C] font-normal text-lg">({filteredUsers.length}{filteredUsers.length !== users.length ? ` / ${users.length}` : ''})</span>
+          </h1>
+        </div>
+        <button
+          type="button"
+          onClick={loadUsers}
+          disabled={loading}
+          title="Synchronize live users from database"
+          className="flex items-center gap-2 px-3.5 py-2 border text-xs font-semibold tracking-widest uppercase bg-[#FAF5ED] border-[#D4BEA5] text-[#30231F] hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs disabled:opacity-60"
+        >
+          <RefreshCw size={13} className={loading ? 'animate-spin text-[#590907]' : 'text-[#75665C]'} />
+          <span>{loading ? 'Syncing...' : 'Refresh Users'}</span>
+        </button>
       </div>
 
       {/* Search & Filters */}
@@ -710,9 +722,9 @@ const AdminUsers = () => {
                           {/* Spin Wheel History */}
                           <div>
                             <div className="flex items-center gap-2 mb-3">
-                              <RotateCw size={13} className="text-vy-accent" />
-                              <h4 className="text-vy-accent text-[10px] tracking-widest uppercase font-bold">Spin History</h4>
-                              <span className="text-vy-grey text-[10px]">({userDetail.spinHistory.length})</span>
+                              <Sparkles size={13} className="text-[#590907]" />
+                              <h4 className="text-[#590907] text-[10px] tracking-widest uppercase font-bold">Spin History</h4>
+                              <span className="text-[#75665C] text-[10px]">({userDetail.spinHistory.length})</span>
                             </div>
 
                             {userDetail.spinHistory.length === 0 ? (

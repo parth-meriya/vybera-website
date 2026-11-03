@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Package, ShoppingCart, Users, DollarSign, TrendingUp, Plus, Copy, Check } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, TrendingUp, Plus, Copy, Check, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '../../firebase/products';
 import { isProductSaleActive, isProductNewDropActive } from '../../utils/pricing';
@@ -32,16 +32,26 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchDashboardData = async () => {
+    setRefreshing(true);
+    try {
+      const [p, o, u] = await Promise.all([getProducts(), getAllOrders(), getAllUsers()]);
+      setProducts(p);
+      setOrders(o);
+      setUsers(u);
+      toast.success('Live dashboard analytics synchronized.', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error('Failed to sync dashboard: ' + err.message, { className: 'toast-vybera' });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    Promise.all([getProducts(), getAllOrders(), getAllUsers()]).then(
-      ([p, o, u]) => {
-        setProducts(p);
-        setOrders(o);
-        setUsers(u);
-        setLoading(false);
-      }
-    );
+    fetchDashboardData();
   }, []);
 
   const revenue = orders
@@ -94,9 +104,21 @@ const AdminDashboard = () => {
           <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
           <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">Dashboard</h1>
         </div>
-        <Link to="/admin/products" className="btn-primary flex items-center gap-2 text-xs">
-          <Plus size={14} /> Add Product
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={fetchDashboardData}
+            disabled={refreshing}
+            title="Synchronize live dashboard data from Firestore"
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-[#FAF5ED] border border-[#D4BEA5] text-[#30231F] hover:bg-[#E8D2B5] text-xs font-bold tracking-wider uppercase transition-all rounded-sm shadow-xs disabled:opacity-60"
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin text-[#590907]' : 'text-[#75665C]'} />
+            <span>{refreshing ? 'Syncing...' : 'Refresh Live'}</span>
+          </button>
+          <Link to="/admin/products" className="btn-primary flex items-center gap-2 text-xs">
+            <Plus size={14} /> Add Product
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}

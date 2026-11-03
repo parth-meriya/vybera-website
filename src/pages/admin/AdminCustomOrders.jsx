@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getAllCustomOrders, updateCustomOrderStatus, updateCustomDesignStatus } from '../../firebase/customOrders';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { Check, Clock, MessageSquare, ExternalLink, ChevronUp, ChevronDown } from 'lucide-react';
+import { Check, Clock, MessageSquare, ExternalLink, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
 
 const STATUS_OPTIONS = ['Pending', 'Processing', 'Completed', 'Cancelled'];
 
@@ -18,15 +18,16 @@ const AdminCustomOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        // 1. Fetch from dedicated customOrders collection
-        const customOrdersDirect = await getAllCustomOrders();
+  const fetchAll = async () => {
+    setRefreshing(true);
+    try {
+      // 1. Fetch from dedicated customOrders collection
+      const customOrdersDirect = await getAllCustomOrders();
 
-        // 2. Fetch from orders collection — extract products with isCustom: true
-        const ordersSnap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
+      // 2. Fetch from orders collection — extract products with isCustom: true
+      const ordersSnap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
         const fromOrders = [];
         ordersSnap.docs.forEach(doc => {
           const data = doc.data();
@@ -85,8 +86,11 @@ const AdminCustomOrders = () => {
         console.error('Failed to fetch custom orders:', err);
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
-    };
+  };
+
+  useEffect(() => {
     fetchAll();
   }, []);
 
@@ -110,11 +114,23 @@ const AdminCustomOrders = () => {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="mb-8">
-        <p className="text-[#75665C] text-xs tracking-widest uppercase mb-1">Admin</p>
-        <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">
-          Custom Orders
-        </h1>
+      <div className="mb-8 flex items-end justify-between border-b border-[#D4BEA5] pb-4">
+        <div>
+          <p className="text-[#75665C] text-xs tracking-widest uppercase mb-1">Admin Panel</p>
+          <h1 className="font-display font-bold text-2xl tracking-wider text-[#30231F]">
+            Custom Orders
+          </h1>
+        </div>
+        <button
+          type="button"
+          onClick={fetchAll}
+          disabled={refreshing}
+          title="Synchronize live custom orders"
+          className="flex items-center gap-2 px-3.5 py-2 border text-xs font-semibold tracking-widest uppercase bg-[#FAF5ED] border-[#D4BEA5] text-[#30231F] hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs disabled:opacity-60"
+        >
+          <RefreshCw size={13} className={refreshing ? 'animate-spin text-[#590907]' : 'text-[#75665C]'} />
+          <span>{refreshing ? 'Syncing...' : 'Refresh'}</span>
+        </button>
       </div>
 
       {/* Stats strip */}

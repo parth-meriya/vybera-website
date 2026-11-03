@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react';
 import {
   getAllCoupons,
   addCoupon,
@@ -178,9 +178,21 @@ const AdminCoupons = () => {
           <p className="text-[#75665C] text-xs font-semibold tracking-widest uppercase mb-1">Admin Panel</p>
           <h1 className="font-display font-bold text-2xl md:text-3xl tracking-wider text-[#30231F]">Coupons</h1>
         </div>
-        <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs font-bold">
-          <Plus size={14} /> Create Coupon
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={fetch}
+            disabled={loading}
+            title="Synchronize live coupons from database"
+            className="flex items-center gap-2 px-3.5 py-2 border text-xs font-semibold tracking-widest uppercase bg-[#FAF5ED] border-[#D4BEA5] text-[#30231F] hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs disabled:opacity-60"
+          >
+            <RefreshCw size={13} className={loading ? 'animate-spin text-[#590907]' : 'text-[#75665C]'} />
+            <span>{loading ? 'Syncing...' : 'Refresh'}</span>
+          </button>
+          <button onClick={() => setModal({})} className="btn-primary flex items-center gap-2 text-xs font-bold">
+            <Plus size={14} /> Create Coupon
+          </button>
+        </div>
       </div>
 
       {loading ? (

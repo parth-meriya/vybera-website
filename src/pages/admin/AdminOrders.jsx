@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { listenToAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus, deleteOrder, updateOrderFull } from '../../firebase/orders';
+import { listenToAllOrders, getAllOrders, updateOrderStatus, updateOrderTracking, updateReturnStatus, deleteOrder, updateOrderFull } from '../../firebase/orders';
 import { printShippingLabel, printOrderInvoice } from '../../utils/billGenerator';
 import { motion } from 'framer-motion';
-import { FileText, Package, RotateCcw, SlidersHorizontal, X, Search, ArrowUpDown, MessageCircle, Trash2, Edit3, Save } from 'lucide-react';
+import { FileText, Package, ArrowLeftRight, RefreshCw, SlidersHorizontal, X, Search, ArrowUpDown, MessageCircle, Trash2, Edit3, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
@@ -25,6 +25,7 @@ const AdminOrders = () => {
   const [trackingInputs, setTrackingInputs] = useState({});
   const [editingOrder, setEditingOrder] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
   // ── Filters ──────────────────────────────────
   const [showFilters, setShowFilters] = useState(false);
@@ -108,30 +109,51 @@ const AdminOrders = () => {
     setSortOrder('newest');
   };
 
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const liveOrders = await getAllOrders();
+      setOrders(liveOrders);
+      toast.success('Live orders synchronized with database.', { className: 'toast-vybera' });
+    } catch (err) {
+      toast.error('Failed to sync live orders: ' + err.message, { className: 'toast-vybera' });
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const handleStatusChange = async (id, status) => {
     try {
-      const { auth } = await import('../../firebase/config');
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Not authenticated');
+      let apiSuccess = false;
+      try {
+        const { auth } = await import('../../firebase/config');
+        const token = await auth.currentUser?.getIdToken();
+        if (token) {
+          const res = await fetch('/api/admin/update-order-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              orderId: id,
+              newStatus: status,
+              trackingId: trackingInputs[id]
+            })
+          });
+          if (res.ok) apiSuccess = true;
+        }
+      } catch (apiErr) {
+        console.warn('API update failed, writing directly to Firestore:', apiErr);
+      }
 
-      const res = await fetch('/api/admin/update-order-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          orderId: id,
-          newStatus: status,
-          trackingId: trackingInputs[id]
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Update failed');
+      // Direct Firestore write ensures instant sync if API is unavailable
+      if (!apiSuccess) {
+        await updateOrderStatus(id, status);
+      }
 
       setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
-      toast.success('Status updated', { className: 'toast-vybera' });
+      toast.success('Status updated live.', { className: 'toast-vybera' });
     } catch (err) {
       toast.error(err.message, { className: 'toast-vybera' });
     }
@@ -152,28 +174,35 @@ const AdminOrders = () => {
 
   const handleTrackingSave = async (order) => {
     try {
-      const { auth } = await import('../../firebase/config');
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Not authenticated');
+      let apiSuccess = false;
+      try {
+        const { auth } = await import('../../firebase/config');
+        const token = await auth.currentUser?.getIdToken();
+        if (token) {
+          const res = await fetch('/api/admin/update-order-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              orderId: order.id,
+              newStatus: order.status,
+              trackingId: trackingInputs[order.id]
+            })
+          });
+          if (res.ok) apiSuccess = true;
+        }
+      } catch (apiErr) {
+        console.warn('API tracking failed, writing directly to Firestore:', apiErr);
+      }
 
-      const res = await fetch('/api/admin/update-order-status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          orderId: order.id,
-          newStatus: order.status,
-          trackingId: trackingInputs[order.id]
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Update failed');
+      if (!apiSuccess) {
+        await updateOrderTracking(order.id, order.status, trackingInputs[order.id]);
+      }
 
       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, trackingId: trackingInputs[order.id] } : o));
-      toast.success('Tracking ID saved', { className: 'toast-vybera' });
+      toast.success('Tracking ID saved and synced live.', { className: 'toast-vybera' });
     } catch (err) {
       toast.error(err.message, { className: 'toast-vybera' });
     }
@@ -231,6 +260,16 @@ const AdminOrders = () => {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleManualRefresh}
+              disabled={refreshing}
+              title="Synchronize live orders from database"
+              className="flex items-center gap-2 px-4 py-2 border text-xs font-semibold tracking-widest uppercase bg-[#FAF5ED] border-[#D4BEA5] text-[#30231F] hover:bg-[#E8D2B5] transition-all rounded-sm shadow-xs disabled:opacity-60"
+            >
+              <RefreshCw size={13} className={refreshing ? 'animate-spin text-[#590907]' : 'text-[#75665C]'} />
+              <span>{refreshing ? 'Syncing...' : 'Refresh Orders'}</span>
+            </button>
             {hasActiveFilters && (
               <button onClick={clearAllFilters} className="flex items-center gap-1.5 text-[#590907] text-xs font-semibold tracking-widest uppercase hover:underline transition-colors">
                 <X size={12} /> Clear
@@ -571,7 +610,7 @@ const AdminOrders = () => {
                           {order.returnRequest && (
                             <div className="md:col-span-2 pt-4 border-t border-[#D4BEA5] mt-2">
                               <h4 className="text-[#75665C] text-xs font-bold tracking-widest uppercase mb-4 flex items-center gap-2">
-                                <RotateCcw size={14} className="text-[#590907]" />
+                                <ArrowLeftRight size={14} className="text-[#590907]" />
                                 {order.returnRequest.type === 'replace' ? 'Replacement' : 'Return'} Request
                                 <span className={`ml-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border rounded-xs ${
                                   order.returnRequest.status === 'approved' ? 'text-emerald-900 border-emerald-300 bg-emerald-100'

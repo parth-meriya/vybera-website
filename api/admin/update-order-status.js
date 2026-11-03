@@ -45,8 +45,16 @@ export default async function handler(req, res) {
     const idToken = authHeader.split('Bearer ')[1];
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     
-    // Verify admin role
-    if (decodedToken.role !== 'admin' && decodedToken.admin !== true) {
+    // Verify admin role (claim or Firestore fallback)
+    let isAdmin = decodedToken.role === 'admin' || decodedToken.admin === true;
+    if (!isAdmin) {
+      const dbAuth = admin.firestore();
+      const userDoc = await dbAuth.collection('users').doc(decodedToken.uid).get();
+      if (userDoc.exists && userDoc.data()?.role === 'admin') {
+        isAdmin = true;
+      }
+    }
+    if (!isAdmin) {
       return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
 
