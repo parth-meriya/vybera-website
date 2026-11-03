@@ -371,8 +371,13 @@ const Home = () => {
       {/* ══════════════════════════════════════════════════════════════
           SECTION 2 — NEW DROPS
       ══════════════════════════════════════════════════════════════ */}
-      <section className="section-pad bg-[#FAF5ED]">
-        <div className="max-w-7xl mx-auto">
+      <section className="section-pad bg-[#FAF5ED] relative overflow-hidden">
+        {/* Background Streetwear Watermark */}
+        <div className="absolute -bottom-8 right-0 select-none pointer-events-none text-[#E8D2B5]/25 font-display font-black text-[13vw] leading-none uppercase tracking-tighter z-0">
+          NEW DROPS
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-4 border-b border-[#E5DACD]">
             <div>
@@ -410,8 +415,14 @@ const Home = () => {
       {/* ══════════════════════════════════════════════════════════════
           SECTION 3 — SALE (LIMITED TIME OFFERS)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="section-pad bg-[#F3E7D8] border-y border-[#E5DACD] relative">
-        <div className="max-w-7xl mx-auto">
+      <section className="section-pad bg-[#F3E7D8] border-y border-[#E5DACD] relative overflow-hidden">
+        {/* Festive Golden Ambient Glow & Watermark */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[radial-gradient(circle,rgba(212,175,55,0.12),transparent_70%)] pointer-events-none z-0" />
+        <div className="absolute -bottom-8 right-0 select-none pointer-events-none text-[#D4BEA5]/30 font-display font-black text-[15vw] leading-none uppercase tracking-tighter z-0">
+          SALE
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12 pb-4 border-b border-[#D4BEA5]">
             <div>
@@ -449,8 +460,13 @@ const Home = () => {
       {/* ══════════════════════════════════════════════════════════════
           SECTION 4 — SHOP COLLECTIONS (ALL REGULAR & OLDER DESIGNS)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="section-pad bg-[#FAF5ED]">
-        <div className="max-w-7xl mx-auto">
+      <section className="section-pad bg-[#FAF5ED] relative overflow-hidden">
+        {/* Background Brand Watermark */}
+        <div className="absolute -bottom-8 left-0 select-none pointer-events-none text-[#E8D2B5]/25 font-display font-black text-[12vw] leading-none uppercase tracking-tighter z-0">
+          COLLECTIONS
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pb-4 border-b border-[#E5DACD]">
             <div>

@@ -82,22 +82,37 @@ const Sale = () => {
           <BackButton label="Home" to="/" />
         </div>
 
-        {/* ── Editorial Sale Campaign Hero ──────────────────────────── */}
-        <div className="relative mb-12 p-8 md:p-14 bg-gradient-to-r from-[#590907] via-[#430605] to-[#241916] text-[#FAF5ED] overflow-hidden border border-[#D4AF37]/50 shadow-xl">
-          {/* Subtle Golden Glow Accents */}
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.2),transparent_70%)] pointer-events-none" />
+        {/* ── Editorial Sale Campaign Hero with Background Image ──── */}
+        <div className="relative mb-12 p-8 md:p-14 bg-[#30231F] text-[#FAF5ED] overflow-hidden border border-[#D4AF37]/50 shadow-2xl">
+          {/* Festive Banner Backdrop */}
+          <div className="absolute inset-0 z-0">
+            <picture>
+              <source media="(max-width: 768px)" srcSet="/banners/diwali_sale_banner_mobile.png" />
+              <img
+                src="/banners/diwali_sale_banner.png"
+                alt="VYBERA Sale Promotion"
+                className="w-full h-full object-cover object-center md:object-[65%_center] opacity-50"
+                onError={(e) => {
+                  e.target.src = '/hero_banner.png';
+                }}
+              />
+            </picture>
+            {/* Deep Burgundy & Gold Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#430605] via-[#430605]/85 md:via-[#430605]/70 to-[#1E1614]/50 z-10" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.25),transparent_60%)] z-10 pointer-events-none" />
+          </div>
 
           <div className="relative z-10 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37] text-[#30231F] text-[10px] font-black tracking-[0.3em] uppercase mb-4 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#D4AF37] text-[#30231F] text-[10px] font-black tracking-[0.3em] uppercase mb-4 shadow-lg border border-[#FFE57F]">
               <Tag size={12} className="text-[#590907]" />
-              LIMITED PROMOTION ARCHIVE
+              FESTIVE PROMOTION ARCHIVE
             </div>
 
             <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl uppercase tracking-tight text-[#FAF5ED] mb-4 leading-none">
               THE SALE.
             </h1>
 
-            <p className="text-xs sm:text-sm text-[#F3E7D8]/90 uppercase tracking-widest leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm text-[#F3E7D8]/90 uppercase tracking-widest leading-relaxed font-medium max-w-xl">
               Hand-curated archive pieces and seasonal promotion drops.
               Genuine markdown prices with heavyweight luxury construction.
             </p>

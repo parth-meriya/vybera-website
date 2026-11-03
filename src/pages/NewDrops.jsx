@@ -78,14 +78,26 @@ const NewDrops = () => {
           <BackButton label="Home" to="/" />
         </div>
 
-        {/* ── Editorial Campaign Hero ───────────────────────────────── */}
-        <div className="relative mb-12 p-8 md:p-14 bg-[#30231F] text-[#FAF5ED] overflow-hidden border border-[#D4BEA5]/40 shadow-xl">
-          {/* Subtle Burgundy Gradient Accent */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1E1614] via-[#590907]/40 to-transparent z-0" />
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.15),transparent_70%)] pointer-events-none" />
+        {/* ── Editorial Campaign Hero with Background Image ─────────── */}
+        <div className="relative mb-12 p-8 md:p-14 bg-[#1E1614] text-[#FAF5ED] overflow-hidden border border-[#D4BEA5]/40 shadow-2xl">
+          {/* Photoshoot Backdrop Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/Design/7th%20boy/ChatGPT%20Image%20May%204,%202026,%2010_13_22%20AM.png"
+              alt="VYBERA New Drops"
+              className="w-full h-full object-cover object-[70%_25%] md:object-[80%_center] opacity-45 scale-105"
+              onError={(e) => {
+                e.target.src = '/hero_banner.png';
+              }}
+            />
+            {/* Editorial Multi-Stop Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1E1614] via-[#1E1614]/90 md:via-[#1E1614]/75 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1E1614] via-transparent to-transparent z-10" />
+            <div className="absolute inset-0 bg-[#590907]/20 mix-blend-multiply z-10 pointer-events-none" />
+          </div>
 
           <div className="relative z-10 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#590907] text-[#FAF5ED] text-[10px] font-black tracking-[0.3em] uppercase mb-4 shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#590907] text-[#FAF5ED] text-[10px] font-black tracking-[0.3em] uppercase mb-4 shadow-lg border border-[#D4BEA5]/30">
               <Flame size={12} className="text-amber-300" />
               EXCLUSIVE DROP ARCHIVE
             </div>
@@ -94,7 +106,7 @@ const NewDrops = () => {
               NEW DROPS.
             </h1>
 
-            <p className="text-xs sm:text-sm text-[#F3E7D8]/80 uppercase tracking-widest leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm text-[#F3E7D8]/90 uppercase tracking-widest leading-relaxed font-medium max-w-xl">
               Hand-selected limited releases designed for those who shape what’s next.
               Crafted from 240+ GSM heavyweight combed cotton. Once sold out, they are archived forever.
             </p>

@@ -152,21 +152,39 @@ const Collections = () => {
           <BackButton label="Home" to="/" />
         </div>
 
-        {/* ── Editorial Header ──────────────────────────────────────── */}
-        <div className="mb-10 pb-6 border-b border-[#D4BEA5]">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E8D2B5] text-[#590907] text-[10px] font-black tracking-[0.3em] uppercase mb-3">
-            <Sparkles size={12} className="text-[#590907]" />
-            CURATED BRAND CATALOG
+        {/* ── Editorial Header with Background Image ────────────────── */}
+        <div className="relative mb-12 p-8 md:p-14 bg-[#1E1614] text-[#FAF5ED] overflow-hidden border border-[#D4BEA5]/40 shadow-2xl">
+          {/* Photoshoot Backdrop Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/Design/6th%20girl/ChatGPT%20Image%20May%204,%202026,%2009_39_33%20AM.png"
+              alt="VYBERA Collections"
+              className="w-full h-full object-cover object-[75%_center] opacity-40 scale-105"
+              onError={(e) => {
+                e.target.src = '/hero_banner.png';
+              }}
+            />
+            {/* Multi-Stop Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1E1614] via-[#1E1614]/90 md:via-[#1E1614]/75 to-transparent z-10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1E1614] via-transparent to-transparent z-10" />
+            <div className="absolute inset-0 bg-[#590907]/15 mix-blend-multiply z-10 pointer-events-none" />
           </div>
 
-          <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl uppercase tracking-tight text-[#30231F] mb-3 leading-none">
-            COLLECTIONS.
-          </h1>
+          <div className="relative z-10 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#E8D2B5] text-[#590907] text-[10px] font-black tracking-[0.3em] uppercase mb-4 shadow-lg">
+              <Sparkles size={12} className="text-[#590907]" />
+              FULL BRAND CATALOG & ARCHIVES
+            </div>
 
-          <p className="text-xs sm:text-sm text-[#75665C] uppercase tracking-wider max-w-2xl font-medium">
-            Discover our entire design spectrum. Every piece is constructed with 240+ GSM heavyweight combed cotton,
-            engineered drop shoulders, and structured streetwear drapes.
-          </p>
+            <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl uppercase tracking-tight text-[#FAF5ED] mb-4 leading-none">
+              THE COLLECTIONS.
+            </h1>
+
+            <p className="text-xs sm:text-sm text-[#F3E7D8]/90 uppercase tracking-widest leading-relaxed font-medium max-w-xl">
+              Discover our entire design spectrum: Anime, Gaming, Meme, Oversized, Couple, and Bespoke.
+              Constructed with 240+ GSM heavyweight combed cotton and structured streetwear drapes.
+            </p>
+          </div>
         </div>
 
         {/* ── Category Tabs (Horizontal Scroll on Mobile) ───────────── */}
