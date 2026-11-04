@@ -10,23 +10,9 @@
  */
 
 import crypto from 'crypto';
-import admin from 'firebase-admin';
-import Razorpay from 'razorpay';
+import { getFirebaseAdmin } from './_lib/firebase-admin.js';
+import { getRazorpayClient, getRazorpaySecret } from './_lib/razorpay.js';
 import { dispatchNotification } from './_lib/notification-dispatcher.js';
-
-// Lazy-initialize Firebase Admin SDK
-function initAdmin() {
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL || process.env.VITE_FIREBASE_CLIENT_EMAIL,
-        privateKey: (process.env.FIREBASE_PRIVATE_KEY || process.env.VITE_FIREBASE_PRIVATE_KEY)?.trim().replace(/^["']|["']$/g, "").replace(/\\n/g, "\n"),
-      }),
-    });
-  }
-}
-
 const ALLOWED_ORIGINS = [
   'https://vybera.shop',
   'https://www.vybera.shop',
@@ -58,7 +44,7 @@ export default async function handler(req, res) {
     }
 
     // ── 1. Fetch Order from Firestore ─────────────────────────
-    initAdmin();
+    const admin = getFirebaseAdmin();
     const db = admin.firestore();
     const orderRef = db.collection('orders').doc(firebase_order_id);
     
@@ -78,7 +64,7 @@ export default async function handler(req, res) {
 
     const isFreeOrder = (orderData.total || 0) === 0;
 
-    const secret = process.env.RAZORPAY_KEY_SECRET;
+    const secret = getRazorpaySecret();
     if (!secret) {
       throw new Error('Server misconfiguration: RAZORPAY_KEY_SECRET is missing');
     }
@@ -96,10 +82,7 @@ export default async function handler(req, res) {
       }
 
       // ── 3. Verify Amount Paid with Razorpay ───────────────────
-      const razorpay = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: secret,
-      });
+      const razorpay = getRazorpayClient();
 
       const rzpOrder = await razorpay.orders.fetch(razorpay_order_id);
       const expectedAmountPaise = Math.round((orderData.total || 0) * 100);

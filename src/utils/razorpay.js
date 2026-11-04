@@ -72,11 +72,18 @@ export const openRazorpay = async ({
   onFailure,
 }) => {
   const keyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+  if (!keyId) {
+    const errorMsg = 'Payment gateway key is missing. Please contact support.';
+    if (onFailure) onFailure({ reason: 'config_error', message: errorMsg, description: errorMsg });
+    return { success: false, reason: 'config_error', error: errorMsg };
+  }
 
   // ── Step 1: Load SDK ────────────────────────────────────────
   const sdkLoaded = await loadRazorpay();
   if (!sdkLoaded) {
-    throw new Error('Razorpay SDK failed to load. Check your internet connection.');
+    const errorMsg = 'Razorpay SDK failed to load. Please check your internet connection.';
+    if (onFailure) onFailure({ reason: 'sdk_load_failure', message: errorMsg, description: errorMsg });
+    return { success: false, reason: 'sdk_load_failure', error: errorMsg };
   }
 
   // ── Step 2: Create Order on Backend ─────────────────────────
@@ -85,8 +92,8 @@ export const openRazorpay = async ({
     razorpayOrder = await createRazorpayOrder(firebaseOrderId, idToken, receipt);
   } catch (err) {
     console.error('[Razorpay] Backend order creation failed:', err.message);
-    if (onFailure) onFailure({ reason: 'backend_failure', message: err.message });
-    return { success: false, reason: 'backend_failure', error: err.message };
+    if (onFailure) onFailure({ reason: 'backend_failure', message: err.message, description: err.message });
+    return { success: false, reason: 'backend_failure', error: err.message, message: err.message, description: err.message };
   }
 
   // ── Step 3: Open Checkout ────────────────────────────────────

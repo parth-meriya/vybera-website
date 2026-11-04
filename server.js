@@ -12,6 +12,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+import createOrderHandler from './api/create-order.js';
 import spinHandler from './api/campaign/spin.js';
 import verifyPaymentHandler from './api/verify-payment.js';
 
@@ -64,35 +65,7 @@ app.use(cors({
 
 app.use(express.json());
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-app.post('/api/create-order', async (req, res) => {
-  try {
-    const { amount, receipt } = req.body;
-
-    if (!amount || amount < 1) {
-      return res.status(400).json({ error: 'Invalid amount' });
-    }
-
-    console.log(`[Razorpay] Creating order: ₹${amount}`);
-
-    const order = await razorpay.orders.create({
-      amount: Math.round(amount * 100), // ₹ → paise
-      currency: 'INR',
-      receipt: receipt || `vybera_${Date.now()}`,
-      notes: { platform: 'VYBERA', environment: process.env.NODE_ENV || 'production' },
-    });
-
-    console.log(`[Razorpay] Order created: ${order.id}`);
-    return res.json({ id: order.id, amount: order.amount, currency: order.currency, receipt: order.receipt });
-  } catch (error) {
-    console.error('[Razorpay] Error:', error.error?.description || error.message);
-    return res.status(500).json({ error: error.error?.description || error.message });
-  }
-});
+app.post('/api/create-order', createOrderHandler);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'VYBERA Production API' }));

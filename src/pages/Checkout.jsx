@@ -321,6 +321,12 @@ const Checkout = () => {
       return;
     }
 
+    if (!user) {
+      toast.error('Please sign in to place your order.', { className: 'toast-vybera' });
+      navigate('/login', { state: { from: '/checkout' } });
+      return;
+    }
+
     const maxDiscountAllowed = Math.max(0, total - rewardsSettings.minPayable);
     const maxPointsValue = rewardPoints * rewardsSettings.redemptionRate;
     const availablePointsToUse = rewardsSettings.enabled && useRewards 
@@ -334,6 +340,22 @@ const Checkout = () => {
     setStep(3);
 
     try {
+      // Refresh user authentication token before checkout
+      let idToken;
+      try {
+        idToken = await user.getIdToken(true);
+      } catch (tokenErr) {
+        console.error('Failed to get auth token:', tokenErr);
+      }
+
+      if (!idToken) {
+        setPaymentState('idle');
+        setStep(2);
+        toast.error('Session expired. Please log in again.', { className: 'toast-vybera' });
+        navigate('/login', { state: { from: '/checkout' } });
+        return;
+      }
+
       const receipt = `vybera_${user.uid.slice(0, 8)}_${Date.now()}`;
       
       // ─── STAGE 1: Create PENDING order first ───
@@ -369,7 +391,9 @@ const Checkout = () => {
         },
         subtotal: subtotal || 0,
         discount: discount || 0,
-        total: total || 0,
+        total: finalTotal,
+        originalTotal: total,
+        pointsDiscount: availablePointsToUse,
         couponCode: coupon?.code || null,
         pointsRedeemed: pointsRedeemed || 0,
         status: 'pending',
@@ -377,8 +401,8 @@ const Checkout = () => {
         paymentReceipt: receipt,
       };
 
-      // ── 0-Rupee Bypass (100% Free via Coupon) ──
-      if (total === 0) {
+      // ── 0-Rupee Bypass (100% Free via Coupon/Rewards) ──
+      if (finalTotal === 0) {
         setPaymentState('loading');
         try {
           const orderId = await createOrder({ ...orderData, status: 'pending', paymentStatus: 'unpaid' });
@@ -417,9 +441,6 @@ const Checkout = () => {
 
       // Create the pending order in DB
       const orderId = await createOrder(orderData);
-
-      const { auth } = await import('../firebase/config');
-      const idToken = await auth.currentUser?.getIdToken();
 
       // Store order ID for UPI redirect recovery (SPA state is lost on redirect)
       localStorage.setItem('vybera_pending_order', orderId);
@@ -472,7 +493,7 @@ const Checkout = () => {
           console.error('Razorpay payment failed:', error);
           setPaymentState('failed');
           setStep(2); // Go back to review step
-          const msg = error?.description || error?.reason || 'Payment was not completed.';
+          const msg = error?.message || error?.description || (error?.reason === 'backend_failure' ? 'Payment order creation failed on server. Please try again.' : error?.reason) || 'Payment was not completed.';
           toast.error(msg, { className: 'toast-vybera' });
         },
       });
