@@ -69,26 +69,28 @@ const BackgroundMusic = () => {
       audio.volume = 0;
     }
 
-    // Try graceful autoplay
-    const promise = audio.play();
-    if (promise !== undefined) {
-      promise
-        .then(() => {
-          setIsPlaying(true);
-          sessionStorage.setItem(STORAGE_KEY_PREF, 'play');
-        })
-        .catch((error) => {
-          // Autoplay was blocked by browser policy
-          setIsPlaying(false);
-          const promptShown = sessionStorage.getItem(STORAGE_KEY_PROMPT);
-          if (!promptShown && config.showWelcomePrompt !== false && userPref !== 'paused') {
-            // Wait 1.2s for initial hero render before showing subtle festive prompt
-            const timer = setTimeout(() => {
-              setShowPrompt(true);
-            }, 1200);
-            return () => clearTimeout(timer);
-          }
-        });
+    // Only attempt playback if user explicitly requested it in this session
+    if (userPref === 'play') {
+      const promise = audio.play();
+      if (promise !== undefined) {
+        promise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(() => {
+            setIsPlaying(false);
+          });
+      }
+    } else {
+      // Do not eager-load 8.5MB audio over network until user opts in
+      setIsPlaying(false);
+      const promptShown = sessionStorage.getItem(STORAGE_KEY_PROMPT);
+      if (!promptShown && config.showWelcomePrompt !== false && userPref !== 'paused') {
+        const timer = setTimeout(() => {
+          setShowPrompt(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
     }
   }, [config]);
 
@@ -167,7 +169,7 @@ const BackgroundMusic = () => {
         ref={audioRef}
         src={config.musicUrl}
         loop
-        preload="metadata"
+        preload="none"
         onError={() => {
           console.warn('Diwali audio file failed to load, falling back to local ambient.');
         }}

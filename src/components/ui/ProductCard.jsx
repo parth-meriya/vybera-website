@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, Heart, Check } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { getUserProfile, updateUserProfile } from '../../firebase/users';
+import { updateUserProfile } from '../../firebase/users';
 import { getProductPricing } from '../../utils/pricing';
 import toast from 'react-hot-toast';
 
@@ -13,44 +13,35 @@ const DEFAULT_SIZES = ['S', 'M', 'L', 'XL'];
 
 const ProductCard = ({ product }) => {
   const { addItem, campaign } = useCart();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const pricing = getProductPricing(product, campaign);
 
   const availableSizes = product?.sizes && product.sizes.length > 0 ? product.sizes : DEFAULT_SIZES;
   const [selectedSize, setSelectedSize] = useState(availableSizes[0] || 'M');
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [adding, setAdding] = useState(false);
 
-  // Check wishlist state
-  useEffect(() => {
-    if (user?.uid) {
-      getUserProfile(user.uid).then((prof) => {
-        if (prof?.wishlist?.includes(product.id)) {
-          setIsWishlisted(true);
+  // Synchronous wishlist state from shared context (zero Firestore round-trips)
+  const isWishlisted = user?.uid
+    ? Boolean(userProfile?.wishlist?.includes(product.id))
+    : (() => {
+        try {
+          const local = JSON.parse(localStorage.getItem('vy_wishlist') || '[]');
+          return local.includes(product.id);
+        } catch {
+          return false;
         }
-      }).catch(() => {});
-    } else {
-      try {
-        const local = JSON.parse(localStorage.getItem('vy_wishlist') || '[]');
-        if (local.includes(product.id)) setIsWishlisted(true);
-      } catch {
-        // Ignore
-      }
-    }
-  }, [user, product.id]);
+      })();
 
   const toggleWishlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     const nextState = !isWishlisted;
-    setIsWishlisted(nextState);
 
     // Save to user profile or localStorage
     if (user?.uid) {
       try {
-        const prof = await getUserProfile(user.uid);
-        const curWish = prof?.wishlist || [];
+        const curWish = userProfile?.wishlist || [];
         const updated = nextState
           ? [...new Set([...curWish, product.id])]
           : curWish.filter((id) => id !== product.id);

@@ -48,15 +48,27 @@ const POPULAR_COLLECTIONS = [
   { name: 'Kids', label: 'Kids', icon: '⭐' },
 ];
 
+const CACHE_HOME_KEY = 'vy_cached_home_data';
+const getInitialHomeCache = () => {
+  try {
+    const raw = sessionStorage.getItem(CACHE_HOME_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {
+    // Ignore storage errors
+  }
+  return null;
+};
+
 const Home = () => {
-  const [campaign, setCampaign] = useState(DEFAULT_DIWALI_CAMPAIGN);
-  const [drops, setDrops] = useState([]);
-  const [saleProducts, setSaleProducts] = useState([]);
-  const [collections, setCollections] = useState([]);
-  const [homeProducts, setHomeProducts] = useState([]);
-  const [bestsellers, setBestsellers] = useState([]);
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getInitialHomeCache();
+  const [campaign, setCampaign] = useState(cached?.campaign || DEFAULT_DIWALI_CAMPAIGN);
+  const [drops, setDrops] = useState(cached?.drops || []);
+  const [saleProducts, setSaleProducts] = useState(cached?.saleProducts || []);
+  const [collections, setCollections] = useState(cached?.collections || []);
+  const [homeProducts, setHomeProducts] = useState(cached?.homeProducts || []);
+  const [bestsellers, setBestsellers] = useState(cached?.homeProducts || []);
+  const [videos, setVideos] = useState(cached?.videos || DEFAULT_SHOPPABLE_VIDEOS);
+  const [loading, setLoading] = useState(!cached);
 
   // Shoppable Video Modal / Active State
   const [activeVideo, setActiveVideo] = useState(null);
@@ -71,7 +83,8 @@ const Home = () => {
       getShoppableVideos().catch(() => DEFAULT_SHOPPABLE_VIDEOS),
     ]).then(([camp, vidList]) => {
       setCampaign(camp);
-      setVideos(vidList && vidList.length > 0 ? vidList : DEFAULT_SHOPPABLE_VIDEOS);
+      const vids = vidList && vidList.length > 0 ? vidList : DEFAULT_SHOPPABLE_VIDEOS;
+      setVideos(vids);
     });
 
     // 2. Real-time product synchronization with Firestore
@@ -81,25 +94,45 @@ const Home = () => {
           // Drops: strictly active drops
           const dropList = allProds
             .filter((p) => isProductNewDropActive(p))
-            .sort((a, b) => (Number(b.newDropPriority) || 0) - (Number(a.newDropPriority) || 0));
-          setDrops(dropList.slice(0, 4));
+            .sort((a, b) => (Number(b.newDropPriority) || 0) - (Number(a.newDropPriority) || 0))
+            .slice(0, 4);
+          setDrops(dropList);
 
           // Sale: strictly active sale products
           const saleList = allProds
             .filter((p) => isProductSaleActive(p))
-            .sort((a, b) => (Number(b.salePriority) || 0) - (Number(a.salePriority) || 0));
-          setSaleProducts(saleList.slice(0, 4));
+            .sort((a, b) => (Number(b.salePriority) || 0) - (Number(a.salePriority) || 0))
+            .slice(0, 4);
+          setSaleProducts(saleList);
 
           // Collections: products assigned to collections
-          const colList = allProds.filter((p) => p.showInCollections !== false);
-          setCollections(colList.slice(0, 4));
+          const colList = allProds
+            .filter((p) => p.showInCollections !== false)
+            .slice(0, 4);
+          setCollections(colList);
 
           // Home Section: products assigned to show on home
           const homeList = allProds
             .filter((p) => p.showOnHome !== false && (p.showOnHome === true || p.isFeatured || p.featured))
-            .sort((a, b) => (Number(b.newDropPriority || b.salePriority || 0)) - (Number(a.newDropPriority || a.salePriority || 0)));
-          setHomeProducts(homeList.slice(0, 6));
-          setBestsellers(homeList.slice(0, 6));
+            .sort((a, b) => (Number(b.newDropPriority || b.salePriority || 0)) - (Number(a.newDropPriority || a.salePriority || 0)))
+            .slice(0, 6);
+          setHomeProducts(homeList);
+          setBestsellers(homeList);
+
+          // Update fast local cache
+          try {
+            sessionStorage.setItem(
+              CACHE_HOME_KEY,
+              JSON.stringify({
+                drops: dropList,
+                saleProducts: saleList,
+                collections: colList,
+                homeProducts: homeList,
+              })
+            );
+          } catch {
+            // Ignore quota
+          }
         } else {
           // If Firestore is empty (e.g. all products deleted by admin), clear all sections
           setDrops([]);
@@ -155,17 +188,17 @@ const Home = () => {
           <picture>
             <source
               media="(max-width: 768px)"
-              srcSet={campaign.mobileBannerUrl || '/banners/diwali_sale_banner_mobile.png'}
+              srcSet={campaign.mobileBannerUrl || '/banners/diwali_sale_banner_mobile.webp'}
             />
             <img
-              src={campaign.desktopBannerUrl || '/banners/diwali_sale_banner.png'}
+              src={campaign.desktopBannerUrl || '/banners/diwali_sale_banner.webp'}
               alt="VYBERA Diwali Fashion Campaign"
               fetchpriority="high"
               decoding="async"
               className="w-full h-full object-cover object-center md:object-[68%_center] opacity-75"
               onError={(e) => {
-                if (e.target.src.includes('diwali_sale_banner.png')) return;
-                e.target.src = '/banners/diwali_sale_banner.png';
+                if (e.target.src.includes('diwali_sale_banner.webp') || e.target.src.includes('diwali_sale_banner.png')) return;
+                e.target.src = '/banners/diwali_sale_banner.webp';
               }}
             />
           </picture>
@@ -473,25 +506,25 @@ const Home = () => {
           <div className="lg:col-span-7 grid grid-cols-2 gap-4">
             <div className="aspect-[4/5] bg-[#FAF5ED] overflow-hidden border border-[#E5DACD] shadow-md group">
               <img
-                src="/Design/7th%20boy/ChatGPT%20Image%20May%204,%202026,%2010_13_22%20AM.png"
+                src="/Design/7th%20boy/oversized_boy.webp"
                 alt="VYBERA Oversized Model Silhouette"
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
                 onError={(e) => {
-                  e.target.src = '/hero_banner.png';
+                  e.target.src = '/hero_banner.webp';
                 }}
               />
             </div>
             <div className="aspect-[4/5] bg-[#FAF5ED] overflow-hidden border border-[#E5DACD] shadow-md group translate-y-6">
               <img
-                src="/Design/6th%20girl/ChatGPT%20Image%20May%204,%202026,%2009_50_38%20AM.png"
+                src="/Design/6th%20girl/oversized_girl.webp"
                 alt="VYBERA Heavyweight Oversized Fit"
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
                 onError={(e) => {
-                  e.target.src = '/hero_banner.png';
+                  e.target.src = '/hero_banner.webp';
                 }}
               />
             </div>
