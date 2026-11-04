@@ -99,7 +99,7 @@ export const openRazorpay = async ({
   // ── Step 3: Open Checkout ────────────────────────────────────
   // Build callback URL for UPI redirect payments (mobile apps redirect away from SPA)
   const baseUrl = window.location.origin;
-  const callbackUrl = `${baseUrl}/order-success?foid=${firebaseOrderId}`;
+  const callbackUrl = `${baseUrl}/api/razorpay-callback?foid=${encodeURIComponent(firebaseOrderId)}`;
 
   return new Promise((resolve, reject) => {
     const options = {

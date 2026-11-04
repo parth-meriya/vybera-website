@@ -16,17 +16,23 @@ const OrderSuccess = () => {
     // Always clear cart when reaching this page
     clearCart();
 
-    // Check if we arrived via Razorpay redirect (UPI payments)
+    const urlError = searchParams.get('error');
+    if (urlError) {
+      setVerifyError(decodeURIComponent(urlError));
+      return;
+    }
+
+    // Check if we arrived via Razorpay redirect with raw parameters
     const razorpayPaymentId = searchParams.get('razorpay_payment_id');
     const razorpayOrderId = searchParams.get('razorpay_order_id');
     const razorpaySignature = searchParams.get('razorpay_signature');
     const firebaseOrderId = searchParams.get('foid') || localStorage.getItem('vybera_pending_order');
 
-    // Clean up localStorage
+    // Clean up pending order from localStorage
     localStorage.removeItem('vybera_pending_order');
 
     if (razorpayPaymentId && razorpayOrderId && razorpaySignature && firebaseOrderId) {
-      // This is a UPI redirect — verify payment on server
+      // Direct query parameters present — verify with backend
       setVerifying(true);
       fetch('/api/verify-payment', {
         method: 'POST',
@@ -39,15 +45,14 @@ const OrderSuccess = () => {
         }),
       })
         .then(async (res) => {
-          if (!res.ok) {
-            const data = await res.json().catch(() => ({}));
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok && !data.message?.includes('already')) {
             throw new Error(data.error || 'Payment verification failed');
           }
           setVerified(true);
         })
         .catch((err) => {
           console.error('Redirect payment verification failed:', err);
-          // Don't show error if already confirmed (double-verify scenario)
           if (err.message?.includes('already')) {
             setVerified(true);
           } else {
@@ -56,10 +61,10 @@ const OrderSuccess = () => {
         })
         .finally(() => setVerifying(false));
     } else {
-      // Normal flow (popup payment) — already verified in Checkout.jsx
+      // Normal popup payment or serverless callback redirect (/api/razorpay-callback)
       setVerified(true);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Loading state while verifying redirect payment
   if (verifying) {
